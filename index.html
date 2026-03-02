@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pitt Break RideShare</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; color: #333; margin: 0; padding: 0; }
+        header { background-color: #1c2957; color: white; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        header h1 { margin: 0; font-size: 2em; color: #cdb87d; }
+        .container { max-width: 700px; margin: 40px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+        .primary-bg { background-color: #1c2957; color: white; }
+        .accent-bg { background-color: #cdb87d; color: #1c2957; }
+        .danger-bg { background-color: #dc3545; color: white; }
+        #auth-view { text-align: center; padding: 40px 20px; }
+        #auth-view input { text-align: center; font-size: 1.2em; padding: 15px; width: 80%; }
+        .tabs { display: none; margin-bottom: 30px; border-bottom: 2px solid #eee; }
+        .tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: bold; color: #666; transition: 0.3s; font-size: 1.1em; }
+        .tab.active { color: #1c2957; border-bottom: 4px solid #1c2957; }
+        .view { display: none; }
+        .view.active { display: block; }
+        input, select, button, textarea { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 1em; }
+        textarea { resize: vertical; min-height: 80px; }
+        button { border: none; cursor: pointer; font-weight: bold; font-size: 1.1em; transition: 0.2s; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        button:disabled { background-color: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+        .row { display: flex; gap: 15px; }
+        .row > * { flex: 1; }
+        .ride-card { border: 1px solid #eee; padding: 25px; margin-bottom: 20px; border-radius: 10px; background-color: #fff; border-left: 6px solid #1c2957; transition: 0.2s; }
+        .ride-card:hover { box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
+        .ride-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .price-tag { font-size: 1.8em; font-weight: bold; color: #28a745; }
+        .badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
+        .badge { background: #e9ecef; padding: 6px 12px; border-radius: 15px; font-size: 0.85em; color: #444; font-weight: 600; }
+        .notes-box { background: #f8f9fa; padding: 15px; border-radius: 8px; font-style: italic; color: #555; margin-bottom: 15px; border-left: 3px solid #cdb87d; }
+        .suggestion { font-size: 0.9em; color: #666; text-align: right; margin-top: -5px; margin-bottom: 15px; display: block; }
+        #loading { text-align: center; color: #1c2957; font-weight: bold; display: none; padding: 40px; font-size: 1.2em; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Pitt Break RideShare</h1>
+    <p style="margin: 5px 0 0 0; color: #ddd;">Student-to-student travel coordination</p>
+</header>
+
+<div class="container">
+    <div id="auth-view" class="view active">
+        <h2 style="color: #1c2957;">Welcome to the Board</h2>
+        <p>Please verify your student status to access the marketplace.</p>
+        <input type="email" id="student-email" placeholder="Enter your @pitt.edu email" required>
+        <button class="primary-bg" onclick="login()" style="width: 80%;">Verify & Enter</button>
+        <p id="auth-error" style="color: red; display: none;">You must use a valid @pitt.edu email address.</p>
+    </div>
+
+    <div class="tabs" id="nav-tabs">
+        <div class="tab active" onclick="switchTab('rider')">Find a Ride Home</div>
+        <div class="tab" onclick="switchTab('driver')">Offer a Ride Home</div>
+    </div>
+
+    <div id="loading">Syncing database...</div>
+
+    <div id="rider-view" class="view">
+        <div id="rides-list"></div>
+    </div>
+
+    <div id="driver-view" class="view">
+        <h2 style="margin-top: 0; color: #1c2957;">Set Up Your Car</h2>
+        <div class="row">
+            <input type="text" id="driver-name" placeholder="Your Name" required>
+            <input type="date" id="date" required>
+        </div>
+        <input type="text" id="destination" placeholder="Destination City (e.g., Philadelphia, PA)" oninput="updateSuggestedPrice()" required>
+        <div class="row">
+            <input type="number" id="seats" placeholder="Seats Available" min="1" max="6" required>
+            <input type="number" id="price" placeholder="Price per Seat ($)" required>
+        </div>
+        <span class="suggestion" id="price-suggestion">Recommended: Enter destination to calculate</span>
+
+        <h3 style="margin-bottom: 10px; margin-top: 20px; color: #1c2957;">Trip Expectations</h3>
+        <div class="row">
+            <select id="vibe">
+                <option value="Chatty">Vibe: Chatty</option>
+                <option value="Quiet">Vibe: Quiet/Headphones</option>
+                <option value="Mixed">Vibe: A bit of both</option>
+            </select>
+            <select id="music">
+                <option value="Driver's Choice">Music: Driver's Choice</option>
+                <option value="Pass the Aux">Music: Pass the Aux</option>
+                <option value="Podcasts/Silence">Music: Podcasts/Silence</option>
+            </select>
+        </div>
+        <select id="luggage">
+            <option value="Backpack Only">Luggage: Backpack Only</option>
+            <option value="Carry-on Size">Luggage: Carry-on Size allowed</option>
+            <option value="Large Trunk Space">Luggage: Large Trunk Space</option>
+        </select>
+        
+        <textarea id="notes" placeholder="Trip Notes (Optional details about stops, strict departure times, or car rules)"></textarea>
+
+        <button class="accent-bg" id="post-btn" onclick="postRide()" style="margin-top: 20px;">Post Ride Offer</button>
+    </div>
+</div>
+
+<script>
+    // --- REPLACE THIS URL WITH YOUR NEW APPS SCRIPT WEB APP URL ---
+    const API_URL = 'https://script.google.com/macros/s/AKfycbz5fMYurbN4QueAnkE8dZG6UJXPvhhlAWem1RIX1AurcFvmmX-YmqO6b_xy8nI_okE/exec';
+    
+    let currentUserEmail = "";
+
+    function login() {
+        const email = document.getElementById('student-email').value.toLowerCase();
+        if (email.endsWith('@pitt.edu')) {
+            currentUserEmail = email;
+            document.getElementById('auth-view').classList.remove('active');
+            document.getElementById('nav-tabs').style.display = 'flex';
+            switchTab('rider');
+        } else {
+            document.getElementById('auth-error').style.display = 'block';
+        }
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.view:not(#auth-view)').forEach(v => v.classList.remove('active'));
+        
+        if (tabName === 'rider') {
+            document.querySelectorAll('.tab')[0].classList.add('active');
+            document.getElementById('rider-view').classList.add('active');
+            fetchRides();
+        } else {
+            document.querySelectorAll('.tab')[1].classList.add('active');
+            document.getElementById('driver-view').classList.add('active');
+        }
+    }
+
+    function updateSuggestedPrice() {
+        const dest = document.getElementById('destination').value;
+        const suggestionBox = document.getElementById('price-suggestion');
+        if (dest.length > 3) {
+            const baseRate = 15;
+            const suggested = baseRate + (dest.length * 1.5); 
+            suggestionBox.innerText = `Recommended to cover gas: $${suggested} per seat`;
+        } else {
+            suggestionBox.innerText = 'Recommended: Enter destination to calculate';
+        }
+    }
+
+    async function fetchRides() {
+        document.getElementById('loading').style.display = 'block';
+        document.getElementById('rides-list').innerHTML = '';
+        
+        try {
+            const response = await fetch(API_URL);
+            const rides = await response.json();
+            renderRides(rides);
+        } catch (error) {
+            document.getElementById('rides-list').innerHTML = '<p style="color:red; text-align:center;">Error connecting to database. Please check your API URL.</p>';
+        } finally {
+            document.getElementById('loading').style.display = 'none';
+        }
+    }
+
+    async function postRide() {
+        const name = document.getElementById('driver-name').value;
+        const destination = document.getElementById('destination').value;
+        const date = document.getElementById('date').value;
+        const seats = document.getElementById('seats').value;
+        const price = document.getElementById('price').value;
+        
+        if (!name || !destination || !date || !seats || !price) {
+            alert("Please fill out all the main trip details.");
+            return;
+        }
+
+        const btn = document.getElementById('post-btn');
+        btn.innerText = "Posting securely to database...";
+        btn.disabled = true;
+
+        const rideData = {
+            action: 'addRide',
+            id: Date.now(),
+            email: currentUserEmail,
+            name, destination, date, seats, price,
+            vibe: document.getElementById('vibe').value,
+            music: document.getElementById('music').value,
+            luggage: document.getElementById('luggage').value,
+            notes: document.getElementById('notes').value
+        };
+
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify(rideData) });
+
+        document.getElementById('destination').value = '';
+        document.getElementById('price').value = '';
+        document.getElementById('notes').value = '';
+        btn.innerText = "Post Ride Offer";
+        btn.disabled = false;
+        switchTab('rider');
+    }
+
+    async function bookSeat(id, btnElement) {
+        btnElement.innerText = "Booking...";
+        btnElement.disabled = true;
+        const payload = { action: 'bookSeat', id: id };
+        
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+
+        alert(`Success! You claimed a seat. Please reach out to the driver directly via Pitt email to coordinate payment and pickup.`);
+        fetchRides(); 
+    }
+
+    async function deleteRide(id, btnElement) {
+        if (!confirm("Are you sure you want to cancel and delete this trip from the board?")) return;
+        
+        btnElement.innerText = "Deleting...";
+        btnElement.disabled = true;
+        const payload = { action: 'deleteRide', id: id, email: currentUserEmail };
+        
+        await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+
+        fetchRides(); 
+    }
+
+    function renderRides(rides) {
+        const container = document.getElementById('rides-list');
+        container.innerHTML = '<h2 style="margin-top: 0; color: #1c2957;">Upcoming Trips</h2>';
+
+        const availableRides = rides.filter(r => parseInt(r.seats) > 0 || r.email === currentUserEmail);
+
+        if (availableRides.length === 0) {
+            container.innerHTML += '<p style="text-align: center; color: #777; margin-top: 40px; font-size: 1.1em;">No trips posted yet. Be the first to offer a ride home!</p>';
+            return;
+        }
+
+        // Sort rides by date
+        availableRides.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        availableRides.forEach(ride => {
+            const dateFmt = new Date(ride.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' });
+            
+            let actionButton = '';
+            if (ride.email === currentUserEmail) {
+                actionButton = `<button class="danger-bg" onclick="deleteRide(${ride.id}, this)">Delete My Ride</button>`;
+            } else if (parseInt(ride.seats) > 0) {
+                actionButton = `<button class="primary-bg" onclick="bookSeat(${ride.id}, this)">Claim a Seat</button>`;
+            } else {
+                actionButton = `<button disabled>Sold Out</button>`;
+            }
+
+            let notesHtml = ride.notes ? `<div class="notes-box"><strong>Driver Notes:</strong> ${ride.notes}</div>` : '';
+
+            const card = document.createElement('div');
+            card.className = 'ride-card';
+            card.innerHTML = `
+                <div class="ride-header">
+                    <div>
+                        <h3 style="margin: 0; color: #1c2957; font-size: 1.5em;">${ride.destination}</h3>
+                        <div style="color: #666; font-size: 1.1em; margin-top: 6px;">📅 ${dateFmt} • <strong>${ride.seats} seats left</strong></div>
+                    </div>
+                    <div class="price-tag">$${ride.price}</div>
+                </div>
+                
+                <div class="badges">
+                    <span class="badge">🚗 ${ride.name}</span>
+                    <span class="badge">🗣️ ${ride.vibe}</span>
+                    <span class="badge">🎵 ${ride.music}</span>
+                    <span class="badge">🎒 ${ride.luggage}</span>
+                </div>
+                
+                ${notesHtml}
+                ${actionButton}
+            `;
+            container.appendChild(card);
+        });
+    }
+</script>
+
+</body>
+</html>
