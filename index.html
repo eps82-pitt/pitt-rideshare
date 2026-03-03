@@ -8,111 +8,102 @@
     <link rel="manifest" href="manifest.json">
     <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }</script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
         :root {
-            --pitt-navy: #1c2957;
-            --pitt-gold: #cdb87d;
-            --bg-color: #f5f5f7;
-            --card-bg: #ffffff;
-            --text-main: #1d1d1f;
-            --text-muted: #86868b;
-            --border-color: #e5e5ea;
-            --input-bg: #fafafa;
-            --tab-bg: #eef0f5;
-            --success: #34c759;
-            --danger: #ff3b30;
-            --warning: #ff9500;
-            --header-grad-1: #1c2957;
-            --header-grad-2: #0b1433;
-            --badge-bg: #f5f5f7;
+            --pitt-navy: #1c2957; --pitt-gold: #cdb87d; --bg-color: #f2f4f7; --card-bg: #ffffff;
+            --text-main: #111827; --text-muted: #6b7280; --border-color: #e5e7eb; --input-bg: #f9fafb;
+            --tab-bg: #e5e7eb; --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+            --header-grad-1: #1c2957; --header-grad-2: #111827; --badge-bg: #f3f4f6;
         }
-
         [data-theme="dark"] {
-            --bg-color: #121212;
-            --card-bg: #1e1e1e;
-            --text-main: #f5f5f7;
-            --text-muted: #a1a1aa;
-            --border-color: #333333;
-            --input-bg: #2d2d2d;
-            --tab-bg: #2d2d2d;
-            --header-grad-1: #0f162e;
-            --header-grad-2: #050a17;
-            --badge-bg: #2d2d2d;
+            --bg-color: #111827; --card-bg: #1f2937; --text-main: #f9fafb; --text-muted: #9ca3af;
+            --border-color: #374151; --input-bg: #374151; --tab-bg: #374151;
+            --header-grad-1: #1f2937; --header-grad-2: #111827; --badge-bg: #374151;
         }
 
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 0; transition: 0.3s ease; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 0; transition: 0.3s ease; }
         
-        header { background: linear-gradient(135deg, var(--header-grad-1), var(--header-grad-2)); color: white; padding: 30px 20px 40px; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); margin-bottom: -30px; }
+        header { background: linear-gradient(135deg, var(--header-grad-1), var(--header-grad-2)); color: white; padding: 35px 20px 45px; border-radius: 0 0 32px 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: -35px; }
         .header-content { display: flex; justify-content: space-between; align-items: flex-start; max-width: 600px; margin: auto; }
-        header h1 { margin: 0; font-size: 2.2em; font-weight: 700; color: var(--pitt-gold); letter-spacing: -0.5px; }
+        header h1 { margin: 0; font-size: 2.2em; color: var(--pitt-gold); letter-spacing: -0.5px; }
+        header p { margin: 4px 0 0 0; color: #9ca3af; font-size: 1.05em; font-weight: 500; }
         
         .header-actions { display: flex; gap: 8px; align-items: center; margin-top: 5px; }
-        .icon-btn { background: rgba(255,255,255,0.15); color: white; padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; transition: 0.2s; }
+        .icon-btn { background: rgba(255,255,255,0.1); color: white; padding: 10px 14px; border-radius: 12px; border: none; cursor: pointer; transition: 0.2s; backdrop-filter: blur(8px); }
+        .icon-btn:hover { background: rgba(255,255,255,0.2); }
         #logout-btn { font-size: 0.9em; font-weight: 600; display: none; }
 
-        .container { max-width: 600px; margin: 0 auto 50px; background: var(--card-bg); padding: 30px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); position: relative; z-index: 10; }
+        .container { max-width: 600px; margin: 0 auto 60px; background: var(--card-bg); padding: 32px; border-radius: 28px; box-shadow: 0 12px 40px rgba(0,0,0,0.06); position: relative; z-index: 10; border: 1px solid var(--border-color); }
         
-        button { border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 1.05em; padding: 16px; border-radius: 12px; transition: 0.2s ease; width: 100%; }
-        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.15); }
+        button { border: none; cursor: pointer; font-family: inherit; font-weight: 600; font-size: 1.05em; padding: 16px; border-radius: 14px; transition: 0.2s; width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); filter: brightness(1.05); }
         button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
         
         .primary-bg { background-color: var(--pitt-navy); color: white; }
-        .accent-bg { background-color: var(--pitt-gold); color: #1c2957; }
-        .danger-bg { background-color: transparent; color: var(--danger); border: 1.5px solid var(--danger); }
-        .warning-bg { background-color: transparent; color: var(--warning); border: 1.5px solid var(--warning); }
-        .success-bg { background-color: transparent; color: var(--success); border: 1.5px solid var(--success); }
+        .accent-bg { background-color: var(--pitt-gold); color: #111827; }
+        .danger-bg { background-color: transparent; color: var(--danger); border: 2px solid var(--danger); box-shadow: none; }
+        .warning-bg { background-color: transparent; color: var(--warning); border: 2px solid var(--warning); box-shadow: none; }
+        .success-bg { background-color: transparent; color: var(--success); border: 2px solid var(--success); box-shadow: none; }
 
-        .tabs { display: none; background: var(--tab-bg); padding: 6px; border-radius: 14px; margin-bottom: 30px; display: flex; gap: 4px; }
-        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: 600; color: var(--text-muted); font-size: 0.95em; border-radius: 10px; transition: 0.3s; }
-        .tab.active { background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .tabs { display: none; background: var(--tab-bg); padding: 6px; border-radius: 16px; margin-bottom: 30px; display: flex; gap: 4px; }
+        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: 600; color: var(--text-muted); font-size: 0.95em; border-radius: 12px; transition: 0.3s; }
+        .tab.active { background: var(--card-bg); color: var(--text-main); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         
         .view { display: none; animation: slideFadeUp 0.3s; }
         .view.active { display: block; }
         @keyframes slideFadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        input, select, textarea { width: 100%; padding: 16px; margin: 8px 0 16px; border: 1.5px solid var(--border-color); border-radius: 12px; box-sizing: border-box; font-family: inherit; font-size: 1em; color: var(--text-main); background-color: var(--input-bg); }
-        input:focus, select:focus, textarea:focus { border-color: var(--pitt-gold); outline: none; }
-        .row { display: flex; gap: 12px; }
+        /* Modernized Form Grid */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+        .form-full { grid-column: span 2; margin-bottom: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 0.85em; font-weight: 600; color: var(--text-muted); padding-left: 4px; }
+        
+        input, select, textarea { width: 100%; padding: 14px 16px; border: 1.5px solid var(--border-color); border-radius: 14px; box-sizing: border-box; font-family: inherit; font-size: 1em; color: var(--text-main); background: var(--input-bg); transition: 0.2s; }
+        input:focus, select:focus, textarea:focus { border-color: var(--pitt-gold); outline: none; box-shadow: 0 0 0 4px rgba(205, 184, 125, 0.15); }
+        textarea { resize: vertical; min-height: 100px; }
 
-        .direction-toggle { display: flex; background: var(--tab-bg); border-radius: 12px; margin-bottom: 15px; padding: 4px; }
-        .direction-btn { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: 600; color: var(--text-muted); border-radius: 10px; transition: 0.3s; }
-        .direction-btn.active { background: var(--pitt-navy); color: white; }
+        .direction-toggle { display: flex; background: var(--tab-bg); border-radius: 16px; margin-bottom: 20px; padding: 4px; }
+        .direction-btn { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: 600; color: var(--text-muted); border-radius: 12px; transition: 0.3s; }
+        .direction-btn.active { background: var(--pitt-navy); color: white; box-shadow: 0 4px 12px rgba(28, 41, 87, 0.3); }
 
         .map-toggle { display: flex; justify-content: flex-end; margin-bottom: 15px; }
-        .map-toggle span { cursor: pointer; color: var(--pitt-navy); font-weight: 600; font-size: 0.9em; padding: 8px 12px; background: var(--tab-bg); border-radius: 8px; }
-
-        #map-container { height: 400px; border-radius: 16px; overflow: hidden; margin-bottom: 20px; display: none; border: 2px solid var(--border-color); }
+        .map-toggle span { cursor: pointer; color: var(--pitt-navy); font-weight: 600; font-size: 0.9em; padding: 8px 14px; background: var(--badge-bg); border-radius: 10px; border: 1px solid var(--border-color); }
+        #map-container { height: 400px; border-radius: 20px; margin-bottom: 24px; display: none; border: 2px solid var(--border-color); z-index: 1; }
         
-        .ride-card { border: 1.5px solid var(--border-color); padding: 24px; margin-bottom: 20px; border-radius: 16px; background-color: var(--card-bg); position: relative; overflow: hidden; }
-        .ride-card::before { content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 100%; background-color: var(--pitt-navy); }
-        .ride-card.booked-by-me::before { background-color: var(--success); }
-        .ride-card.booked-by-me { border-color: var(--success); }
+        .ride-card { border: 1.5px solid var(--border-color); padding: 24px; margin-bottom: 24px; border-radius: 20px; background: var(--card-bg); position: relative; overflow: hidden; transition: 0.3s; }
+        .ride-card:hover { border-color: #d1d5db; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .ride-card::before { content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 100%; background: var(--pitt-navy); }
+        .ride-card.booked-by-me::before { background: var(--success); }
+        .ride-card.booked-by-me { border-color: var(--success); background: rgba(16, 185, 129, 0.03); }
 
         .badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
-        .badge { background: var(--badge-bg); padding: 6px 12px; border-radius: 20px; font-size: 0.85em; font-weight: 600; border: 1px solid var(--border-color); }
-        .affinity-badge { background: #ffe4e1; color: #d6336c; border-color: #ffb3c6; }
+        .badge { background: var(--badge-bg); padding: 6px 14px; border-radius: 20px; font-size: 0.85em; font-weight: 600; border: 1px solid var(--border-color); color: var(--text-main); }
+        .affinity-badge { background: rgba(236, 72, 153, 0.1); color: #ec4899; border-color: rgba(236, 72, 153, 0.2); }
 
-        #loading { text-align: center; color: var(--text-muted); font-weight: 600; display: none; padding: 30px; }
+        #loading { text-align: center; color: var(--text-muted); font-weight: 600; display: none; padding: 40px; }
 
-        /* Chat Modal */
-        #chat-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .chat-box { background: var(--card-bg); width: 90%; max-width: 500px; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; height: 70vh; }
-        .chat-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 10px; }
-        #chat-messages { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 10px 14px; border-radius: 16px; max-width: 80%; font-size: 0.95em; line-height: 1.4; }
-        .msg.mine { background: var(--pitt-navy); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        /* Modern Overlay Modal */
+        .overlay-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(17, 24, 39, 0.7); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
+        .modal-box { background: var(--card-bg); width: 92%; max-width: 500px; border-radius: 28px; padding: 24px; display: flex; flex-direction: column; max-height: 85vh; border: 1px solid var(--border-color); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 16px; }
+        .modal-body { flex: 1; overflow-y: auto; padding-right: 8px; }
+        
+        /* iMessage Style Chat */
+        #chat-messages { display: flex; flex-direction: column; gap: 12px; padding-bottom: 10px; }
+        .msg { padding: 12px 16px; border-radius: 20px; max-width: 75%; font-size: 0.95em; line-height: 1.5; }
+        .msg.mine { background: #007aff; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
         .msg.theirs { background: var(--tab-bg); color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 4px; }
-        .msg-sender { font-size: 0.75em; color: var(--text-muted); margin-bottom: 4px; }
-        .chat-input-area { display: flex; gap: 10px; margin-top: 10px; }
-        .chat-input-area input { margin: 0; flex: 1; }
-        .chat-input-area button { width: auto; padding: 0 20px; }
+        .msg-sender { font-size: 0.75em; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; padding: 0 4px; }
+        .chat-input-area { display: flex; gap: 12px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-color); }
+        .chat-input-area input { margin: 0; flex: 1; border-radius: 20px; }
+        .chat-input-area button { width: auto; padding: 0 24px; border-radius: 20px; background: #007aff; }
 
-        #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1100; display: flex; flex-direction: column; gap: 10px; }
-        .toast { background-color: var(--text-main); color: var(--bg-color); padding: 14px 24px; border-radius: 30px; font-weight: 600; opacity: 0; transition: 0.3s ease; }
+        #toast-container { position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 1100; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; }
+        .toast { background: var(--text-main); color: var(--bg-color); padding: 16px 24px; border-radius: 16px; font-weight: 600; font-size: 0.95em; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; gap: 12px; }
         .toast.show { opacity: 1; transform: translateY(-10px); }
     </style>
 </head>
@@ -125,7 +116,7 @@
             <p>Break travel, coordinated.</p>
         </div>
         <div class="header-actions">
-            <button class="icon-btn" id="theme-toggle" onclick="toggleTheme()">🌙</button>
+            <button class="icon-btn" onclick="toggleTheme()">🌙</button>
             <button class="icon-btn" id="logout-btn" onclick="logout()">Log Out</button>
         </div>
     </div>
@@ -133,20 +124,21 @@
 
 <div class="container" id="main-container">
     <div id="auth-view" class="view active">
-        <div id="auth-step-1">
-            <h2>Student Login</h2>
-            <input type="email" id="student-email" placeholder="username@pitt.edu" required>
+        <div id="auth-step-1" style="text-align: center;">
+            <h2 style="margin-bottom: 8px;">Student Login</h2>
+            <p style="color: var(--text-muted); margin-bottom: 24px;">Enter your Pitt email to receive a secure code.</p>
+            <input type="email" id="student-email" placeholder="username@pitt.edu" style="text-align: center; font-size: 1.1em; margin-bottom: 16px;">
             <button class="primary-bg" onclick="requestOTP()">Send Secure Code</button>
-            <p id="auth-error" style="color: var(--danger); display: none;">Must be a valid @pitt.edu address.</p>
         </div>
-        <div id="auth-step-2" style="display: none;">
-            <h2>Verify Email</h2>
-            <input type="text" id="otp-input" placeholder="0000" maxlength="4">
+        <div id="auth-step-2" style="display: none; text-align: center;">
+            <h2 style="margin-bottom: 8px;">Verify Email</h2>
+            <p style="color: var(--text-muted); margin-bottom: 24px;">Enter the 4-digit code sent to your inbox.</p>
+            <input type="text" id="otp-input" placeholder="0000" maxlength="4" style="text-align: center; letter-spacing: 16px; font-weight: 700; font-size: 1.8em; margin-bottom: 16px;">
             <button class="accent-bg" onclick="verifyOTP()">Verify & Enter</button>
         </div>
     </div>
 
-    <div class="tabs" id="nav-tabs" style="display: none;">
+    <div class="tabs" id="nav-tabs">
         <div class="tab active" onclick="switchTab('rider')">Find Ride</div>
         <div class="tab" onclick="switchTab('driver')">Offer Ride</div>
         <div class="tab" onclick="switchTab('my-trips')">My Itinerary</div>
@@ -159,69 +151,117 @@
             <div class="direction-btn active" id="filter-leaving" onclick="setFilterDirection('Leaving Pitt')">Leaving Pitt</div>
             <div class="direction-btn" id="filter-returning" onclick="setFilterDirection('Returning to Pitt')">Returning to Pitt</div>
         </div>
-        <div class="map-toggle">
-            <span id="map-btn" onclick="toggleMapView()">🗺️ Toggle Map View</span>
-        </div>
-        
+        <div class="map-toggle"><span onclick="toggleMapView()">🗺️ Toggle Map View</span></div>
         <div id="map-container"></div>
         
-        <input type="text" id="search-bar" placeholder="Search destinations..." oninput="filterRides()" style="margin-bottom: 20px;">
+        <div style="position: relative; margin-bottom: 24px;">
+            <span style="position: absolute; left: 16px; top: 16px; color: var(--text-muted);">🔍</span>
+            <input type="text" id="search-bar" placeholder="Search destinations..." oninput="filterRides()" style="padding-left: 45px; margin: 0;">
+        </div>
         <div id="rides-list"></div>
     </div>
 
     <div id="driver-view" class="view">
-        <h2 style="margin-top: 0;">Set Up Your Car</h2>
+        <h2 style="margin-top: 0; margin-bottom: 24px;">Set Up Your Car</h2>
         
-        <select id="post-direction">
-            <option value="Leaving Pitt">🚗 Driving away from Pitt</option>
-            <option value="Returning to Pitt">🏠 Driving back to Pitt</option>
-        </select>
-        <select id="affinity" style="border-color: #d6336c;">
-            <option value="Everyone">👥 Open to Everyone</option>
-            <option value="Women Only">💜 Women Only Ride</option>
-        </select>
+        <div class="form-grid">
+            <div class="form-group form-full">
+                <label>Trip Direction</label>
+                <select id="post-direction" style="border-color: var(--pitt-navy); font-weight: 600;"><option value="Leaving Pitt">🚗 Driving away from Pitt</option><option value="Returning to Pitt">🏠 Driving back to Pitt</option></select>
+            </div>
+            
+            <div class="form-group">
+                <label>Driver Name</label>
+                <input type="text" id="driver-name" placeholder="First Name" required>
+            </div>
+            <div class="form-group">
+                <label>Date</label>
+                <input type="date" id="date" required>
+            </div>
 
-        <div class="row">
-            <input type="text" id="driver-name" placeholder="Your Name" required>
-            <input type="date" id="date" required>
-        </div>
-        <input type="text" id="destination" placeholder="Destination City" oninput="updateSuggestedPrice()" required>
-        
-        <input type="hidden" id="dest-lat">
-        <input type="hidden" id="dest-lon">
+            <div class="form-group form-full">
+                <label>Destination City</label>
+                <input type="text" id="destination" placeholder="e.g., Philadelphia, PA" oninput="updateSuggestedPrice('destination', 'dest-lat', 'dest-lon')" required>
+                <input type="hidden" id="dest-lat"><input type="hidden" id="dest-lon">
+                <span id="price-suggestion" style="text-align:right; font-size:0.8em; color:var(--text-muted); margin-top:-10px;">Enter city for calculated gas split...</span>
+            </div>
 
-        <div class="row">
-            <input type="number" id="seats" placeholder="Open Seats" min="1" max="6" required>
-            <input type="number" id="price" placeholder="Price per Seat" required>
-        </div>
-        <span id="price-suggestion" style="display:block; text-align:right; font-size:0.85em; color:var(--text-muted); margin-bottom: 20px;">Enter city to calculate...</span>
+            <div class="form-group">
+                <label>Open Seats</label>
+                <input type="number" id="seats" min="1" max="6" required>
+            </div>
+            <div class="form-group">
+                <label>Price per Seat ($)</label>
+                <input type="number" id="price" min="0" required>
+            </div>
 
-        <div class="row">
-            <select id="vibe"><option value="Chatty">🗣️ Chatty</option><option value="Quiet">🎧 Quiet</option><option value="Mixed">⚖️ Mixed</option></select>
-            <select id="music"><option value="Driver's Choice">📻 Driver Aux</option><option value="Pass the Aux">📱 Pass Aux</option></select>
+            <div class="form-group form-full">
+                <label>Passenger Comfort</label>
+                <select id="affinity"><option value="Everyone">👥 Open to Everyone</option><option value="Women Only">💜 Women Only Ride</option></select>
+            </div>
+
+            <div class="form-group">
+                <select id="vibe"><option value="Chatty">🗣️ Chatty</option><option value="Quiet">🎧 Quiet</option><option value="Mixed">⚖️ Mixed</option></select>
+            </div>
+            <div class="form-group">
+                <select id="music"><option value="Driver's Choice">📻 Driver Aux</option><option value="Pass the Aux">📱 Pass Aux</option></select>
+            </div>
+
+            <div class="form-group form-full">
+                <select id="luggage"><option value="Backpack Only">🎒 Backpack Only</option><option value="Carry-on Size">🧳 Carry-on</option><option value="Large Trunk Space">📦 Trunk Space</option></select>
+            </div>
+
+            <div class="form-group form-full">
+                <label>Trip Notes</label>
+                <textarea id="notes" placeholder="Departure times, drop-off restrictions, etc."></textarea>
+            </div>
         </div>
-        <select id="luggage"><option value="Backpack Only">🎒 Backpack Only</option><option value="Carry-on Size">🧳 Carry-on</option><option value="Large Trunk Space">📦 Trunk Space</option></select>
-        
-        <textarea id="notes" placeholder="Notes (Departure times, etc.)"></textarea>
+
         <button class="primary-bg" onclick="postRide()">Post to Board</button>
     </div>
 
     <div id="my-trips-view" class="view">
-        <h2 style="margin-top: 0;">My Itinerary</h2>
+        <h2 style="margin-top: 0; margin-bottom: 24px;">My Itinerary</h2>
         <div id="my-rides-list"></div>
     </div>
 </div>
 
-<div id="chat-modal">
-    <div class="chat-box">
-        <div class="chat-header">
-            <h3 style="margin: 0;">Ride Chat</h3>
-            <button onclick="closeChat()" style="width: auto; padding: 5px 10px; background: #eee; color: #333;">✕</button>
+<div id="edit-modal" class="overlay-modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 style="margin: 0;">Edit Trip</h3>
+            <button class="icon-btn" onclick="closeEditModal()" style="color:var(--text-main); background:var(--badge-bg);">✕</button>
         </div>
-        <div id="chat-messages"></div>
+        <div class="modal-body form-grid">
+            <input type="hidden" id="edit-id">
+            <div class="form-group form-full"><select id="edit-direction"><option value="Leaving Pitt">🚗 Leaving Pitt</option><option value="Returning to Pitt">🏠 Returning to Pitt</option></select></div>
+            <div class="form-group"><input type="date" id="edit-date" required></div>
+            <div class="form-group"><select id="edit-affinity"><option value="Everyone">👥 Everyone</option><option value="Women Only">💜 Women Only</option></select></div>
+            <div class="form-group form-full">
+                <input type="text" id="edit-destination" oninput="updateSuggestedPrice('edit-destination', 'edit-lat', 'edit-lon')" required>
+                <input type="hidden" id="edit-lat"><input type="hidden" id="edit-lon">
+            </div>
+            <div class="form-group"><input type="number" id="edit-seats" placeholder="Seats" min="1" max="6" required></div>
+            <div class="form-group"><input type="number" id="edit-price" placeholder="Price" required></div>
+            <div class="form-group"><select id="edit-vibe"><option value="Chatty">🗣️ Chatty</option><option value="Quiet">🎧 Quiet</option><option value="Mixed">⚖️ Mixed</option></select></div>
+            <div class="form-group"><select id="edit-music"><option value="Driver's Choice">📻 Driver Aux</option><option value="Pass the Aux">📱 Pass Aux</option></select></div>
+            <div class="form-group form-full"><select id="edit-luggage"><option value="Backpack Only">🎒 Backpack Only</option><option value="Carry-on Size">🧳 Carry-on</option><option value="Large Trunk Space">📦 Trunk Space</option></select></div>
+            <div class="form-group form-full"><textarea id="edit-notes" placeholder="Notes"></textarea></div>
+            <div class="form-group form-full"><button class="accent-bg" onclick="submitEditRide()">Save Changes</button></div>
+        </div>
+    </div>
+</div>
+
+<div id="chat-modal" class="overlay-modal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3 style="margin: 0;">Group Chat</h3>
+            <button class="icon-btn" onclick="closeChat()" style="color:var(--text-main); background:var(--badge-bg);">✕</button>
+        </div>
+        <div id="chat-messages" class="modal-body"></div>
         <div class="chat-input-area">
             <input type="text" id="chat-input" placeholder="Message the car..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
-            <button class="primary-bg" onclick="sendChatMessage()">Send</button>
+            <button onclick="sendChatMessage()" style="color:white;">↑</button>
         </div>
     </div>
 </div>
@@ -229,7 +269,7 @@
 <div id="toast-container"></div>
 
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwCIv-5peCnTOUrrdeuEKlUvfQbnd1i0ouj19W5BslEXCg700HbwvQy8KdMxKMEm8Vu/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbz5fMYurbN4QueAnkE8dZG6UJXPvhhlAWem1RIX1AurcFvmmX-YmqO6b_xy8nI_okE/exec';
     
     let currentUserEmail = "", sessionToken = "";
     let cachedRides = [];
@@ -263,74 +303,89 @@
     function showToast(msg, type = 'success') {
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div'); toast.className = `toast ${type}`;
-        toast.innerHTML = `${type === 'success' ? '✅' : '⚠️'} ${msg}`;
+        let icon = type === 'success' ? '✅' : type === 'warning' ? '⚡' : '⚠️';
+        toast.innerHTML = `<span style="font-size: 1.2em;">${icon}</span> ${msg}`;
         container.appendChild(toast);
         void toast.offsetWidth; toast.classList.add('show');
         setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 4000);
     }
 
-    // --- AUTH ---
     async function requestOTP() {
-        const emailInput = document.getElementById('student-email').value.toLowerCase().trim();
-        if (emailInput === 'admin') {
-            currentUserEmail = 'admin@pitt.edu'; sessionToken = 'admin-token';
-            localStorage.setItem('pittRideShareSession', JSON.stringify({ email: currentUserEmail, token: sessionToken }));
-            location.reload(); return;
-        }
-        if (!emailInput.endsWith('@pitt.edu')) { document.getElementById('auth-error').style.display='block'; return; }
-        currentUserEmail = emailInput;
-        await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'requestOTP', email: emailInput }) });
-        document.getElementById('auth-step-1').style.display='none'; document.getElementById('auth-step-2').style.display='block';
+        const emailInput = document.getElementById('student-email').value.trim();
+        const btn = document.querySelector('#auth-step-1 button');
+        btn.innerText = "Sending..."; btn.disabled = true;
+
+        try {
+            currentUserEmail = emailInput; 
+            const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'requestOTP', email: emailInput }) });
+            const result = await response.json();
+
+            // Intercept Admin Bypass
+            if (result.status === 'admin_success') {
+                currentUserEmail = 'admin@pitt.edu'; sessionToken = result.token;
+                localStorage.setItem('pittRideShareSession', JSON.stringify({ email: currentUserEmail, token: sessionToken }));
+                location.reload(); return;
+            }
+
+            if (result.status === 'error') { showToast(result.message || "Failed. Try again later.", "error"); btn.innerText = "Send Secure Code"; btn.disabled = false; return; }
+            
+            document.getElementById('auth-step-1').style.display = 'none';
+            document.getElementById('auth-step-2').style.display = 'block';
+            showToast("Code sent to your inbox!");
+        } catch (error) { showToast("Network error.", "error"); btn.innerText = "Send Secure Code"; btn.disabled = false; }
     }
 
     async function verifyOTP() {
         const otp = document.getElementById('otp-input').value.trim();
+        const btn = document.querySelector('#auth-step-2 button');
+        btn.innerText = "Verifying..."; btn.disabled = true;
+
         const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'verifyOTP', email: currentUserEmail, otp: otp }) });
         const result = await res.json();
         if (result.status === 'success') {
             localStorage.setItem('pittRideShareSession', JSON.stringify({ email: currentUserEmail, token: result.token }));
             location.reload();
-        } else alert("Invalid code.");
+        } else {
+            showToast("Invalid or expired code.", "error");
+            btn.innerText = "Verify & Enter"; btn.disabled = false;
+        }
     }
 
-    function logout() { localStorage.clear(); location.reload(); }
+    async function logout() { 
+        try { if (sessionToken) await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'logout', email: currentUserEmail, token: sessionToken }) }); } catch(e){}
+        localStorage.clear(); location.reload(); 
+    }
 
     async function secureFetch(payload) {
         payload.email = currentUserEmail; payload.token = sessionToken;
         const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-        return await response.json();
+        const result = await response.json();
+        if (result.status === 'unauthorized') { logout(); }
+        return result;
     }
 
     // --- MAP LOGIC ---
     function initMap() {
         if (!map) {
-            map = L.map('map-container').setView([40.4406, -79.9959], 6); // Centered on Pitt
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
+            map = L.map('map-container').setView([40.4406, -79.9959], 6); 
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
             markersGroup = L.layerGroup().addTo(map);
         }
     }
-
     function toggleMapView() {
         isMapVisible = !isMapVisible;
-        const mapContainer = document.getElementById('map-container');
-        const listContainer = document.getElementById('rides-list');
+        const mapContainer = document.getElementById('map-container'); const listContainer = document.getElementById('rides-list');
         if (isMapVisible) {
-            mapContainer.style.display = 'block'; listContainer.style.display = 'none';
-            initMap();
+            mapContainer.style.display = 'block'; listContainer.style.display = 'none'; initMap();
             setTimeout(() => { map.invalidateSize(); updateMapMarkers(); }, 200);
-        } else {
-            mapContainer.style.display = 'none'; listContainer.style.display = 'block';
-        }
+        } else { mapContainer.style.display = 'none'; listContainer.style.display = 'block'; }
     }
-
     function updateMapMarkers() {
         if (!map) return;
         markersGroup.clearLayers();
-        const visibleRides = cachedRides.filter(r => r.direction === currentFilterDirection && r.lat && r.lon);
-        
-        visibleRides.forEach(ride => {
+        cachedRides.filter(r => r.direction === currentFilterDirection && r.lat && r.lon).forEach(ride => {
             const marker = L.marker([parseFloat(ride.lat), parseFloat(ride.lon)]).addTo(markersGroup);
-            marker.bindPopup(`<b>${ride.destination}</b><br>$${ride.price} - ${ride.seats} seats<br><br><button onclick="bookSeat(${ride.id}, this)" style="padding: 5px; font-size: 0.8em; background:#1c2957; color:white;">Claim Seat</button>`);
+            marker.bindPopup(`<b>${ride.destination}</b><br>$${ride.price} - ${ride.seats} seats<br><button onclick="bookSeat(${ride.id}, this)" style="padding: 5px; background:var(--pitt-navy); color:white; border-radius:6px; margin-top:5px; border:none;">Claim Seat</button>`);
         });
     }
 
@@ -341,7 +396,6 @@
         document.getElementById(tab+'-view').classList.add('active');
         if(tab !== 'driver') fetchRides();
     }
-
     function setFilterDirection(dir) {
         currentFilterDirection = dir;
         document.getElementById('filter-leaving').classList.toggle('active', dir === 'Leaving Pitt');
@@ -349,16 +403,14 @@
         filterRides(); if(isMapVisible) updateMapMarkers();
     }
 
-    function updateSuggestedPrice() {
-        const dest = document.getElementById('destination').value.trim();
+    function updateSuggestedPrice(destInputId, latInputId, lonInputId) {
+        const dest = document.getElementById(destInputId).value.trim();
         clearTimeout(priceDebounceTimer);
         priceDebounceTimer = setTimeout(async () => {
             const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dest + ', USA')}&limit=1`);
             const data = await res.json();
             if (data && data.length > 0) {
-                document.getElementById('dest-lat').value = data[0].lat;
-                document.getElementById('dest-lon').value = data[0].lon;
-                document.getElementById('price-suggestion').innerText = "Location mapped successfully.";
+                document.getElementById(latInputId).value = data[0].lat; document.getElementById(lonInputId).value = data[0].lon;
             }
         }, 800);
     }
@@ -371,12 +423,10 @@
         document.getElementById('my-trips-view').classList.contains('active') ? renderMyTrips() : filterRides();
         if(isMapVisible) updateMapMarkers();
     }
-
     function filterRides() {
         const search = document.getElementById('search-bar').value.toLowerCase();
         renderRides(cachedRides.filter(r => r.destination.toLowerCase().includes(search) && r.direction === currentFilterDirection), 'rides-list');
     }
-
     function renderMyTrips() {
         renderRides(cachedRides.filter(r => r.email === currentUserEmail || (r.riders && r.riders.includes(currentUserEmail))), 'my-rides-list');
     }
@@ -391,36 +441,61 @@
             vibe: document.getElementById('vibe').value, music: document.getElementById('music').value,
             luggage: document.getElementById('luggage').value, notes: document.getElementById('notes').value
         };
-        await secureFetch(payload); showToast("Posted!"); switchTab('my-trips');
+        const res = await secureFetch(payload); 
+        if(res.status === 'success') { showToast("Posted!"); switchTab('my-trips'); }
+        else { showToast(res.message || "Invalid input.", "error"); }
     }
 
-    async function bookSeat(id, btn) { btn.disabled = true; await secureFetch({ action: 'bookSeat', id }); fetchRides(); }
+    function openEditModal(rideId) {
+        const ride = cachedRides.find(r => r.id === rideId);
+        if (!ride) return;
+        document.getElementById('edit-id').value = ride.id; document.getElementById('edit-direction').value = ride.direction;
+        document.getElementById('edit-affinity').value = ride.affinity; document.getElementById('edit-date').value = ride.date.split('T')[0];
+        document.getElementById('edit-destination').value = ride.destination; document.getElementById('edit-lat').value = ride.lat; document.getElementById('edit-lon').value = ride.lon;
+        document.getElementById('edit-seats').value = ride.seats; document.getElementById('edit-price').value = ride.price;
+        document.getElementById('edit-vibe').value = ride.vibe; document.getElementById('edit-music').value = ride.music;
+        document.getElementById('edit-luggage').value = ride.luggage; document.getElementById('edit-notes').value = ride.notes;
+        document.getElementById('edit-modal').style.display = 'flex';
+    }
+    function closeEditModal() { document.getElementById('edit-modal').style.display = 'none'; }
+    
+    async function submitEditRide() {
+        const payload = {
+            action: 'editRide', id: document.getElementById('edit-id').value,
+            destination: document.getElementById('edit-destination').value, date: document.getElementById('edit-date').value,
+            seats: document.getElementById('edit-seats').value, price: document.getElementById('edit-price').value,
+            direction: document.getElementById('edit-direction').value, affinity: document.getElementById('edit-affinity').value,
+            lat: document.getElementById('edit-lat').value, lon: document.getElementById('edit-lon').value,
+            vibe: document.getElementById('edit-vibe').value, music: document.getElementById('edit-music').value,
+            luggage: document.getElementById('edit-luggage').value, notes: document.getElementById('edit-notes').value
+        };
+        await secureFetch(payload); showToast("Trip updated!"); closeEditModal(); fetchRides();
+    }
+
+    async function bookSeat(id, btn) { btn.disabled = true; await secureFetch({ action: 'bookSeat', id }); fetchRides(); showToast("Seat Confirmed!"); }
     async function joinWaitlist(id, btn) { btn.disabled = true; await secureFetch({ action: 'joinWaitlist', id }); showToast("Joined waitlist!"); fetchRides(); }
     async function cancelSeat(id, btn) { if(confirm("Cancel?")) { btn.disabled = true; await secureFetch({ action: 'cancelSeat', id }); fetchRides(); } }
-    async function deleteRide(id, btn) { if(confirm("Delete?")) { btn.disabled = true; await secureFetch({ action: 'deleteRide', id }); fetchRides(); } }
+    async function deleteRide(id, btn) { if(confirm("Delete permanently?")) { btn.disabled = true; await secureFetch({ action: 'deleteRide', id }); fetchRides(); } }
 
     // --- CHAT LOGIC ---
     function openChat(rideId) {
-        currentChatRideId = rideId;
-        document.getElementById('chat-modal').style.display = 'flex';
-        document.getElementById('chat-messages').innerHTML = '<p style="text-align:center;">Loading messages...</p>';
-        loadMessages();
+        currentChatRideId = rideId; document.getElementById('chat-modal').style.display = 'flex';
+        document.getElementById('chat-messages').innerHTML = '<p style="text-align:center; color:var(--text-muted);">Loading...</p>'; loadMessages();
     }
     function closeChat() { document.getElementById('chat-modal').style.display = 'none'; currentChatRideId = null; }
     
     async function loadMessages() {
         if(!currentChatRideId) return;
         const res = await secureFetch({ action: 'getMessages', rideId: currentChatRideId });
-        const box = document.getElementById('chat-messages');
-        box.innerHTML = '';
-        if(res.data.length === 0) box.innerHTML = '<p style="text-align:center; color:#888;">No messages yet. Say hi!</p>';
+        const box = document.getElementById('chat-messages'); box.innerHTML = '';
+        if(res.data.length === 0) box.innerHTML = '<p style="text-align:center; color:var(--text-muted);">Send the first message!</p>';
         res.data.forEach(m => {
             const isMe = m.email === currentUserEmail;
-            box.innerHTML += `
-                <div style="display:flex; flex-direction:column; align-items: ${isMe ? 'flex-end' : 'flex-start'};">
-                    <span class="msg-sender">${m.email.split('@')[0]}</span>
-                    <div class="msg ${isMe ? 'mine' : 'theirs'}">${m.message}</div>
-                </div>`;
+            const msgDiv = document.createElement('div');
+            msgDiv.style.cssText = `display:flex; flex-direction:column; align-items: ${isMe ? 'flex-end' : 'flex-start'};`;
+            const senderSpan = document.createElement('span'); senderSpan.className = 'msg-sender'; senderSpan.textContent = m.email.split('@')[0];
+            const bubbleDiv = document.createElement('div'); bubbleDiv.className = `msg ${isMe ? 'mine' : 'theirs'}`; bubbleDiv.textContent = m.message; 
+            msgDiv.appendChild(senderSpan); msgDiv.appendChild(bubbleDiv); box.appendChild(msgDiv);
         });
         box.scrollTop = box.scrollHeight;
     }
@@ -430,7 +505,7 @@
         if(!input.value.trim() || !currentChatRideId) return;
         const msg = input.value; input.value = '';
         await secureFetch({ action: 'sendMessage', rideId: currentChatRideId, message: msg });
-        loadMessages(); // Currently doing calc lab, need to coordinate fast!
+        loadMessages();
     }
 
     function renderRides(ridesToRender, containerId) {
@@ -441,23 +516,29 @@
             let actionBtn = ''; let amIBooked = ride.riders && ride.riders.includes(currentUserEmail);
             let onWaitlist = ride.waitlist && ride.waitlist.includes(currentUserEmail);
 
-            if (ride.email === currentUserEmail) actionBtn = `<button class="danger-bg" onclick="deleteRide(${ride.id}, this)">Delete Trip</button>`;
-            else if (amIBooked) actionBtn = `<div class="row"><button class="success-bg" disabled>✓ Confirmed</button><button class="warning-bg" onclick="cancelSeat(${ride.id}, this)">Cancel</button></div>`;
+            if (ride.email === currentUserEmail) actionBtn = `<div style="display:flex; gap:12px;"><button class="accent-bg" onclick="openEditModal(${ride.id})">Edit</button><button class="danger-bg" onclick="deleteRide(${ride.id}, this)">Delete</button></div>`;
+            else if (amIBooked) actionBtn = `<div style="display:flex; gap:12px;"><button class="success-bg" disabled style="flex:1.5;">✓ Confirmed</button><button class="warning-bg" onclick="cancelSeat(${ride.id}, this)">Cancel</button></div>`;
             else if (parseInt(ride.seats) > 0) actionBtn = `<button class="primary-bg" onclick="bookSeat(${ride.id}, this)">Claim Seat</button>`;
-            else if (onWaitlist) actionBtn = `<button style="background: var(--border-color);" disabled>On Waitlist</button>`;
+            else if (onWaitlist) actionBtn = `<button style="background: var(--border-color); color:var(--text-muted);" disabled>On Waitlist</button>`;
             else actionBtn = `<button class="warning-bg" onclick="joinWaitlist(${ride.id}, this)">Join Waitlist</button>`;
 
-            let chatBtn = (amIBooked || ride.email === currentUserEmail) ? `<button class="accent-bg" onclick="openChat(${ride.id})" style="margin-top:10px;">💬 Group Chat</button>` : '';
+            let chatBtn = (amIBooked || ride.email === currentUserEmail) ? `<button style="background:#007aff; color:white; margin-top:12px;" onclick="openChat(${ride.id})">💬 Group Chat</button>` : '';
             let affinityBadge = ride.affinity === 'Women Only' ? `<span class="badge affinity-badge">💜 Women Only</span>` : '';
 
             const card = document.createElement('div'); card.className = 'ride-card';
+            if (amIBooked) card.classList.add('booked-by-me');
+            
             card.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <h3 style="margin:0;">${ride.destination}</h3> <div style="font-size:1.4em; font-weight:bold; color:var(--success)">$${ride.price}</div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                    <div>
+                        <span style="font-size:0.8em; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">${ride.direction === 'Leaving Pitt' ? '🚗 Outbound' : '🏠 Return'}</span>
+                        <h3 style="margin:4px 0 0 0; font-size:1.6em;">${ride.destination}</h3>
+                    </div>
+                    <div style="font-size:1.8em; font-weight:800; color:var(--success)">$${ride.price}</div>
                 </div>
-                <div style="color:var(--text-muted); margin-bottom:10px;">📅 ${new Date(ride.date).toLocaleDateString()} • <strong>${ride.seats} seats open</strong></div>
+                <div style="color:var(--text-muted); margin-bottom:12px; font-weight:500;">📅 ${new Date(ride.date).toLocaleDateString()} &nbsp;•&nbsp; <span style="color:var(--text-main); font-weight:700;">${ride.seats} seats open</span></div>
                 <div class="badges"><span class="badge">👤 ${ride.name}</span> ${affinityBadge}</div>
-                ${ride.notes ? `<div style="background:var(--badge-bg); padding:10px; border-radius:8px; margin-bottom:15px; font-size:0.9em;">${ride.notes}</div>` : ''}
+                ${ride.notes ? `<div style="background:var(--badge-bg); padding:12px 16px; border-radius:12px; margin-bottom:20px; font-size:0.9em; border: 1px solid var(--border-color);">${ride.notes}</div>` : '<div style="margin-bottom:20px;"></div>'}
                 ${actionBtn}
                 ${chatBtn}
             `;
