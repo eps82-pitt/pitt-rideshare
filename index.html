@@ -22,12 +22,15 @@
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
         
         header { background: linear-gradient(135deg, var(--pitt-navy), #0b1433); color: white; padding: 30px 20px 40px; text-align: center; border-bottom-left-radius: 24px; border-bottom-right-radius: 24px; box-shadow: 0 4px 20px rgba(28, 41, 87, 0.15); margin-bottom: -30px; }
-        header h1 { margin: 0; font-size: 2.2em; font-weight: 700; color: var(--pitt-gold); letter-spacing: -0.5px; }
-        header p { margin: 8px 0 0 0; color: rgba(255,255,255,0.8); font-size: 1.05em; font-weight: 500; }
+        .header-content { display: flex; justify-content: space-between; align-items: flex-start; max-width: 600px; margin: auto; }
+        header h1 { margin: 0; font-size: 2.2em; font-weight: 700; color: var(--pitt-gold); letter-spacing: -0.5px; text-align: left; }
+        header p { margin: 8px 0 0 0; color: rgba(255,255,255,0.8); font-size: 1.05em; font-weight: 500; text-align: left; }
         
+        #logout-btn { background: rgba(255,255,255,0.15); color: white; width: auto; padding: 8px 16px; font-size: 0.85em; border-radius: 8px; margin-top: 5px; backdrop-filter: blur(5px); display: none; }
+        #logout-btn:hover { background: rgba(255,255,255,0.25); }
+
         .container { max-width: 600px; margin: 0 auto 50px; background: var(--card-bg); padding: 30px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.06); position: relative; z-index: 10; }
         
-        /* Buttons */
         button { border: none; cursor: pointer; font-family: 'Inter', sans-serif; font-weight: 600; font-size: 1.05em; padding: 16px; border-radius: 12px; transition: all 0.2s ease; width: 100%; box-sizing: border-box; }
         button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); }
         button:active:not(:disabled) { transform: translateY(0); }
@@ -39,14 +42,12 @@
         .warning-bg { background-color: #fff8eb; color: var(--warning); border: 1px solid #ffe8c2; }
         .success-bg { background-color: #f0fdf4; color: var(--success); border: 1px solid #bbf7d0; }
 
-        /* Auth Screen */
         #auth-view { text-align: center; padding: 20px 10px; }
         #auth-view h2 { font-weight: 700; margin-bottom: 8px; }
         #auth-view p { color: var(--text-muted); margin-bottom: 25px; line-height: 1.5; }
         #student-email { text-align: center; font-size: 1.1em; padding: 16px; margin-bottom: 15px; }
         #otp-input { text-align: center; letter-spacing: 12px; font-weight: 700; font-size: 1.8em !important; padding: 20px; color: var(--pitt-navy); margin-bottom: 20px; }
 
-        /* Modern Segmented Controls (Tabs) */
         .tabs { display: none; background: #eef0f5; padding: 6px; border-radius: 14px; margin-bottom: 30px; gap: 4px; }
         .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: 600; color: var(--text-muted); font-size: 0.95em; border-radius: 10px; transition: 0.3s; }
         .tab.active { background: white; color: var(--pitt-navy); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
@@ -55,14 +56,12 @@
         .view.active { display: block; }
         @keyframes slideFadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Inputs */
         input, select, textarea { width: 100%; padding: 16px; margin: 8px 0 16px; border: 1.5px solid var(--border-color); border-radius: 12px; box-sizing: border-box; font-family: 'Inter', sans-serif; font-size: 1em; color: var(--text-main); background-color: #fafafa; transition: all 0.2s; }
         input:focus, select:focus, textarea:focus { background-color: white; border-color: var(--pitt-gold); outline: none; box-shadow: 0 0 0 4px rgba(205, 184, 125, 0.15); }
         textarea { resize: vertical; min-height: 100px; }
         .row { display: flex; gap: 12px; }
         .row > * { flex: 1; margin-bottom: 0; }
 
-        /* Filter Toggle */
         .direction-toggle { display: flex; background: #eef0f5; border-radius: 12px; margin-bottom: 25px; padding: 4px; }
         .direction-btn { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: 600; color: var(--text-muted); border-radius: 10px; transition: 0.3s; font-size: 0.95em; }
         .direction-btn.active { background: var(--pitt-navy); color: white; box-shadow: 0 2px 8px rgba(28, 41, 87, 0.2); }
@@ -71,7 +70,6 @@
         .search-container input { padding-left: 45px; background-color: white; border: 1.5px solid var(--border-color); }
         .search-icon { position: absolute; left: 16px; top: 23px; color: var(--text-muted); font-size: 1.2em; }
 
-        /* Ride Cards */
         .ride-card { border: 1px solid var(--border-color); padding: 24px; margin-bottom: 20px; border-radius: 16px; background-color: var(--card-bg); transition: 0.2s; position: relative; overflow: hidden; }
         .ride-card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.06); border-color: #d2d2d7; }
         .ride-card::before { content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 100%; background-color: var(--pitt-navy); }
@@ -82,12 +80,10 @@
         .ride-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
         .destination-title { margin: 0; color: var(--text-main); font-size: 1.4em; font-weight: 700; letter-spacing: -0.3px; }
         .date-subtitle { color: var(--text-muted); font-size: 0.95em; margin-top: 6px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
-        
         .price-tag { font-size: 1.4em; font-weight: 700; color: var(--success); background: #f0fdf4; padding: 6px 12px; border-radius: 10px; }
         
         .badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
         .badge { background: #f5f5f7; padding: 6px 12px; border-radius: 20px; font-size: 0.85em; color: var(--text-main); font-weight: 600; display: flex; align-items: center; gap: 6px; border: 1px solid var(--border-color); }
-        
         .direction-badge { display: inline-block; background: #e8eaf6; color: var(--pitt-navy); padding: 4px 10px; border-radius: 8px; font-size: 0.75em; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
         .direction-badge.returning { background: #fff8eb; color: #b38f36; }
         
@@ -97,7 +93,6 @@
         
         #loading { text-align: center; color: var(--text-muted); font-weight: 600; display: none; padding: 50px 20px; font-size: 1.1em; }
 
-        /* Toast Notifications */
         #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 10px; align-items: center; width: 90%; max-width: 400px; }
         .toast { background-color: var(--text-main); color: white; padding: 14px 24px; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-size: 0.95em; font-weight: 500; opacity: 0; transform: translateY(20px); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; gap: 10px; width: auto; }
         .toast.show { opacity: 1; transform: translateY(0); }
@@ -108,15 +103,20 @@
 <body>
 
 <header>
-    <h1>Pitt RideShare</h1>
-    <p>Break travel, coordinated.</p>
+    <div class="header-content">
+        <div>
+            <h1>Pitt RideShare</h1>
+            <p>Break travel, coordinated.</p>
+        </div>
+        <button id="logout-btn" onclick="logout()">Log Out</button>
+    </div>
 </header>
 
 <div class="container">
     <div id="auth-view" class="view active">
         <div id="auth-step-1" style="width: 100%;">
             <h2>Student Login</h2>
-            <p>Enter your Pitt email to access the board. We'll send a secure 4-digit code to your inbox.</p>
+            <p>Enter your Pitt email. We'll send a secure 4-digit code to your inbox.</p>
             <input type="email" id="student-email" placeholder="username@pitt.edu" required>
             <button class="primary-bg" id="send-code-btn" onclick="requestOTP()">Send Secure Code</button>
             <p id="auth-error" style="color: var(--danger); display: none; margin-top: 15px; font-weight: 500;">Must be a valid @pitt.edu address.</p>
@@ -206,7 +206,6 @@
         </select>
         
         <textarea id="notes" placeholder="Additional Notes (Departure times, drop-off spots, etc.)"></textarea>
-
         <button class="primary-bg" id="post-btn" onclick="postRide()" style="margin-top: 10px; font-size: 1.2em; padding: 18px;">Post to Board</button>
     </div>
 
@@ -217,65 +216,86 @@
     </div>
 </div>
 
-<div id="toast-container"></div>
-
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwVy8zZFxLmwQICLNjEvudC5-_a0hd_nLoVb3hQ2yOuLHzsL52NXomLBtM1cpodDbAS/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbz_YY057bItSg3JhKPREP8MC30MiV8tB7bNNMoRV4sI2mftz7HfTy1ZAudPjgyBaIwa/exec';
     
     let currentUserEmail = "";
+    let sessionToken = "";
     let cachedRides = [];
     let currentFilterDirection = 'Leaving Pitt';
     const PITT_LAT = 40.4406;
     const PITT_LON = -79.9959;
     let priceDebounceTimer;
 
+    // --- ON LOAD: Check Local Storage (Cookies) ---
     document.addEventListener("DOMContentLoaded", () => {
         const today = new Date().toISOString().split('T')[0];
         document.getElementById("date").setAttribute('min', today);
+
+        const savedSession = localStorage.getItem('pittRideShareSession');
+        if (savedSession) {
+            const sessionData = JSON.parse(savedSession);
+            currentUserEmail = sessionData.email;
+            sessionToken = sessionData.token;
+            
+            document.getElementById('auth-view').classList.remove('active');
+            document.getElementById('nav-tabs').style.display = 'flex';
+            document.getElementById('logout-btn').style.display = 'block';
+            switchTab('rider');
+        }
     });
 
     function showToast(message, type = 'success') {
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        // Map icon based on type
-        let icon = type === 'success' ? '✅' : '⚠️';
-        toast.innerHTML = `${icon} ${message}`;
+        toast.innerHTML = `${type === 'success' ? '✅' : '⚠️'} ${message}`;
         container.appendChild(toast);
-        
-        // Trigger animation
         void toast.offsetWidth;
         toast.classList.add('show');
-        
-        setTimeout(() => { 
-            toast.classList.remove('show'); 
-            setTimeout(() => toast.remove(), 300); 
-        }, 4000);
+        setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 4000);
     }
 
-    // --- SECURE OTP LOGIN FUNCTIONS ---
+    // --- SECURE AUTHENTICATION ---
+    function logout() {
+        localStorage.removeItem('pittRideShareSession');
+        currentUserEmail = "";
+        sessionToken = "";
+        
+        document.getElementById('logout-btn').style.display = 'none';
+        document.getElementById('nav-tabs').style.display = 'none';
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        
+        document.getElementById('auth-view').classList.add('active');
+        document.getElementById('auth-step-2').style.display = 'none';
+        document.getElementById('auth-step-1').style.display = 'block';
+        document.getElementById('student-email').value = '';
+        document.getElementById('otp-input').value = '';
+        showToast("Logged out securely.");
+    }
+
     async function requestOTP() {
         const emailInput = document.getElementById('student-email').value.toLowerCase().trim();
         const btn = document.getElementById('send-code-btn');
         
-        // ADMIN BACKDOOR
         if (emailInput === 'admin') {
             currentUserEmail = 'admin@pitt.edu'; 
+            sessionToken = 'admin-token';
+            localStorage.setItem('pittRideShareSession', JSON.stringify({ email: currentUserEmail, token: sessionToken }));
             document.getElementById('auth-view').classList.remove('active');
             document.getElementById('nav-tabs').style.display = 'flex';
+            document.getElementById('logout-btn').style.display = 'block';
             switchTab('rider');
             showToast("Admin access granted.", "success");
             return;
         }
 
         if (!emailInput.endsWith('@pitt.edu')) {
-            document.getElementById('auth-error').style.display = 'block';
-            return;
+            document.getElementById('auth-error').style.display = 'block'; return;
         }
         
         document.getElementById('auth-error').style.display = 'none';
-        btn.innerText = "Sending Code...";
-        btn.disabled = true;
+        btn.innerText = "Sending Code..."; btn.disabled = true;
 
         try {
             currentUserEmail = emailInput; 
@@ -285,39 +305,39 @@
             showToast("Code sent to your inbox!");
         } catch (error) {
             showToast("Failed to send code.", "error");
-            btn.innerText = "Send Secure Code";
-            btn.disabled = false;
+            btn.innerText = "Send Secure Code"; btn.disabled = false;
         }
     }
 
     async function verifyOTP() {
         const otp = document.getElementById('otp-input').value.trim();
         const btn = document.getElementById('verify-code-btn');
-        btn.innerText = "Verifying...";
-        btn.disabled = true;
+        btn.innerText = "Verifying..."; btn.disabled = true;
 
         try {
             const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'verifyOTP', email: currentUserEmail, otp: otp }) });
             const result = await response.json();
             
             if (result.status === 'success') {
+                sessionToken = result.token;
+                localStorage.setItem('pittRideShareSession', JSON.stringify({ email: currentUserEmail, token: sessionToken }));
+                
                 document.getElementById('auth-view').classList.remove('active');
                 document.getElementById('nav-tabs').style.display = 'flex';
+                document.getElementById('logout-btn').style.display = 'block';
                 switchTab('rider');
                 showToast("Login verified!");
             } else {
                 document.getElementById('otp-error').style.display = 'block';
-                btn.innerText = "Verify & Enter";
-                btn.disabled = false;
+                btn.innerText = "Verify & Enter"; btn.disabled = false;
             }
         } catch (error) {
             showToast("Network error.", "error");
-            btn.innerText = "Verify & Enter";
-            btn.disabled = false;
+            btn.innerText = "Verify & Enter"; btn.disabled = false;
         }
     }
 
-    // --- NAVIGATION & RENDERING ---
+    // --- NAVIGATION & UTILS ---
     function switchTab(tabName) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.view:not(#auth-view)').forEach(v => v.classList.remove('active'));
@@ -343,7 +363,6 @@
         filterRides();
     }
 
-    // Geometry pricing math 
     function calculateExactDistance(lat1, lon1, lat2, lon2) {
         const R = 3958.8; 
         const dLat = (lat2 - lat1) * Math.PI / 180.0;
@@ -358,7 +377,7 @@
         const suggestionBox = document.getElementById('price-suggestion');
         clearTimeout(priceDebounceTimer);
 
-        if (dest.length < 3) { suggestionBox.innerText = 'Enter city to calculate gas split...'; return; }
+        if (dest.length < 3) { suggestionBox.innerText = 'Enter city for calculated gas split...'; return; }
         suggestionBox.innerText = 'Calculating mapping distance...';
 
         priceDebounceTimer = setTimeout(async () => {
@@ -379,22 +398,32 @@
         }, 800);
     }
 
+    // --- SECURE API CALLS ---
+    async function secureFetch(payload) {
+        payload.email = currentUserEmail;
+        payload.token = sessionToken;
+        const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const result = await response.json();
+        if (result.status === 'unauthorized') {
+            logout();
+            showToast("Session expired. Please log in again.", "error");
+            throw new Error('unauthorized');
+        }
+        return result;
+    }
+
     async function fetchRides() {
         document.getElementById('loading').style.display = 'block';
         if(document.getElementById('rider-view').classList.contains('active')) document.getElementById('rides-list').innerHTML = '';
         if(document.getElementById('my-trips-view').classList.contains('active')) document.getElementById('my-rides-list').innerHTML = '';
         
         try {
-            const response = await fetch(API_URL);
-            cachedRides = await response.json();
-            
-            if (document.getElementById('my-trips-view').classList.contains('active')) {
-                renderMyTrips();
-            } else {
-                filterRides();
-            }
+            const result = await secureFetch({ action: 'getRides' });
+            cachedRides = result.data;
+            if (document.getElementById('my-trips-view').classList.contains('active')) renderMyTrips();
+            else filterRides();
         } catch (error) {
-            showToast("Error syncing board.", "error");
+            if (error.message !== 'unauthorized') showToast("Error syncing board.", "error");
         } finally {
             document.getElementById('loading').style.display = 'none';
         }
@@ -411,8 +440,7 @@
 
     function renderMyTrips() {
         const myFilteredRides = cachedRides.filter(ride => 
-            ride.email === currentUserEmail || 
-            (ride.riders && ride.riders.includes(currentUserEmail))
+            ride.email === currentUserEmail || (ride.riders && ride.riders.includes(currentUserEmail))
         );
         renderRides(myFilteredRides, 'my-rides-list');
     }
@@ -425,66 +453,51 @@
         const price = document.getElementById('price').value;
         const direction = document.getElementById('post-direction').value;
         
-        if (!name || !destination || !date || !seats || !price) {
-            showToast("Missing required fields.", "error"); return;
-        }
+        if (!name || !destination || !date || !seats || !price) { showToast("Missing required fields.", "error"); return; }
 
         const btn = document.getElementById('post-btn');
         btn.innerText = "Posting to Database..."; btn.disabled = true;
 
-        const rideData = {
-            action: 'addRide', id: Date.now(), email: currentUserEmail, name, destination, date, seats, price, direction,
-            vibe: document.getElementById('vibe').value, music: document.getElementById('music').value,
-            luggage: document.getElementById('luggage').value, notes: document.getElementById('notes').value
-        };
-
         try {
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify(rideData) });
+            await secureFetch({
+                action: 'addRide', id: Date.now(), name, destination, date, seats, price, direction,
+                vibe: document.getElementById('vibe').value, music: document.getElementById('music').value,
+                luggage: document.getElementById('luggage').value, notes: document.getElementById('notes').value
+            });
             showToast("Ride posted successfully!");
             document.getElementById('destination').value = ''; document.getElementById('price').value = ''; document.getElementById('notes').value = '';
             switchTab('my-trips'); 
-        } catch (error) {
-            showToast("Network error.", "error");
-        } finally {
-            btn.innerText = "Post to Board"; btn.disabled = false;
-        }
+        } catch (error) {} finally { btn.innerText = "Post to Board"; btn.disabled = false; }
     }
 
     async function bookSeat(id, btnElement) {
         btnElement.innerText = "Securing..."; btnElement.disabled = true;
         try {
-            const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'bookSeat', id: id, riderEmail: currentUserEmail }) });
-            const result = await response.json();
-            if (result.status === 'error') showToast("You already booked a seat!", "error");
+            const result = await secureFetch({ action: 'bookSeat', id: id });
+            if (result.message === 'Already booked') showToast("You already booked a seat!", "error");
             else showToast("Seat confirmed!");
             fetchRides(); 
-        } catch (error) {
-            showToast("Failed to book.", "error"); btnElement.innerText = "Claim Seat"; btnElement.disabled = false;
-        }
+        } catch (error) { btnElement.innerText = "Claim Seat"; btnElement.disabled = false; }
     }
 
     async function cancelSeat(id, btnElement) {
         if (!confirm("Cancel this seat? The driver will be notified.")) return;
         btnElement.innerText = "Canceling..."; btnElement.disabled = true;
         try {
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'cancelSeat', id: id, riderEmail: currentUserEmail }) });
+            await secureFetch({ action: 'cancelSeat', id: id });
             showToast("Seat returned to board.");
             fetchRides(); 
-        } catch (error) {
-            showToast("Failed to cancel.", "error"); btnElement.innerText = "Cancel Seat"; btnElement.disabled = false;
-        }
+        } catch (error) { btnElement.innerText = "Cancel Seat"; btnElement.disabled = false; }
     }
 
     async function deleteRide(id, btnElement) {
         if (!confirm("Delete this trip permanently?")) return;
         btnElement.innerText = "Deleting..."; btnElement.disabled = true;
         try {
-            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteRide', id: id, email: currentUserEmail }) });
+            await secureFetch({ action: 'deleteRide', id: id });
             showToast("Trip deleted.");
             fetchRides(); 
-        } catch (error) {
-            showToast("Failed to delete.", "error"); btnElement.innerText = "Delete Ride"; btnElement.disabled = false;
-        }
+        } catch (error) { btnElement.innerText = "Delete Trip"; btnElement.disabled = false; }
     }
 
     function renderRides(ridesToRender, containerId) {
@@ -492,35 +505,20 @@
         container.innerHTML = '';
 
         const visibleRides = ridesToRender.filter(r => parseInt(r.seats) > 0 || r.email === currentUserEmail || (r.riders && r.riders.includes(currentUserEmail)));
-
         if (visibleRides.length === 0) {
-            container.innerHTML = '<p style="text-align: center; color: var(--text-muted); margin-top: 40px; font-weight: 500;">No trips found.</p>';
-            return;
+            container.innerHTML = '<p style="text-align: center; color: var(--text-muted); margin-top: 40px; font-weight: 500;">No trips found.</p>'; return;
         }
-
         visibleRides.sort((a, b) => new Date(a.date) - new Date(b.date));
 
         visibleRides.forEach(ride => {
             const dateFmt = new Date(ride.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' });
-            
-            let actionButton = '';
-            let cardClass = 'ride-card' + (ride.direction === 'Returning to Pitt' ? ' returning' : '');
+            let actionButton = ''; let cardClass = 'ride-card' + (ride.direction === 'Returning to Pitt' ? ' returning' : '');
             let amIBooked = ride.riders && ride.riders.includes(currentUserEmail);
 
-            if (ride.email === currentUserEmail) {
-                actionButton = `<button class="danger-bg" onclick="deleteRide(${ride.id}, this)">Delete Trip</button>`;
-            } else if (amIBooked) {
-                actionButton = `
-                    <div class="row">
-                        <button class="success-bg" disabled style="flex:1.5;">✓ Confirmed</button>
-                        <button class="warning-bg" onclick="cancelSeat(${ride.id}, this)">Cancel</button>
-                    </div>`;
-                cardClass += ' booked-by-me';
-            } else if (parseInt(ride.seats) > 0) {
-                actionButton = `<button class="primary-bg" onclick="bookSeat(${ride.id}, this)">Claim Seat</button>`;
-            } else {
-                actionButton = `<button style="background-color: #e5e5ea; color: #888;" disabled>Sold Out</button>`;
-            }
+            if (ride.email === currentUserEmail) actionButton = `<button class="danger-bg" onclick="deleteRide(${ride.id}, this)">Delete Trip</button>`;
+            else if (amIBooked) { actionButton = `<div class="row"><button class="success-bg" disabled style="flex:1.5;">✓ Confirmed</button><button class="warning-bg" onclick="cancelSeat(${ride.id}, this)">Cancel</button></div>`; cardClass += ' booked-by-me'; }
+            else if (parseInt(ride.seats) > 0) actionButton = `<button class="primary-bg" onclick="bookSeat(${ride.id}, this)">Claim Seat</button>`;
+            else actionButton = `<button style="background-color: #e5e5ea; color: #888;" disabled>Sold Out</button>`;
 
             let contactInfo = (amIBooked || ride.email === currentUserEmail) 
                 ? `<div class="private-contact">📧 Contact: <a href="mailto:${ride.email}" style="color: inherit;">${ride.email}</a></div>`
@@ -529,34 +527,24 @@
             let badgeClass = ride.direction === 'Returning to Pitt' ? 'direction-badge returning' : 'direction-badge';
             let notesHtml = ride.notes ? `<div class="notes-box"><strong>Notes:</strong> ${ride.notes}</div>` : '';
 
-            const card = document.createElement('div');
-            card.className = cardClass;
+            const card = document.createElement('div'); card.className = cardClass;
             card.innerHTML = `
                 <div class="${badgeClass}">${ride.direction === 'Leaving Pitt' ? '🚗 Leaving Pitt' : '🏠 Returning to Pitt'}</div>
                 <div class="ride-header" style="margin-top: 20px;">
-                    <div>
-                        <h3 class="destination-title">${ride.destination}</h3>
-                        <div class="date-subtitle">📅 ${dateFmt} • <strong style="color: var(--text-main);">${ride.seats} seats left</strong></div>
-                    </div>
+                    <div><h3 class="destination-title">${ride.destination}</h3><div class="date-subtitle">📅 ${dateFmt} • <strong style="color: var(--text-main);">${ride.seats} seats left</strong></div></div>
                     <div class="price-tag">$${ride.price}</div>
                 </div>
-                
                 <div class="badges">
                     <span class="badge">👤 ${ride.name}</span>
                     <span class="badge">${ride.vibe === 'Chatty' ? '🗣️ Chatty' : ride.vibe === 'Quiet' ? '🎧 Quiet' : '⚖️ Mixed'}</span>
                     <span class="badge">${ride.music.includes('Aux') ? '📱 Aux' : ride.music.includes('Driver') ? '📻 Driver Music' : '🎙️ Podcast'}</span>
                     <span class="badge">${ride.luggage.includes('Backpack') ? '🎒 Backpack' : ride.luggage.includes('Carry') ? '🧳 Carry-on' : '📦 Trunk Space'}</span>
                 </div>
-                
-                ${contactInfo}
-                ${notesHtml}
-                ${actionButton}
+                ${contactInfo} ${notesHtml} ${actionButton}
             `;
             container.appendChild(card);
         });
     }
 </script>
-
 </body>
 </html>
-
