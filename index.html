@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com https://*.basemaps.cartocdn.com https://nominatim.openstreetmap.org https://script.google.com; img-src 'self' data: https://*.basemaps.cartocdn.com;">
+    
     <title>Pitt RideShare</title>
     <link rel="manifest" href="manifest.json">
     <script>if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }</script>
@@ -29,11 +32,17 @@
 
         body { font-family: 'Inter', sans-serif; background: var(--bg-color); color: var(--text-main); margin: 0; padding: 0; padding-bottom: 100px; transition: 0.3s ease; -webkit-tap-highlight-color: transparent; }
         
+        #ptr-indicator { text-align: center; color: var(--text-muted); font-weight: 600; padding: 15px; font-size: 0.9em; display: none; }
+
         header { background: linear-gradient(135deg, var(--header-grad-1), var(--header-grad-2)); color: white; padding: 35px 20px 45px; border-radius: 0 0 32px 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); margin-bottom: -30px; position: sticky; top: 0; z-index: 50; }
         .header-content { display: flex; justify-content: space-between; align-items: flex-start; max-width: 600px; margin: auto; }
-        header h1 { margin: 0; font-size: 2.2em; color: var(--pitt-gold); letter-spacing: -0.8px; font-weight: 800; }
+        header h1 { margin: 0; font-size: 2.2em; color: var(--pitt-gold); letter-spacing: -0.8px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
         header p { margin: 4px 0 0 0; color: #9ca3af; font-size: 1.05em; font-weight: 500; }
         
+        /* Silent Background Sync Spinner */
+        .sync-icon { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.2); border-top: 2px solid var(--pitt-gold); border-radius: 50%; animation: spin 1s linear infinite; display: none; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
         .header-actions { display: flex; gap: 8px; align-items: center; margin-top: 5px; }
         .icon-btn { background: rgba(255,255,255,0.1); color: white; padding: 10px; border-radius: 12px; border: none; cursor: pointer; transition: 0.2s; backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; }
         .icon-btn:active { transform: scale(0.9); }
@@ -49,11 +58,12 @@
         .danger-bg { background: transparent; color: var(--danger); border: 2px solid var(--danger); }
         .warning-bg { background: transparent; color: var(--warning); border: 2px solid var(--warning); }
         .success-bg { background: transparent; color: var(--success); border: 2px solid var(--success); }
+        .cal-btn { background: #e8f0fe; color: #1a73e8; border: 2px solid #d2e3fc; font-size: 0.9em; padding: 12px; margin-top: 12px; }
+        [data-theme="dark"] .cal-btn { background: rgba(26, 115, 232, 0.2); color: #669df6; border-color: rgba(26, 115, 232, 0.3); }
 
-        /* FLOATING BOTTOM NAVIGATION */
-        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); padding: 8px; border-radius: 24px; display: none; gap: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.2); z-index: 100; width: 90%; max-width: 400px; padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); padding: 8px; border-radius: 24px; display: none; gap: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.2); z-index: 100; width: 90%; max-width: 450px; padding-bottom: max(8px, env(safe-area-inset-bottom)); }
         [data-theme="dark"] .bottom-nav { background: rgba(31, 41, 55, 0.85); border-color: rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .nav-item { flex: 1; padding: 14px 8px; text-align: center; cursor: pointer; font-weight: 600; color: var(--text-muted); font-size: 0.85em; border-radius: 16px; transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .nav-item { flex: 1; padding: 12px 4px; text-align: center; cursor: pointer; font-weight: 600; color: var(--text-muted); font-size: 0.8em; border-radius: 16px; transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .nav-item.active { background: var(--pitt-navy); color: white; }
         .nav-icon { font-size: 1.4em; }
 
@@ -68,13 +78,11 @@
         
         input, select, textarea { width: 100%; padding: 16px; border: 2px solid var(--border-color); border-radius: 16px; box-sizing: border-box; font-family: inherit; font-size: 1em; color: var(--text-main); background: var(--input-bg); transition: 0.2s; }
         input:focus, select:focus, textarea:focus { border-color: var(--pitt-gold); outline: none; background: var(--card-bg); }
-        textarea { resize: vertical; min-height: 100px; }
 
         .direction-toggle { display: flex; background: var(--tab-bg); border-radius: 20px; margin-bottom: 20px; padding: 4px; gap: 4px; }
         .direction-btn { flex: 1; padding: 14px; text-align: center; cursor: pointer; font-weight: 700; color: var(--text-muted); border-radius: 16px; transition: 0.3s; }
         .direction-btn.active { background: var(--pitt-navy); color: white; box-shadow: 0 4px 12px rgba(28, 41, 87, 0.3); }
 
-        /* HORIZONTAL FILTER CHIPS */
         .chips-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 12px; scrollbar-width: none; }
         .chips-container::-webkit-scrollbar { display: none; }
         .chip { padding: 8px 16px; background: var(--tab-bg); color: var(--text-main); border-radius: 20px; font-size: 0.85em; font-weight: 600; white-space: nowrap; cursor: pointer; border: 1px solid var(--border-color); transition: 0.2s; }
@@ -86,10 +94,8 @@
         #map-container { height: 400px; border-radius: 24px; margin-bottom: 24px; display: none; border: 2px solid var(--border-color); z-index: 1; }
         
         .ride-card { border: 2px solid var(--border-color); padding: 24px; margin-bottom: 20px; border-radius: 24px; background: var(--card-bg); position: relative; transition: 0.2s; }
-        .ride-card:active { transform: scale(0.98); }
         .ride-card.booked-by-me { border-color: var(--success); background: rgba(16, 185, 129, 0.05); }
 
-        /* DYNAMIC AVATAR */
         .driver-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
         .avatar { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 1.1em; }
 
@@ -97,15 +103,12 @@
         .badge { background: var(--badge-bg); padding: 6px 12px; border-radius: 12px; font-size: 0.8em; font-weight: 600; color: var(--text-main); display: flex; align-items: center; gap: 4px; }
         .affinity-badge { background: rgba(236, 72, 153, 0.1); color: #ec4899; }
 
-        /* SKELETON LOADER */
-        .skeleton-card { border: 2px solid var(--border-color); padding: 24px; margin-bottom: 20px; border-radius: 24px; background: var(--card-bg); animation: pulse 1.5s infinite; }
-        .skel-line { height: 20px; background: var(--tab-bg); border-radius: 10px; margin-bottom: 12px; }
-        .skel-circle { width: 42px; height: 42px; background: var(--tab-bg); border-radius: 50%; }
-        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
-
-        /* EMPTY STATE */
-        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); }
-        .empty-state svg { width: 120px; height: 120px; margin-bottom: 20px; opacity: 0.5; }
+        /* Admin Dashboard Grid */
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: var(--tab-bg); padding: 20px; border-radius: 20px; text-align: center; border: 1px solid var(--border-color); }
+        .stat-num { font-size: 2.2em; font-weight: 800; color: var(--pitt-navy); margin-bottom: 4px; }
+        [data-theme="dark"] .stat-num { color: var(--pitt-gold); }
+        .stat-label { font-size: 0.85em; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
 
         .overlay-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         .modal-box { background: var(--card-bg); width: 92%; max-width: 500px; border-radius: 32px; padding: 24px; display: flex; flex-direction: column; max-height: 85vh; border: 1px solid var(--border-color); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
@@ -117,7 +120,6 @@
         .msg.mine { background: #007aff; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
         .msg.theirs { background: var(--tab-bg); color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 4px; }
         
-        /* TOAST WITH PROGRESS BAR */
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 1100; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; }
         .toast { background: var(--text-main); color: var(--bg-color); padding: 16px 24px; border-radius: 16px; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: 0.3s; display: flex; align-items: center; gap: 12px; overflow: hidden; position: relative; }
         .toast.show { opacity: 1; transform: translateY(10px); }
@@ -127,12 +129,11 @@
 </head>
 <body>
 
+<div id="ptr-indicator">↻ Release to sync</div>
+
 <header>
     <div class="header-content">
-        <div>
-            <h1>Pitt RideShare</h1>
-            <p>Break travel, coordinated.</p>
-        </div>
+        <h1>Pitt RideShare <div id="sync-spinner" class="sync-icon"></div></h1>
         <div class="header-actions">
             <button class="icon-btn" onclick="toggleTheme()" id="theme-btn">🌙</button>
             <button class="icon-btn" id="logout-btn" onclick="logout()" style="display:none;">
@@ -146,15 +147,18 @@
     <div id="auth-view" class="view active">
         <div style="text-align: center; margin-bottom: 30px;">
             <h2 id="auth-title" style="margin-bottom: 8px; font-size: 2em;">Welcome Back</h2>
-            <p id="auth-subtitle" style="color: var(--text-muted);">Enter your Pitt email and password.</p>
+            <p id="auth-subtitle" style="color: var(--text-muted);">Enter your email and password.</p>
         </div>
         
-        <div class="form-group" style="margin-bottom: 16px;">
-            <input type="text" id="auth-email" placeholder="username@pitt.edu" style="text-align: center;">
+        <div id="reg-fields" style="display: none;">
+            <div class="form-group" style="margin-bottom: 16px;"><input type="text" id="auth-name" placeholder="Full Name" style="text-align: center;"></div>
+            <div class="form-group" style="margin-bottom: 16px;">
+                <select id="auth-gender" style="text-align: center; text-align-last: center;"><option value="" disabled selected>Select Gender</option><option value="Female">Female</option><option value="Male">Male</option><option value="Non-Binary">Non-Binary / Other</option></select>
+            </div>
         </div>
-        <div class="form-group" style="margin-bottom: 24px;">
-            <input type="password" id="auth-password" placeholder="Password" style="text-align: center;">
-        </div>
+
+        <div class="form-group" style="margin-bottom: 16px;"><input type="text" id="auth-email" placeholder="username@pitt.edu" style="text-align: center;"></div>
+        <div class="form-group" style="margin-bottom: 24px;"><input type="password" id="auth-password" placeholder="Password" style="text-align: center;"></div>
 
         <button class="primary-bg" id="auth-btn" onclick="submitAuth()">Sign In</button>
         <button class="accent-bg" id="auth-toggle-btn" onclick="toggleAuthMode()" style="margin-top: 12px; background: transparent; color: var(--pitt-navy); box-shadow: none;">Need an account? Sign Up</button>
@@ -178,14 +182,9 @@
         
         <div style="position: relative; margin-bottom: 24px;">
             <span style="position: absolute; left: 16px; top: 16px; color: var(--text-muted);">🔍</span>
-            <input type="text" id="search-bar" placeholder="Search cities..." oninput="filterRides()" style="padding-left: 45px; margin: 0; border-radius: 20px;">
+            <input type="text" id="search-bar" placeholder="Search cities or stops..." oninput="filterRides()" style="padding-left: 45px; margin: 0; border-radius: 20px;">
         </div>
         
-        <div id="skeleton-container" style="display: none;">
-            <div class="skeleton-card"><div class="driver-header"><div class="skel-circle"></div><div class="skel-line" style="width:150px; margin:0;"></div></div><div class="skel-line" style="width:80%;"></div><div class="skel-line" style="width:60%;"></div></div>
-            <div class="skeleton-card"><div class="driver-header"><div class="skel-circle"></div><div class="skel-line" style="width:120px; margin:0;"></div></div><div class="skel-line" style="width:90%;"></div><div class="skel-line" style="width:50%;"></div></div>
-        </div>
-
         <div id="rides-list"></div>
     </div>
 
@@ -195,14 +194,15 @@
             <div class="form-group form-full"><label>Direction</label><select id="post-direction"><option value="Leaving Pitt">🚗 Leaving Pitt</option><option value="Returning to Pitt">🏠 Returning to Pitt</option></select></div>
             <div class="form-group"><label>Your Name</label><input type="text" id="driver-name" placeholder="First Name"></div>
             <div class="form-group"><label>Date</label><input type="date" id="date"></div>
-            <div class="form-group form-full"><label>Destination</label><input type="text" id="destination" placeholder="City, State" oninput="updateSuggestedPrice('destination', 'dest-lat', 'dest-lon')"><input type="hidden" id="dest-lat"><input type="hidden" id="dest-lon"><span id="price-suggestion" style="text-align:right; font-size:0.8em; color:var(--text-muted); margin-top:-4px;"></span></div>
+            <div class="form-group form-full"><label>Final Destination</label><input type="text" id="destination" placeholder="City, State" oninput="updateSuggestedPrice('destination', 'dest-lat', 'dest-lon')"><input type="hidden" id="dest-lat"><input type="hidden" id="dest-lon"><span id="price-suggestion" style="text-align:right; font-size:0.8em; color:var(--text-muted); margin-top:-4px;"></span></div>
+            <div class="form-group form-full"><label>Waypoints / Stops Along The Way</label><input type="text" id="waypoints" placeholder="e.g., State College, Harrisburg"></div>
             <div class="form-group"><label>Seats</label><input type="number" id="seats" min="1" max="6"></div>
             <div class="form-group"><label>Price ($)</label><input type="number" id="price" min="0"></div>
             <div class="form-group form-full"><label>Safety</label><select id="affinity"><option value="Everyone">👥 Open to Everyone</option><option value="Women Only">💜 Women Only Ride</option></select></div>
             <div class="form-group"><label>Vibe</label><select id="vibe"><option value="Chatty">🗣️ Chatty</option><option value="Quiet">🎧 Quiet</option><option value="Mixed">⚖️ Mixed</option></select></div>
             <div class="form-group"><label>Music</label><select id="music"><option value="Driver's Choice">📻 Driver Aux</option><option value="Pass the Aux">📱 Pass Aux</option></select></div>
             <div class="form-group form-full"><label>Luggage</label><select id="luggage"><option value="Backpack Only">🎒 Backpack Only</option><option value="Carry-on Size">🧳 Carry-on</option><option value="Large Trunk Space">📦 Trunk Space</option></select></div>
-            <div class="form-group form-full"><label>Notes</label><textarea id="notes" placeholder="Pick up spots, stops along the way..."></textarea></div>
+            <div class="form-group form-full"><label>Notes</label><textarea id="notes" placeholder="Pick up spots..."></textarea></div>
         </div>
         <button class="primary-bg" onclick="haptic(); postRide()">Post to Board</button>
     </div>
@@ -211,28 +211,44 @@
         <h2 style="margin-top: 0; margin-bottom: 24px;">My Itinerary</h2>
         <div id="my-rides-list"></div>
     </div>
+
+    <div id="profile-view" class="view">
+        <h2 style="margin-top: 0; margin-bottom: 24px;">My Profile</h2>
+        <div style="display:flex; justify-content:center; margin-bottom: 24px;"><div id="profile-avatar" class="avatar" style="width: 80px; height: 80px; font-size: 2em; background: var(--pitt-navy);">👤</div></div>
+        <div class="form-grid">
+            <div class="form-group form-full"><label>Full Name</label><input type="text" id="prof-name"></div>
+            <div class="form-group form-full"><label>Gender</label><select id="prof-gender" disabled style="opacity:0.7;"><option value="Female">Female</option><option value="Male">Male</option><option value="Non-Binary">Non-Binary / Other</option></select></div>
+            <div class="form-group form-full"><label>Bio / Major</label><textarea id="prof-bio" style="min-height: 80px;"></textarea></div>
+        </div>
+        <button class="primary-bg" onclick="haptic(); saveProfile()">Save Profile</button>
+    </div>
+
+    <div id="admin-view" class="view">
+        <h2 style="margin-top: 0; margin-bottom: 24px;">Admin Dashboard</h2>
+        <div class="stat-grid">
+            <div class="stat-card"><div class="stat-num" id="stat-users">-</div><div class="stat-label">Total Users</div></div>
+            <div class="stat-card"><div class="stat-num" id="stat-rides">-</div><div class="stat-label">Total Rides</div></div>
+            <div class="stat-card form-full"><div class="stat-num" id="stat-money" style="color:var(--success)">$-</div><div class="stat-label">Student Economy Exchanged</div></div>
+        </div>
+    </div>
 </div>
 
 <nav class="bottom-nav" id="bottom-nav">
-    <div class="nav-item active" onclick="haptic(); switchTab('rider')">
-        <span class="nav-icon">🔍</span><span>Search</span>
-    </div>
-    <div class="nav-item" onclick="haptic(); switchTab('driver')">
-        <span class="nav-icon">🚗</span><span>Post Ride</span>
-    </div>
-    <div class="nav-item" onclick="haptic(); switchTab('my-trips')">
-        <span class="nav-icon">🎟️</span><span>My Trips</span>
-    </div>
+    <div class="nav-item active" onclick="haptic(); switchTab('rider')"><span class="nav-icon">🔍</span><span>Search</span></div>
+    <div class="nav-item" onclick="haptic(); switchTab('driver')"><span class="nav-icon">🚗</span><span>Post</span></div>
+    <div class="nav-item" onclick="haptic(); switchTab('my-trips')"><span class="nav-icon">🎟️</span><span>Trips</span></div>
+    <div class="nav-item" onclick="haptic(); switchTab('profile')"><span class="nav-icon">👤</span><span>Profile</span></div>
+    <div class="nav-item" id="nav-admin" style="display:none;" onclick="haptic(); switchTab('admin')"><span class="nav-icon">⚙️</span><span>Admin</span></div>
 </nav>
 
-<div id="edit-modal" class="overlay-modal"><div class="modal-box"><div class="modal-header"><h3 style="margin: 0;">Edit Trip</h3><button class="icon-btn" onclick="haptic(); document.getElementById('edit-modal').style.display='none'" style="color:var(--text-main); background:var(--badge-bg);">✕</button></div><div class="modal-body form-grid"><input type="hidden" id="edit-id"><div class="form-group form-full"><select id="edit-direction"><option value="Leaving Pitt">🚗 Leaving Pitt</option><option value="Returning to Pitt">🏠 Returning to Pitt</option></select></div><div class="form-group"><input type="date" id="edit-date"></div><div class="form-group"><select id="edit-affinity"><option value="Everyone">👥 Everyone</option><option value="Women Only">💜 Women Only</option></select></div><div class="form-group form-full"><input type="text" id="edit-destination" oninput="updateSuggestedPrice('edit-destination', 'edit-lat', 'edit-lon')"><input type="hidden" id="edit-lat"><input type="hidden" id="edit-lon"></div><div class="form-group"><input type="number" id="edit-seats" min="1" max="6"></div><div class="form-group"><input type="number" id="edit-price"></div><div class="form-group"><select id="edit-vibe"><option value="Chatty">🗣️ Chatty</option><option value="Quiet">🎧 Quiet</option><option value="Mixed">⚖️ Mixed</option></select></div><div class="form-group"><select id="edit-music"><option value="Driver's Choice">📻 Driver Aux</option><option value="Pass the Aux">📱 Pass Aux</option></select></div><div class="form-group form-full"><select id="edit-luggage"><option value="Backpack Only">🎒 Backpack Only</option><option value="Carry-on Size">🧳 Carry-on</option><option value="Large Trunk Space">📦 Trunk Space</option></select></div><div class="form-group form-full"><textarea id="edit-notes"></textarea></div><div class="form-group form-full"><button class="accent-bg" onclick="haptic(); submitEditRide()">Save Changes</button></div></div></div></div>
+<div id="edit-modal" class="overlay-modal"><div class="modal-box"><div class="modal-header"><h3 style="margin: 0;">Edit Trip</h3><button class="icon-btn" onclick="haptic(); document.getElementById('edit-modal').style.display='none'" style="color:var(--text-main); background:var(--badge-bg);">✕</button></div><div class="modal-body form-grid"><input type="hidden" id="edit-id"><div class="form-group form-full"><select id="edit-direction"><option value="Leaving Pitt">🚗 Leaving Pitt</option><option value="Returning to Pitt">🏠 Returning to Pitt</option></select></div><div class="form-group"><input type="date" id="edit-date"></div><div class="form-group"><select id="edit-affinity"><option value="Everyone">👥 Everyone</option><option value="Women Only">💜 Women Only</option></select></div><div class="form-group form-full"><input type="text" id="edit-destination" oninput="updateSuggestedPrice('edit-destination', 'edit-lat', 'edit-lon')"><input type="hidden" id="edit-lat"><input type="hidden" id="edit-lon"></div><div class="form-group form-full"><label>Waypoints</label><input type="text" id="edit-waypoints"></div><div class="form-group"><input type="number" id="edit-seats" min="1" max="6"></div><div class="form-group"><input type="number" id="edit-price"></div><div class="form-group"><select id="edit-vibe"><option value="Chatty">🗣️ Chatty</option><option value="Quiet">🎧 Quiet</option><option value="Mixed">⚖️ Mixed</option></select></div><div class="form-group"><select id="edit-music"><option value="Driver's Choice">📻 Driver Aux</option><option value="Pass the Aux">📱 Pass Aux</option></select></div><div class="form-group form-full"><select id="edit-luggage"><option value="Backpack Only">🎒 Backpack Only</option><option value="Carry-on Size">🧳 Carry-on</option><option value="Large Trunk Space">📦 Trunk Space</option></select></div><div class="form-group form-full"><textarea id="edit-notes"></textarea></div><div class="form-group form-full"><button class="accent-bg" onclick="haptic(); submitEditRide()">Save Changes</button></div></div></div></div>
 
 <div id="chat-modal" class="overlay-modal"><div class="modal-box"><div class="modal-header"><h3 style="margin: 0;">Group Chat</h3><button class="icon-btn" onclick="haptic(); closeChat()" style="color:var(--text-main); background:var(--badge-bg);">✕</button></div><div id="chat-messages" class="modal-body"></div><div class="chat-input-area"><input type="text" id="chat-input" placeholder="iMessage..." onkeypress="if(event.key === 'Enter') sendChatMessage()"><button onclick="haptic(); sendChatMessage()" style="color:white; padding: 0 16px;">↑</button></div></div></div>
 
 <div id="toast-container"></div>
 
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwAJB-DXcODQ3Fcj9jWwQfE4FssCL6-9FqG8PNfn8Ml8RgtlepihTdXFeO_PAyyjb0q/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbw_sF2Wr2hypn5Vq_sh1K1_PcIaWCgGaJS7kRJWyv24TTj8KC82Xodc2jjMKVwEQsZc/exec';
     
     let currentUserEmail = "", sessionToken = "";
     let cachedRides = [];
@@ -244,189 +260,148 @@
     let isRegisterMode = false;
     let activeFilters = { cheap: false, women: false, trunk: false, quiet: false };
 
-    // --- AUTO DARK MODE & INIT ---
-    document.addEventListener("DOMContentLoaded", () => {
-        // Auto-sync dark mode if no local preference
-        if (!localStorage.getItem('pittRideShareTheme')) {
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                document.documentElement.setAttribute('data-theme', 'dark');
-                document.getElementById('theme-btn').innerText = '☀️';
+    // Pull-to-refresh Logic
+    let touchstartY = 0;
+    document.addEventListener('touchstart', e => { touchstartY = e.touches[0].clientY; }, {passive: true});
+    document.addEventListener('touchend', e => {
+        if (window.scrollY === 0 && (e.changedTouches[0].clientY - touchstartY > 120)) {
+            if (document.getElementById('rider-view').classList.contains('active') || document.getElementById('my-trips-view').classList.contains('active')) {
+                haptic(); document.getElementById('ptr-indicator').style.display = 'block';
+                setTimeout(() => { document.getElementById('ptr-indicator').style.display = 'none'; silentSync(); }, 800);
             }
-        } else {
-            const savedTheme = localStorage.getItem('pittRideShareTheme');
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            document.getElementById('theme-btn').innerText = savedTheme === 'dark' ? '☀️' : '🌙';
         }
+    }, {passive: true});
 
+    document.addEventListener("DOMContentLoaded", () => {
+        if (!localStorage.getItem('pittRideShareTheme') && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.setAttribute('data-theme', 'dark'); document.getElementById('theme-btn').innerText = '☀️';
+        } else {
+            const savedTheme = localStorage.getItem('pittRideShareTheme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme); document.getElementById('theme-btn').innerText = savedTheme === 'dark' ? '☀️' : '🌙';
+        }
         document.getElementById("date").setAttribute('min', new Date().toISOString().split('T')[0]);
 
         if (localStorage.getItem('pittRideShareSession')) {
             const sessionData = JSON.parse(localStorage.getItem('pittRideShareSession'));
             currentUserEmail = sessionData.email; sessionToken = sessionData.token;
+            
+            // Instant UI Paint from Cache
+            const localData = localStorage.getItem('pittRideShareData');
+            if (localData) { cachedRides = JSON.parse(localData); filterRides(); }
+
             document.getElementById('auth-view').classList.remove('active');
             document.getElementById('bottom-nav').style.display = 'flex';
-            document.getElementById('logout-btn').style.display = 'flex';
+            if (currentUserEmail === 'admin@pitt.edu') document.getElementById('nav-admin').style.display = 'flex';
             switchTab('rider');
+            silentSync(); // Background update
         }
     });
 
-    function toggleTheme() {
-        haptic();
-        const newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('pittRideShareTheme', newTheme);
-        document.getElementById('theme-btn').innerText = newTheme === 'dark' ? '☀️' : '🌙';
-    }
-
+    function toggleTheme() { haptic(); const newTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', newTheme); localStorage.setItem('pittRideShareTheme', newTheme); document.getElementById('theme-btn').innerText = newTheme === 'dark' ? '☀️' : '🌙'; }
     function haptic() { if (navigator.vibrate) navigator.vibrate(40); }
 
     function showToast(msg, type = 'success') {
-        haptic();
-        const container = document.getElementById('toast-container');
-        const toast = document.createElement('div'); toast.className = `toast ${type}`;
-        let icon = type === 'success' ? '✅' : type === 'warning' ? '⚡' : '⚠️';
-        toast.innerHTML = `<span style="font-size: 1.4em;">${icon}</span> <span>${msg}</span>`;
-        container.appendChild(toast);
-        void toast.offsetWidth; toast.classList.add('show');
+        haptic(); const container = document.getElementById('toast-container'); const toast = document.createElement('div'); toast.className = `toast ${type}`;
+        toast.innerHTML = `<span style="font-size: 1.4em;">${type === 'success' ? '✅' : '⚠️'}</span> <span>${msg}</span>`;
+        container.appendChild(toast); void toast.offsetWidth; toast.classList.add('show');
         setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 4000);
     }
 
-    // --- PASSWORD AUTHENTICATION ---
     function toggleAuthMode() {
-        haptic();
-        isRegisterMode = !isRegisterMode;
+        haptic(); isRegisterMode = !isRegisterMode;
         document.getElementById('auth-title').innerText = isRegisterMode ? 'Create Account' : 'Welcome Back';
-        document.getElementById('auth-subtitle').innerText = isRegisterMode ? 'Use your @pitt.edu email.' : 'Enter your Pitt email and password.';
+        document.getElementById('auth-subtitle').innerText = isRegisterMode ? 'Use your @pitt.edu email.' : 'Enter your email and password.';
         document.getElementById('auth-btn').innerText = isRegisterMode ? 'Sign Up' : 'Sign In';
         document.getElementById('auth-toggle-btn').innerText = isRegisterMode ? 'Already have an account? Sign In' : 'Need an account? Sign Up';
+        document.getElementById('reg-fields').style.display = isRegisterMode ? 'block' : 'none';
     }
 
     async function submitAuth() {
         haptic();
-        const email = document.getElementById('auth-email').value.trim();
-        const password = document.getElementById('auth-password').value;
+        const email = document.getElementById('auth-email').value.trim(); const password = document.getElementById('auth-password').value;
         const btn = document.getElementById('auth-btn');
 
         if (!email || !password) { showToast("Fill all fields.", "warning"); return; }
-        // Admin bypass bypasses client-side email check
         if (email !== 'test2' && !email.endsWith('@pitt.edu')) { showToast("Must be a @pitt.edu email.", "error"); return; }
 
+        let payload = { action: isRegisterMode ? 'register' : 'login', email: email, password: password };
+        if (isRegisterMode) { payload.name = document.getElementById('auth-name').value; payload.gender = document.getElementById('auth-gender').value; if (!payload.name || !payload.gender) { showToast("Provide name and gender.", "warning"); return; } }
+
         btn.innerText = "Processing..."; btn.disabled = true;
-
         try {
-            const payload = { action: isRegisterMode ? 'register' : 'login', email: email, password: password };
-            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-            const result = await res.json();
-
-            if (result.status === 'admin_success') {
-                currentUserEmail = 'admin@pitt.edu'; sessionToken = result.token;
-                localStorage.setItem('pittRideShareSession', JSON.stringify({ email: currentUserEmail, token: sessionToken }));
-                location.reload(); return;
-            }
-
-            if (result.status === 'success') {
-                currentUserEmail = email; sessionToken = result.token;
+            const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) }); const result = await res.json();
+            if (result.status === 'admin_success' || result.status === 'success') {
+                currentUserEmail = result.status === 'admin_success' ? 'admin@pitt.edu' : email; sessionToken = result.token;
                 localStorage.setItem('pittRideShareSession', JSON.stringify({ email: currentUserEmail, token: sessionToken }));
                 location.reload();
-            } else {
-                showToast(result.message, "error");
-                btn.innerText = isRegisterMode ? 'Sign Up' : 'Sign In'; btn.disabled = false;
-            }
+            } else { showToast(result.message, "error"); btn.innerText = isRegisterMode ? 'Sign Up' : 'Sign In'; btn.disabled = false; }
         } catch (e) { showToast("Network error.", "error"); btn.innerText = isRegisterMode ? 'Sign Up' : 'Sign In'; btn.disabled = false; }
     }
 
-    async function logout() { 
-        haptic();
-        try { if (sessionToken) await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'logout', email: currentUserEmail, token: sessionToken }) }); } catch(e){}
-        localStorage.clear(); location.reload(); 
-    }
+    async function logout() { haptic(); try { if (sessionToken) await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'logout', email: currentUserEmail, token: sessionToken }) }); } catch(e){} localStorage.clear(); location.reload(); }
 
     async function secureFetch(payload) {
         payload.email = currentUserEmail; payload.token = sessionToken;
-        const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-        const result = await response.json();
-        if (result.status === 'unauthorized') logout();
-        return result;
+        const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+        const result = await res.json(); if (result.status === 'unauthorized') logout(); return result;
     }
 
-    // --- BOTTOM NAVIGATION ---
     function switchTab(tab) {
         document.querySelectorAll('.nav-item').forEach(t => t.classList.remove('active'));
-        if(tab==='rider') document.querySelectorAll('.nav-item')[0].classList.add('active');
-        if(tab==='driver') document.querySelectorAll('.nav-item')[1].classList.add('active');
-        if(tab==='my-trips') document.querySelectorAll('.nav-item')[2].classList.add('active');
+        const navMap = {'rider':0, 'driver':1, 'my-trips':2, 'profile':3, 'admin':4};
+        if(navMap[tab] !== undefined) document.querySelectorAll('.nav-item')[navMap[tab]].classList.add('active');
 
         document.querySelectorAll('.view:not(#auth-view)').forEach(v => v.classList.remove('active'));
         document.getElementById(tab+'-view').classList.add('active');
-        if(tab !== 'driver') fetchRides();
+        
+        if(tab === 'profile') loadProfile(); else if (tab === 'admin') loadAnalytics(); else if (tab !== 'driver') silentSync();
     }
 
-    // --- AVATAR GENERATOR ---
-    function getInitials(name) {
-        let parts = name.split(' ');
-        let initials = parts[0].charAt(0);
-        if (parts.length > 1) initials += parts[parts.length - 1].charAt(0);
-        return initials.toUpperCase();
-    }
-    function stringToColor(str) {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        return `hsl(${hash % 360}, 70%, 60%)`;
-    }
+    function getInitials(name) { let parts = name.split(' '); return (parts[0].charAt(0) + (parts.length > 1 ? parts[parts.length - 1].charAt(0) : '')).toUpperCase(); }
+    function stringToColor(str) { let hash = 0; for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash); return `hsl(${hash % 360}, 70%, 60%)`; }
 
-    // --- LEAFLET FLY-TO & CLUSTERING MAP ---
-    function initMap() {
-        if (!map) {
-            map = L.map('map-container').setView([40.4406, -79.9959], 6); 
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
-            markersClusterGroup = L.markerClusterGroup({ showCoverageOnHover: false, maxClusterRadius: 40 });
-            map.addLayer(markersClusterGroup);
+    async function loadProfile() {
+        const res = await secureFetch({ action: 'getProfile' });
+        if(res.status === 'success') {
+            document.getElementById('prof-name').value = res.name; document.getElementById('prof-gender').value = res.gender; document.getElementById('prof-bio').value = res.bio;
+            document.getElementById('driver-name').value = res.name;
+            const avatar = document.getElementById('profile-avatar'); avatar.innerText = getInitials(res.name); avatar.style.background = stringToColor(res.name);
         }
     }
+    async function saveProfile() {
+        await secureFetch({ action: 'updateProfile', name: document.getElementById('prof-name').value, gender: document.getElementById('prof-gender').value, bio: document.getElementById('prof-bio').value });
+        showToast("Profile saved!");
+    }
+    async function loadAnalytics() {
+        const res = await secureFetch({ action: 'getAnalytics' });
+        if(res.status === 'success') {
+            document.getElementById('stat-users').innerText = res.stats.users; document.getElementById('stat-rides').innerText = res.stats.rides; document.getElementById('stat-money').innerText = "$" + res.stats.economy.toLocaleString();
+        }
+    }
+
+    // MAP LOGIC
+    function initMap() { if (!map) { map = L.map('map-container').setView([40.4406, -79.9959], 6); L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map); markersClusterGroup = L.markerClusterGroup({ showCoverageOnHover: false, maxClusterRadius: 40 }); map.addLayer(markersClusterGroup); } }
     function toggleMapView() {
-        isMapVisible = !isMapVisible;
-        const mapContainer = document.getElementById('map-container'); const listContainer = document.getElementById('rides-list');
-        if (isMapVisible) {
-            mapContainer.style.display = 'block'; listContainer.style.display = 'none'; document.querySelector('.chips-container').style.display='none';
-            initMap();
-            setTimeout(() => { map.invalidateSize(); updateMapMarkers(); }, 200);
-        } else { mapContainer.style.display = 'none'; listContainer.style.display = 'block'; document.querySelector('.chips-container').style.display='flex'; }
+        isMapVisible = !isMapVisible; const mapContainer = document.getElementById('map-container'); const listContainer = document.getElementById('rides-list');
+        if (isMapVisible) { mapContainer.style.display = 'block'; listContainer.style.display = 'none'; document.querySelector('.chips-container').style.display='none'; initMap(); setTimeout(() => { map.invalidateSize(); updateMapMarkers(); }, 200); } else { mapContainer.style.display = 'none'; listContainer.style.display = 'block'; document.querySelector('.chips-container').style.display='flex'; }
     }
     function updateMapMarkers() {
-        if (!map) return;
-        markersClusterGroup.clearLayers();
-        let validRides = cachedRides.filter(r => r.direction === currentFilterDirection && r.lat && r.lon);
-        let bounds = [];
+        if (!map) return; markersClusterGroup.clearLayers(); let validRides = cachedRides.filter(r => r.direction === currentFilterDirection && r.lat && r.lon); let bounds = [];
         validRides.forEach(ride => {
             const marker = L.marker([parseFloat(ride.lat), parseFloat(ride.lon)]);
             marker.bindPopup(`<b>${ride.destination}</b><br>$${ride.price} - ${ride.seats} seats<br><button onclick="bookSeat(${ride.id}, this)" style="padding:8px; border-radius:12px; margin-top:8px; background:var(--pitt-navy); color:white; font-size:0.9em;">Claim</button>`);
-            markersClusterGroup.addLayer(marker);
-            bounds.push([parseFloat(ride.lat), parseFloat(ride.lon)]);
+            markersClusterGroup.addLayer(marker); bounds.push([parseFloat(ride.lat), parseFloat(ride.lon)]);
         });
-        // Fly-to animation to fit bounds
-        if (bounds.length > 0) map.flyToBounds(bounds, { padding: [30, 30], duration: 1.5 });
-        else map.flyTo([40.4406, -79.9959], 6, {duration: 1.5});
+        if (bounds.length > 0) map.flyToBounds(bounds, { padding: [30, 30], duration: 1.5 }); else map.flyTo([40.4406, -79.9959], 6, {duration: 1.5});
     }
 
-    // --- CHIPS & FILTERS ---
-    function setFilterDirection(dir) {
-        currentFilterDirection = dir;
-        document.getElementById('filter-leaving').classList.toggle('active', dir === 'Leaving Pitt');
-        document.getElementById('filter-returning').classList.toggle('active', dir === 'Returning to Pitt');
-        filterRides(); if(isMapVisible) updateMapMarkers();
-    }
-    function toggleChip(chipName) {
-        activeFilters[chipName] = !activeFilters[chipName];
-        document.getElementById('chip-' + chipName).classList.toggle('active');
-        filterRides();
-    }
+    function setFilterDirection(dir) { currentFilterDirection = dir; document.getElementById('filter-leaving').classList.toggle('active', dir === 'Leaving Pitt'); document.getElementById('filter-returning').classList.toggle('active', dir === 'Returning to Pitt'); filterRides(); if(isMapVisible) updateMapMarkers(); }
+    function toggleChip(chipName) { activeFilters[chipName] = !activeFilters[chipName]; document.getElementById('chip-' + chipName).classList.toggle('active'); filterRides(); }
 
     function updateSuggestedPrice(destInputId, latInputId, lonInputId) {
-        const dest = document.getElementById(destInputId).value.trim();
-        clearTimeout(priceDebounceTimer);
+        const dest = document.getElementById(destInputId).value.trim(); clearTimeout(priceDebounceTimer);
         priceDebounceTimer = setTimeout(async () => {
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dest + ', USA')}&limit=1`);
-            const data = await res.json();
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dest + ', USA')}&limit=1`); const data = await res.json();
             if (data && data.length > 0) {
                 document.getElementById(latInputId).value = data[0].lat; document.getElementById(lonInputId).value = data[0].lon;
                 const R = 3958.8; const dLat = (parseFloat(data[0].lat) - 40.4406) * Math.PI / 180.0; const dLon = (parseFloat(data[0].lon) - -79.9959) * Math.PI / 180.0;
@@ -437,138 +412,119 @@
         }, 800);
     }
 
-    async function fetchRides() {
-        document.getElementById('rides-list').innerHTML = '';
-        document.getElementById('skeleton-container').style.display = 'block';
-        
-        const res = await secureFetch({ action: 'getRides' });
-        cachedRides = res.data;
-        
-        document.getElementById('skeleton-container').style.display = 'none';
-        document.getElementById('my-trips-view').classList.contains('active') ? renderMyTrips() : filterRides();
-        if(isMapVisible) updateMapMarkers();
+    // --- OPTIMISTIC BACKGROUND SYNC ---
+    async function silentSync() {
+        document.getElementById('sync-spinner').style.display = 'inline-block'; // Show silent header spinner
+        try {
+            const res = await secureFetch({ action: 'getRides' });
+            cachedRides = res.data;
+            localStorage.setItem('pittRideShareData', JSON.stringify(cachedRides));
+            document.getElementById('my-trips-view').classList.contains('active') ? renderMyTrips() : filterRides();
+            if(isMapVisible) updateMapMarkers();
+        } catch(e) {} finally { document.getElementById('sync-spinner').style.display = 'none'; }
     }
 
     function filterRides() {
         const search = document.getElementById('search-bar').value.toLowerCase();
-        let filtered = cachedRides.filter(r => r.direction === currentFilterDirection && r.destination.toLowerCase().includes(search));
-        
+        let filtered = cachedRides.filter(r => r.direction === currentFilterDirection && (r.destination.toLowerCase().includes(search) || (r.waypoints && r.waypoints.toLowerCase().includes(search))));
         if (activeFilters.cheap) filtered = filtered.filter(r => r.price <= 30);
         if (activeFilters.women) filtered = filtered.filter(r => r.affinity === 'Women Only');
         if (activeFilters.trunk) filtered = filtered.filter(r => r.luggage === 'Large Trunk Space');
         if (activeFilters.quiet) filtered = filtered.filter(r => r.vibe === 'Quiet');
-
         renderRides(filtered, 'rides-list');
     }
     
-    function renderMyTrips() {
-        renderRides(cachedRides.filter(r => r.email === currentUserEmail || (r.riders && r.riders.includes(currentUserEmail))), 'my-rides-list');
-    }
+    function renderMyTrips() { renderRides(cachedRides.filter(r => r.email === currentUserEmail || (r.riders && r.riders.includes(currentUserEmail))), 'my-rides-list'); }
 
     async function postRide() {
-        const payload = {
-            action: 'addRide', id: Date.now(), name: document.getElementById('driver-name').value,
-            destination: document.getElementById('destination').value, date: document.getElementById('date').value,
-            seats: document.getElementById('seats').value, price: document.getElementById('price').value,
-            direction: document.getElementById('post-direction').value, affinity: document.getElementById('affinity').value,
-            lat: document.getElementById('dest-lat').value, lon: document.getElementById('dest-lon').value,
-            vibe: document.getElementById('vibe').value, music: document.getElementById('music').value,
-            luggage: document.getElementById('luggage').value, notes: document.getElementById('notes').value
-        };
+        const payload = { action: 'addRide', id: Date.now(), name: document.getElementById('driver-name').value, destination: document.getElementById('destination').value, waypoints: document.getElementById('waypoints').value, date: document.getElementById('date').value, seats: document.getElementById('seats').value, price: document.getElementById('price').value, direction: document.getElementById('post-direction').value, affinity: document.getElementById('affinity').value, lat: document.getElementById('dest-lat').value, lon: document.getElementById('dest-lon').value, vibe: document.getElementById('vibe').value, music: document.getElementById('music').value, luggage: document.getElementById('luggage').value, notes: document.getElementById('notes').value };
         const res = await secureFetch(payload); 
-        if(res.status === 'success') { showToast("Posted successfully!"); switchTab('my-trips'); }
-        else showToast(res.message || "Invalid input.", "error");
+        if(res.status === 'success') { showToast("Posted successfully!"); switchTab('my-trips'); } else showToast(res.message || "Invalid input.", "error");
     }
 
-    // Edit functions remain structurally the same...
-    function openEditModal(rideId) { haptic(); /* (Implementation same as previous) */ }
+    function openEditModal(rideId) { 
+        haptic(); const ride = cachedRides.find(r => r.id === rideId); if (!ride) return;
+        document.getElementById('edit-id').value = ride.id; document.getElementById('edit-direction').value = ride.direction; document.getElementById('edit-affinity').value = ride.affinity; document.getElementById('edit-date').value = ride.date.split('T')[0]; document.getElementById('edit-destination').value = ride.destination; document.getElementById('edit-waypoints').value = ride.waypoints; document.getElementById('edit-lat').value = ride.lat; document.getElementById('edit-lon').value = ride.lon; document.getElementById('edit-seats').value = ride.seats; document.getElementById('edit-price').value = ride.price; document.getElementById('edit-vibe').value = ride.vibe; document.getElementById('edit-music').value = ride.music; document.getElementById('edit-luggage').value = ride.luggage; document.getElementById('edit-notes').value = ride.notes; document.getElementById('edit-modal').style.display = 'flex';
+    }
     function closeEditModal() { document.getElementById('edit-modal').style.display = 'none'; }
-    async function submitEditRide() { /* (Implementation same as previous) */ }
-
-    async function bookSeat(id, btn) { haptic(); btn.disabled = true; await secureFetch({ action: 'bookSeat', id }); fetchRides(); showToast("Seat Confirmed!"); }
-    async function joinWaitlist(id, btn) { haptic(); btn.disabled = true; await secureFetch({ action: 'joinWaitlist', id }); showToast("Joined waitlist!"); fetchRides(); }
-    async function cancelSeat(id, btn) { haptic(); if(confirm("Cancel seat?")) { btn.disabled = true; await secureFetch({ action: 'cancelSeat', id }); fetchRides(); } }
-    async function deleteRide(id, btn) { haptic(); if(confirm("Delete permanently?")) { btn.disabled = true; await secureFetch({ action: 'deleteRide', id }); fetchRides(); } }
-
-    function openChat(rideId) {
-        haptic(); currentChatRideId = rideId; document.getElementById('chat-modal').style.display = 'flex';
-        document.getElementById('chat-messages').innerHTML = '<p style="text-align:center; color:var(--text-muted); margin-top:20px;">Loading...</p>'; loadMessages();
+    async function submitEditRide() {
+        const payload = { action: 'editRide', id: document.getElementById('edit-id').value, destination: document.getElementById('edit-destination').value, waypoints: document.getElementById('edit-waypoints').value, date: document.getElementById('edit-date').value, seats: document.getElementById('edit-seats').value, price: document.getElementById('edit-price').value, direction: document.getElementById('edit-direction').value, affinity: document.getElementById('edit-affinity').value, lat: document.getElementById('edit-lat').value, lon: document.getElementById('edit-lon').value, vibe: document.getElementById('edit-vibe').value, music: document.getElementById('edit-music').value, luggage: document.getElementById('edit-luggage').value, notes: document.getElementById('edit-notes').value };
+        await secureFetch(payload); showToast("Trip updated!"); closeEditModal(); silentSync();
     }
+
+    // OPTIMISTIC ACTIONS (Instantly update UI, sync in background)
+    async function bookSeat(id, btn) { 
+        haptic(); btn.disabled = true; 
+        let r = cachedRides.find(x => x.id === id); if(r) { r.seats--; r.riders += "," + currentUserEmail; }
+        document.getElementById('my-trips-view').classList.contains('active') ? renderMyTrips() : filterRides(); showToast("Seat Confirmed!");
+        try { await secureFetch({ action: 'bookSeat', id }); } catch(e) { silentSync(); } // Silent revert if fail
+    }
+    async function joinWaitlist(id, btn) { 
+        haptic(); btn.disabled = true; 
+        let r = cachedRides.find(x => x.id === id); if(r) { r.waitlist += "," + currentUserEmail; }
+        document.getElementById('my-trips-view').classList.contains('active') ? renderMyTrips() : filterRides(); showToast("Joined waitlist!");
+        try { await secureFetch({ action: 'joinWaitlist', id }); } catch(e) { silentSync(); } 
+    }
+    async function cancelSeat(id, btn) { 
+        haptic(); if(!confirm("Cancel seat?")) return; btn.disabled = true; 
+        let r = cachedRides.find(x => x.id === id); if(r) { r.seats++; r.riders = r.riders.replace(currentUserEmail, ""); }
+        document.getElementById('my-trips-view').classList.contains('active') ? renderMyTrips() : filterRides();
+        try { await secureFetch({ action: 'cancelSeat', id }); } catch(e) { silentSync(); } 
+    }
+    async function deleteRide(id, btn) { haptic(); if(!confirm("Delete permanently?")) return; btn.disabled = true; await secureFetch({ action: 'deleteRide', id }); silentSync(); }
+
+    function openChat(rideId) { haptic(); currentChatRideId = rideId; document.getElementById('chat-modal').style.display = 'flex'; document.getElementById('chat-messages').innerHTML = '<p style="text-align:center; color:var(--text-muted); margin-top:20px;">Loading...</p>'; loadMessages(); }
     function closeChat() { document.getElementById('chat-modal').style.display = 'none'; currentChatRideId = null; }
     
     async function loadMessages() {
-        if(!currentChatRideId) return;
-        const res = await secureFetch({ action: 'getMessages', rideId: currentChatRideId });
-        const box = document.getElementById('chat-messages'); box.innerHTML = '';
+        if(!currentChatRideId) return; const res = await secureFetch({ action: 'getMessages', rideId: currentChatRideId }); const box = document.getElementById('chat-messages'); box.innerHTML = '';
         if(res.data.length === 0) box.innerHTML = '<p style="text-align:center; color:var(--text-muted); margin-top:20px;">Send the first message!</p>';
         res.data.forEach(m => {
-            const isMe = m.email === currentUserEmail;
-            const msgDiv = document.createElement('div'); msgDiv.style.cssText = `display:flex; flex-direction:column; align-items: ${isMe ? 'flex-end' : 'flex-start'};`;
+            const isMe = m.email === currentUserEmail; const msgDiv = document.createElement('div'); msgDiv.style.cssText = `display:flex; flex-direction:column; align-items: ${isMe ? 'flex-end' : 'flex-start'};`;
             const senderSpan = document.createElement('span'); senderSpan.className = 'msg-sender'; senderSpan.textContent = m.email.split('@')[0];
             const bubbleDiv = document.createElement('div'); bubbleDiv.className = `msg ${isMe ? 'mine' : 'theirs'}`; bubbleDiv.textContent = m.message; 
             msgDiv.appendChild(senderSpan); msgDiv.appendChild(bubbleDiv); box.appendChild(msgDiv);
-        });
-        box.scrollTop = box.scrollHeight;
+        }); box.scrollTop = box.scrollHeight;
     }
 
     async function sendChatMessage() {
-        const input = document.getElementById('chat-input');
-        if(!input.value.trim() || !currentChatRideId) return;
-        const msg = input.value; input.value = '';
-        await secureFetch({ action: 'sendMessage', rideId: currentChatRideId, message: msg });
-        loadMessages();
+        const input = document.getElementById('chat-input'); if(!input.value.trim() || !currentChatRideId) return;
+        const msg = input.value; input.value = ''; await secureFetch({ action: 'sendMessage', rideId: currentChatRideId, message: msg }); loadMessages();
+    }
+
+    function generateCalendarLink(ride) {
+        const d = new Date(ride.date); const startStr = d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8) + "T140000Z"; const endStr = d.toISOString().replace(/-|:|\.\d+/g, '').substring(0,8) + "T160000Z";
+        return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Ride+to+${encodeURIComponent(ride.destination)}&dates=${startStr}/${endStr}&details=Driver:+${encodeURIComponent(ride.name)}%0A%0A${encodeURIComponent(ride.notes)}`;
     }
 
     function renderRides(ridesToRender, containerId) {
         const container = document.getElementById(containerId); container.innerHTML = '';
-        
-        // EMPTY STATE SVG
         if (ridesToRender.length === 0) { 
-            container.innerHTML = `
-            <div class="empty-state">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
-                <h3>No rides found</h3>
-                <p>Try adjusting your filters or checking back later.</p>
-            </div>`; return; 
+            container.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg><h3>No rides found</h3><p>Try adjusting your filters or pull down to refresh.</p></div>`; return; 
         }
 
         ridesToRender.forEach(ride => {
-            let actionBtn = ''; let amIBooked = ride.riders && ride.riders.includes(currentUserEmail);
-            let onWaitlist = ride.waitlist && ride.waitlist.includes(currentUserEmail);
-
-            if (ride.email === currentUserEmail) actionBtn = `<button class="danger-bg" onclick="haptic(); deleteRide(${ride.id}, this)">Delete Trip</button>`;
-            else if (amIBooked) actionBtn = `<button class="warning-bg" onclick="haptic(); cancelSeat(${ride.id}, this)">Cancel Seat</button>`;
+            let actionBtn = ''; let amIBooked = ride.riders && ride.riders.includes(currentUserEmail); let onWaitlist = ride.waitlist && ride.waitlist.includes(currentUserEmail); let calBtn = '';
+            if (ride.email === currentUserEmail) actionBtn = `<div style="display:flex; gap:12px;"><button class="accent-bg" onclick="openEditModal(${ride.id})">Edit</button><button class="danger-bg" onclick="haptic(); deleteRide(${ride.id}, this)">Delete</button></div>`;
+            else if (amIBooked) { actionBtn = `<button class="warning-bg" onclick="haptic(); cancelSeat(${ride.id}, this)">Cancel Seat</button>`; calBtn = `<a href="${generateCalendarLink(ride)}" target="_blank" style="text-decoration:none;"><button class="cal-btn">📅 Add to Google Calendar</button></a>`; }
             else if (parseInt(ride.seats) > 0) actionBtn = `<button class="primary-bg" onclick="haptic(); bookSeat(${ride.id}, this)">Claim Seat</button>`;
             else if (onWaitlist) actionBtn = `<button style="background: var(--border-color); color:var(--text-muted);" disabled>On Waitlist</button>`;
             else actionBtn = `<button class="warning-bg" onclick="haptic(); joinWaitlist(${ride.id}, this)">Join Waitlist</button>`;
 
             let chatBtn = (amIBooked || ride.email === currentUserEmail) ? `<button style="background:#007aff; color:white; margin-top:12px;" onclick="openChat(${ride.id})">💬 Group Chat</button>` : '';
             let affinityBadge = ride.affinity === 'Women Only' ? `<span class="badge affinity-badge">💜 Women Only</span>` : '';
-            
-            // Dynamic Avatar
-            const initials = getInitials(ride.name);
-            const avatarColor = stringToColor(ride.name);
+            let waypointsHtml = ride.waypoints ? `<div style="font-size:0.85em; color:var(--text-muted); margin-bottom:12px; font-weight:600;">📍 Stops: ${ride.waypoints}</div>` : '';
+            const initials = getInitials(ride.name); const avatarColor = stringToColor(ride.name);
 
-            const card = document.createElement('div'); card.className = 'ride-card';
-            if (amIBooked) card.classList.add('booked-by-me');
-            
+            const card = document.createElement('div'); card.className = 'ride-card'; if (amIBooked) card.classList.add('booked-by-me');
             card.innerHTML = `
-                <div class="driver-header">
-                    <div class="avatar" style="background: ${avatarColor}">${initials}</div>
-                    <div>
-                        <div style="font-weight:700; font-size:1.1em;">${ride.name}</div>
-                        <div style="font-size:0.85em; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">${ride.direction === 'Leaving Pitt' ? '🚗 Outbound' : '🏠 Return'}</div>
-                    </div>
-                </div>
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                    <h3 style="margin:0; font-size:1.6em;">${ride.destination}</h3>
-                    <div style="font-size:1.8em; font-weight:800; color:var(--success)">$${ride.price}</div>
-                </div>
+                <div class="driver-header"><div class="avatar" style="background: ${avatarColor}">${initials}</div><div><div style="font-weight:700; font-size:1.1em;">${ride.name}</div><div style="font-size:0.85em; color:var(--text-muted); font-weight:600; text-transform:uppercase; letter-spacing:0.5px;">${ride.direction === 'Leaving Pitt' ? '🚗 Outbound' : '🏠 Return'}</div></div></div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;"><h3 style="margin:0; font-size:1.6em;">${ride.destination}</h3><div style="font-size:1.8em; font-weight:800; color:var(--success)">$${ride.price}</div></div>
+                ${waypointsHtml}
                 <div style="color:var(--text-muted); margin-bottom:12px; font-weight:500;">📅 ${new Date(ride.date).toLocaleDateString()} &nbsp;•&nbsp; <span style="color:var(--text-main); font-weight:700;">${ride.seats} seats open</span></div>
                 <div class="badges"><span class="badge">${ride.vibe}</span><span class="badge">${ride.music}</span><span class="badge">${ride.luggage}</span>${affinityBadge}</div>
                 ${ride.notes ? `<div style="background:var(--badge-bg); padding:16px; border-radius:16px; margin-bottom:20px; font-size:0.95em; color:var(--text-muted);">${ride.notes}</div>` : '<div style="margin-bottom:20px;"></div>'}
-                ${actionBtn}
-                ${chatBtn}
+                ${actionBtn}${calBtn}${chatBtn}
             `;
             container.appendChild(card);
         });
