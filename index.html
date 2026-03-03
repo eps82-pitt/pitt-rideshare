@@ -13,12 +13,15 @@
         .primary-bg { background-color: #1c2957; color: white; }
         .accent-bg { background-color: #cdb87d; color: #1c2957; }
         .danger-bg { background-color: #dc3545; color: white; }
+        .warning-bg { background-color: #ffc107; color: #333; }
         .success-bg { background-color: #28a745; color: white; border: none; }
         
-        #auth-view { text-align: center; padding: 40px 20px; }
+        #auth-view { text-align: center; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; }
         #auth-view input { text-align: center; font-size: 1.2em; padding: 15px; width: 80%; }
+        #otp-input { letter-spacing: 10px; font-weight: bold; font-size: 1.5em !important; }
+        
         .tabs { display: none; margin-bottom: 20px; border-bottom: 2px solid #eee; }
-        .tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: bold; color: #666; transition: 0.3s; font-size: 1.1em; }
+        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: bold; color: #666; transition: 0.3s; font-size: 1.05em; }
         .tab.active { color: #1c2957; border-bottom: 4px solid #1c2957; }
         .view { display: none; animation: fadeIn 0.3s; }
         .view.active { display: block; }
@@ -33,18 +36,26 @@
         .row { display: flex; gap: 15px; }
         .row > * { flex: 1; }
 
+        .direction-toggle { display: flex; background: #e9ecef; border-radius: 8px; margin-bottom: 20px; overflow: hidden; }
+        .direction-btn { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: bold; color: #555; transition: 0.3s; }
+        .direction-btn.active { background: #1c2957; color: white; }
+
         .search-container { position: relative; margin-bottom: 20px; }
         .search-container input { padding-left: 40px; border: 2px solid #eee; }
         .search-icon { position: absolute; left: 15px; top: 25px; color: #999; }
 
-        .ride-card { border: 1px solid #eee; padding: 25px; margin-bottom: 20px; border-radius: 10px; background-color: #fff; border-left: 6px solid #1c2957; transition: 0.2s; }
+        .ride-card { border: 1px solid #eee; padding: 25px; margin-bottom: 20px; border-radius: 10px; background-color: #fff; border-left: 6px solid #1c2957; transition: 0.2s; position: relative; }
         .ride-card:hover { box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
         .ride-card.booked-by-me { border-left: 6px solid #28a745; background-color: #f8fff9; }
-        .ride-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
+        .ride-card.returning { border-left: 6px solid #cdb87d; }
+        .ride-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
         .price-tag { font-size: 1.8em; font-weight: bold; color: #28a745; }
         .badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
         .badge { background: #e9ecef; padding: 6px 12px; border-radius: 15px; font-size: 0.85em; color: #444; font-weight: 600; }
-        .notes-box { background: #f8f9fa; padding: 15px; border-radius: 8px; font-style: italic; color: #555; margin-bottom: 15px; border-left: 3px solid #cdb87d; }
+        .direction-badge { position: absolute; top: -12px; left: 20px; background: #1c2957; color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.8em; font-weight: bold; }
+        .direction-badge.returning { background: #cdb87d; color: #1c2957; }
+        .notes-box { background: #f8f9fa; padding: 15px; border-radius: 8px; font-style: italic; color: #555; margin-bottom: 15px; border-left: 3px solid #ccc; }
+        .private-contact { background: #e6f2ff; padding: 10px; border-radius: 6px; font-size: 0.9em; margin-bottom: 15px; border: 1px solid #b3d7ff; }
         .suggestion { font-size: 0.9em; color: #666; text-align: right; margin-top: -5px; margin-bottom: 15px; display: block; }
         #loading { text-align: center; color: #1c2957; font-weight: bold; display: none; padding: 40px; font-size: 1.2em; }
 
@@ -64,41 +75,59 @@
 
 <div class="container">
     <div id="auth-view" class="view active">
-        <h2 style="color: #1c2957;">Welcome to the Board</h2>
-        <p>Please verify your student status to access the marketplace.</p>
-        <input type="email" id="student-email" placeholder="Enter your @pitt.edu email" required>
-        <button class="primary-bg" onclick="login()" style="width: 80%;">Verify & Enter</button>
-        <p id="auth-error" style="color: red; display: none; margin-top: 15px;">You must use a valid @pitt.edu email address.</p>
+        <div id="auth-step-1" style="width: 100%;">
+            <h2 style="color: #1c2957;">Secure Student Login</h2>
+            <p>Enter your @pitt.edu email. We will send you a 4-digit code.</p>
+            <input type="email" id="student-email" placeholder="username@pitt.edu" required>
+            <button class="primary-bg" id="send-code-btn" onclick="requestOTP()" style="width: 80%;">Send Secure Code</button>
+            <p id="auth-error" style="color: red; display: none; margin-top: 15px;">Must be a valid @pitt.edu address.</p>
+        </div>
+        
+        <div id="auth-step-2" style="width: 100%; display: none;">
+            <h2 style="color: #1c2957;">Verify Your Email</h2>
+            <p>Check your inbox (and spam folder) for the 4-digit code.</p>
+            <input type="text" id="otp-input" placeholder="1234" maxlength="4">
+            <button class="accent-bg" id="verify-code-btn" onclick="verifyOTP()" style="width: 80%;">Verify & Enter</button>
+            <p id="otp-error" style="color: red; display: none; margin-top: 15px;">Incorrect or expired code. Try again.</p>
+        </div>
     </div>
 
     <div class="tabs" id="nav-tabs">
-        <div class="tab active" onclick="switchTab('rider')">Find a Ride Home</div>
-        <div class="tab" onclick="switchTab('driver')">Offer a Ride Home</div>
+        <div class="tab active" onclick="switchTab('rider')">Find a Ride</div>
+        <div class="tab" onclick="switchTab('driver')">Offer a Ride</div>
+        <div class="tab" onclick="switchTab('my-trips')">My Trips</div>
     </div>
 
     <div id="loading">Syncing database...</div>
 
     <div id="rider-view" class="view">
+        <div class="direction-toggle">
+            <div class="direction-btn active" id="filter-leaving" onclick="setFilterDirection('Leaving Pitt')">Leaving Pitt</div>
+            <div class="direction-btn" id="filter-returning" onclick="setFilterDirection('Returning to Pitt')">Returning to Pitt</div>
+        </div>
         <div class="search-container">
             <span class="search-icon">🔍</span>
-            <input type="text" id="search-bar" placeholder="Search by destination city..." oninput="filterRides()">
+            <input type="text" id="search-bar" placeholder="Search by city..." oninput="filterRides()">
         </div>
         <div id="rides-list"></div>
     </div>
 
     <div id="driver-view" class="view">
         <h2 style="margin-top: 0; color: #1c2957;">Set Up Your Car</h2>
+        <select id="post-direction" style="border: 2px solid #1c2957; font-weight: bold; color: #1c2957;">
+            <option value="Leaving Pitt">🚗 I am driving AWAY FROM Pitt</option>
+            <option value="Returning to Pitt">🏠 I am driving BACK TO Pitt</option>
+        </select>
         <div class="row">
             <input type="text" id="driver-name" placeholder="Your Name" required>
             <input type="date" id="date" required>
         </div>
-        <input type="text" id="destination" placeholder="Destination City (e.g., Philadelphia, PA)" oninput="updateSuggestedPrice()" required>
+        <input type="text" id="destination" placeholder="City (e.g., Philadelphia, PA)" oninput="updateSuggestedPrice()" required>
         <div class="row">
             <input type="number" id="seats" placeholder="Seats Available" min="1" max="6" required>
             <input type="number" id="price" placeholder="Price per Seat ($)" min="0" required>
         </div>
-        <span class="suggestion" id="price-suggestion">Recommended: Enter destination to calculate...</span>
-
+        <span class="suggestion" id="price-suggestion">Recommended: Enter city to calculate...</span>
         <h3 style="margin-bottom: 10px; margin-top: 20px; color: #1c2957;">Trip Expectations</h3>
         <div class="row">
             <select id="vibe">
@@ -117,24 +146,27 @@
             <option value="Carry-on Size">Luggage: Carry-on Size allowed</option>
             <option value="Large Trunk Space">Luggage: Large Trunk Space</option>
         </select>
-        
         <textarea id="notes" placeholder="Trip Notes (e.g. strict departure times, drop-off restrictions, etc.)"></textarea>
-
         <button class="accent-bg" id="post-btn" onclick="postRide()" style="margin-top: 20px;">Post Ride Offer</button>
+    </div>
+
+    <div id="my-trips-view" class="view">
+        <h2 style="margin-top: 0; color: #1c2957;">My Itinerary</h2>
+        <p style="color: #666; margin-bottom: 20px;">Rides you are driving or have claimed a seat in.</p>
+        <div id="my-rides-list"></div>
     </div>
 </div>
 
 <div id="toast-container"></div>
 
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxUa9-cPjQVeD2akQJ6xVleMU2L8suemErmRNxOxEuzBvZgm3i1RawOg3M0RtEN81al/exec';
-    
-    // Exact starting coordinates for campus
-    const PITT_LAT = 40.4406;
-    const PITT_LON = -79.9959;
+    const API_URL = 'https://script.google.com/macros/s/AKfycbw1tumyvJ_9wb9wpC-1w7zWbJ85-F3UVQ-XNPMcOWy1Ial-yl9Tfj0J0wNoUDpWI2Ja/exec';
     
     let currentUserEmail = "";
     let cachedRides = [];
+    let currentFilterDirection = 'Leaving Pitt';
+    const PITT_LAT = 40.4406;
+    const PITT_LON = -79.9959;
     let priceDebounceTimer;
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -150,25 +182,64 @@
         container.appendChild(toast);
         void toast.offsetWidth;
         toast.classList.add('show');
-        setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 300);
-        }, 4000);
+        setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 4000);
     }
 
-    function login() {
+    // --- SECURE OTP LOGIN FUNCTIONS ---
+    async function requestOTP() {
         const email = document.getElementById('student-email').value.toLowerCase().trim();
-        if (email.endsWith('@pitt.edu')) {
-            currentUserEmail = email;
-            document.getElementById('auth-view').classList.remove('active');
-            document.getElementById('nav-tabs').style.display = 'flex';
-            switchTab('rider');
-            showToast("Successfully verified student status.");
-        } else {
+        const btn = document.getElementById('send-code-btn');
+        
+        if (!email.endsWith('@pitt.edu')) {
             document.getElementById('auth-error').style.display = 'block';
+            return;
+        }
+        
+        document.getElementById('auth-error').style.display = 'none';
+        btn.innerText = "Sending Email...";
+        btn.disabled = true;
+
+        try {
+            currentUserEmail = email; // Store temporarily
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'requestOTP', email: email }) });
+            document.getElementById('auth-step-1').style.display = 'none';
+            document.getElementById('auth-step-2').style.display = 'block';
+            showToast("Code sent to your Pitt email!");
+        } catch (error) {
+            showToast("Failed to send code.", "error");
+            btn.innerText = "Send Secure Code";
+            btn.disabled = false;
         }
     }
 
+    async function verifyOTP() {
+        const otp = document.getElementById('otp-input').value.trim();
+        const btn = document.getElementById('verify-code-btn');
+        btn.innerText = "Verifying...";
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'verifyOTP', email: currentUserEmail, otp: otp }) });
+            const result = await response.json();
+            
+            if (result.status === 'success') {
+                document.getElementById('auth-view').classList.remove('active');
+                document.getElementById('nav-tabs').style.display = 'flex';
+                switchTab('rider');
+                showToast("Login verified!");
+            } else {
+                document.getElementById('otp-error').style.display = 'block';
+                btn.innerText = "Verify & Enter";
+                btn.disabled = false;
+            }
+        } catch (error) {
+            showToast("Network error.", "error");
+            btn.innerText = "Verify & Enter";
+            btn.disabled = false;
+        }
+    }
+
+    // --- NAVIGATION & RENDERING ---
     function switchTab(tabName) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.view:not(#auth-view)').forEach(v => v.classList.remove('active'));
@@ -177,41 +248,41 @@
             document.querySelectorAll('.tab')[0].classList.add('active');
             document.getElementById('rider-view').classList.add('active');
             fetchRides();
-        } else {
+        } else if (tabName === 'driver') {
             document.querySelectorAll('.tab')[1].classList.add('active');
             document.getElementById('driver-view').classList.add('active');
+        } else if (tabName === 'my-trips') {
+            document.querySelectorAll('.tab')[2].classList.add('active');
+            document.getElementById('my-trips-view').classList.add('active');
+            fetchRides();
         }
     }
 
-    // Mathematical exact distance calculation (Haversine formula)
+    function setFilterDirection(direction) {
+        currentFilterDirection = direction;
+        document.getElementById('filter-leaving').classList.toggle('active', direction === 'Leaving Pitt');
+        document.getElementById('filter-returning').classList.toggle('active', direction === 'Returning to Pitt');
+        filterRides();
+    }
+
+    // Exact geometry float math for pricing algorithm
     function calculateExactDistance(lat1, lon1, lat2, lon2) {
-        const R = 3958.8; // Earth radius in miles
+        const R = 3958.8; 
         const dLat = (lat2 - lat1) * Math.PI / 180.0;
         const dLon = (lon2 - lon1) * Math.PI / 180.0;
-        const a = Math.sin(dLat / 2.0) * Math.sin(dLat / 2.0) +
-                  Math.cos(lat1 * Math.PI / 180.0) * Math.cos(lat2 * Math.PI / 180.0) *
-                  Math.sin(dLon / 2.0) * Math.sin(dLon / 2.0);
+        const a = Math.sin(dLat / 2.0) * Math.sin(dLat / 2.0) + Math.cos(lat1 * Math.PI / 180.0) * Math.cos(lat2 * Math.PI / 180.0) * Math.sin(dLon / 2.0) * Math.sin(dLon / 2.0);
         const c = 2.0 * Math.atan2(Math.sqrt(a), Math.sqrt(1.0 - a));
-        const distance = R * c; 
-        
-        // Multiplier to estimate road routing over straight-line air travel
-        return distance * 1.25; 
+        return (R * c) * 1.25; 
     }
 
     function updateSuggestedPrice() {
         const dest = document.getElementById('destination').value.trim();
         const suggestionBox = document.getElementById('price-suggestion');
-        
         clearTimeout(priceDebounceTimer);
 
-        if (dest.length < 3) {
-            suggestionBox.innerText = 'Recommended: Enter destination to calculate...';
-            return;
-        }
-
+        if (dest.length < 3) { suggestionBox.innerText = 'Recommended: Enter city to calculate...'; return; }
         suggestionBox.innerText = 'Calculating real-world driving distance...';
 
-        // Wait 800ms after the user stops typing to prevent spamming the geocode API
         priceDebounceTimer = setTimeout(async () => {
             try {
                 const query = encodeURIComponent(dest + ', USA');
@@ -219,37 +290,34 @@
                 const data = await response.json();
 
                 if (data && data.length > 0) {
-                    const destLat = parseFloat(data[0].lat);
-                    const destLon = parseFloat(data[0].lon);
-
-                    const drivingMiles = calculateExactDistance(PITT_LAT, PITT_LON, destLat, destLon);
-                    
-                    // Constants: $3.40 per gallon, 25 MPG average
+                    const drivingMiles = calculateExactDistance(PITT_LAT, PITT_LON, parseFloat(data[0].lat), parseFloat(data[0].lon));
                     const totalTripGas = (drivingMiles / 25.0) * 3.40;
-                    
-                    // Split among driver + 2 average passengers + $4 for car wear/tear
                     const recommendedSeatPrice = (totalTripGas / 3.0) + 4.0;
-
-                    suggestionBox.innerText = `Route: ~${Math.round(drivingMiles)} miles. Recommended: $${Math.ceil(recommendedSeatPrice)} per seat to split costs.`;
+                    suggestionBox.innerText = `Route: ~${Math.round(drivingMiles)} miles. Recommended: $${Math.ceil(recommendedSeatPrice)} per seat.`;
                 } else {
-                    suggestionBox.innerText = 'City not found. Please try adding the state (e.g., "Chicago, IL").';
+                    suggestionBox.innerText = 'City not found.';
                 }
-            } catch (error) {
-                suggestionBox.innerText = 'Distance API unavailable. Set your own fair price.';
-            }
+            } catch (error) { suggestionBox.innerText = 'Distance API unavailable.'; }
         }, 800);
     }
 
     async function fetchRides() {
         document.getElementById('loading').style.display = 'block';
-        document.getElementById('rides-list').innerHTML = '';
+        if(document.getElementById('rider-view').classList.contains('active')) document.getElementById('rides-list').innerHTML = '';
+        if(document.getElementById('my-trips-view').classList.contains('active')) document.getElementById('my-rides-list').innerHTML = '';
         
         try {
             const response = await fetch(API_URL);
             cachedRides = await response.json();
-            renderRides(cachedRides);
+            
+            // Route data to the correct tab
+            if (document.getElementById('my-trips-view').classList.contains('active')) {
+                renderMyTrips();
+            } else {
+                filterRides();
+            }
         } catch (error) {
-            document.getElementById('rides-list').innerHTML = '<p style="color:red; text-align:center;">Error connecting to database. Please check your API deployment.</p>';
+            showToast("Error connecting to database.", "error");
         } finally {
             document.getElementById('loading').style.display = 'none';
         }
@@ -258,9 +326,19 @@
     function filterRides() {
         const searchTerm = document.getElementById('search-bar').value.toLowerCase();
         const filteredRides = cachedRides.filter(ride => 
-            ride.destination.toLowerCase().includes(searchTerm)
+            ride.destination.toLowerCase().includes(searchTerm) && 
+            ride.direction === currentFilterDirection
         );
-        renderRides(filteredRides);
+        renderRides(filteredRides, 'rides-list');
+    }
+
+    function renderMyTrips() {
+        // Filter strictly for rides owned by user or booked by user
+        const myFilteredRides = cachedRides.filter(ride => 
+            ride.email === currentUserEmail || 
+            (ride.riders && ride.riders.includes(currentUserEmail))
+        );
+        renderRides(myFilteredRides, 'my-rides-list');
     }
 
     async function postRide() {
@@ -269,95 +347,80 @@
         const date = document.getElementById('date').value;
         const seats = document.getElementById('seats').value;
         const price = document.getElementById('price').value;
+        const direction = document.getElementById('post-direction').value;
         
         if (!name || !destination || !date || !seats || !price) {
-            showToast("Please fill out all required trip details.", "error");
-            return;
+            showToast("Please fill out all required details.", "error"); return;
         }
 
         const btn = document.getElementById('post-btn');
-        btn.innerText = "Posting securely to database...";
-        btn.disabled = true;
+        btn.innerText = "Posting securely to database..."; btn.disabled = true;
 
         const rideData = {
-            action: 'addRide',
-            id: Date.now(),
-            email: currentUserEmail,
-            name, destination, date, seats, price,
-            vibe: document.getElementById('vibe').value,
-            music: document.getElementById('music').value,
-            luggage: document.getElementById('luggage').value,
-            notes: document.getElementById('notes').value
+            action: 'addRide', id: Date.now(), email: currentUserEmail, name, destination, date, seats, price, direction,
+            vibe: document.getElementById('vibe').value, music: document.getElementById('music').value,
+            luggage: document.getElementById('luggage').value, notes: document.getElementById('notes').value
         };
 
         try {
             await fetch(API_URL, { method: 'POST', body: JSON.stringify(rideData) });
-            showToast("Your trip has been posted to the board!");
-            
-            document.getElementById('destination').value = '';
-            document.getElementById('price').value = '';
-            document.getElementById('notes').value = '';
-            document.getElementById('price-suggestion').innerText = 'Recommended: Enter destination to calculate...';
-            switchTab('rider');
+            showToast("Your trip has been posted!");
+            document.getElementById('destination').value = ''; document.getElementById('price').value = ''; document.getElementById('notes').value = '';
+            switchTab('my-trips'); // Send them to their dashboard to see the new post
         } catch (error) {
-            showToast("Network error. Could not post ride.", "error");
+            showToast("Network error.", "error");
         } finally {
-            btn.innerText = "Post Ride Offer";
-            btn.disabled = false;
+            btn.innerText = "Post Ride Offer"; btn.disabled = false;
         }
     }
 
     async function bookSeat(id, btnElement) {
-        btnElement.innerText = "Booking...";
-        btnElement.disabled = true;
-        
+        btnElement.innerText = "Booking..."; btnElement.disabled = true;
         try {
-            const payload = { action: 'bookSeat', id: id, riderEmail: currentUserEmail };
-            const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+            const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'bookSeat', id: id, riderEmail: currentUserEmail }) });
             const result = await response.json();
-            
-            if (result.status === 'error') {
-                showToast("You have already booked a seat on this ride!", "error");
-            } else {
-                showToast("Seat claimed! The driver has been notified via email.");
-            }
+            if (result.status === 'error') showToast("You have already booked a seat!", "error");
+            else showToast("Seat claimed! Contact info unlocked.");
             fetchRides(); 
         } catch (error) {
-            showToast("Failed to book seat.", "error");
-            btnElement.innerText = "Claim a Seat";
-            btnElement.disabled = false;
+            showToast("Failed to book seat.", "error"); btnElement.innerText = "Claim a Seat"; btnElement.disabled = false;
+        }
+    }
+
+    async function cancelSeat(id, btnElement) {
+        if (!confirm("Are you sure you want to cancel your seat? The driver will be notified.")) return;
+        btnElement.innerText = "Cancelling..."; btnElement.disabled = true;
+        try {
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'cancelSeat', id: id, riderEmail: currentUserEmail }) });
+            showToast("Seat successfully cancelled.");
+            fetchRides(); 
+        } catch (error) {
+            showToast("Failed to cancel.", "error"); btnElement.innerText = "Cancel My Seat"; btnElement.disabled = false;
         }
     }
 
     async function deleteRide(id, btnElement) {
-        if (!confirm("Are you sure you want to cancel and delete this trip from the board?")) return;
-        
-        btnElement.innerText = "Deleting...";
-        btnElement.disabled = true;
-        
+        if (!confirm("Are you sure you want to delete this trip from the board?")) return;
+        btnElement.innerText = "Deleting..."; btnElement.disabled = true;
         try {
             await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteRide', id: id, email: currentUserEmail }) });
-            showToast("Trip successfully removed.");
+            showToast("Trip removed.");
             fetchRides(); 
         } catch (error) {
-            showToast("Failed to delete trip.", "error");
-            btnElement.innerText = "Delete My Ride";
-            btnElement.disabled = false;
+            showToast("Failed to delete.", "error"); btnElement.innerText = "Delete My Ride"; btnElement.disabled = false;
         }
     }
 
-    function renderRides(ridesToRender) {
-        const container = document.getElementById('rides-list');
+    // Handles rendering for both the main board and the My Trips dashboard
+    function renderRides(ridesToRender, containerId) {
+        const container = document.getElementById(containerId);
         container.innerHTML = '';
 
-        const visibleRides = ridesToRender.filter(r => 
-            parseInt(r.seats) > 0 || 
-            r.email === currentUserEmail || 
-            (r.riders && r.riders.includes(currentUserEmail))
-        );
+        // Only show rides with available seats UNLESS you are the driver or a confirmed rider
+        const visibleRides = ridesToRender.filter(r => parseInt(r.seats) > 0 || r.email === currentUserEmail || (r.riders && r.riders.includes(currentUserEmail)));
 
         if (visibleRides.length === 0) {
-            container.innerHTML = '<p style="text-align: center; color: #777; margin-top: 40px; font-size: 1.1em;">No matching trips found.</p>';
+            container.innerHTML = '<p style="text-align: center; color: #777; margin-top: 40px;">No trips found.</p>';
             return;
         }
 
@@ -367,13 +430,17 @@
             const dateFmt = new Date(ride.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' });
             
             let actionButton = '';
-            let cardClass = 'ride-card';
+            let cardClass = 'ride-card' + (ride.direction === 'Returning to Pitt' ? ' returning' : '');
             let amIBooked = ride.riders && ride.riders.includes(currentUserEmail);
 
             if (ride.email === currentUserEmail) {
                 actionButton = `<button class="danger-bg" onclick="deleteRide(${ride.id}, this)">Delete My Ride</button>`;
             } else if (amIBooked) {
-                actionButton = `<button class="success-bg" disabled>✓ You are booked on this ride</button>`;
+                actionButton = `
+                    <div style="display:flex; gap:10px;">
+                        <button class="success-bg" disabled style="flex:2;">✓ Seat Confirmed</button>
+                        <button class="warning-bg" onclick="cancelSeat(${ride.id}, this)" style="flex:1;">Cancel Seat</button>
+                    </div>`;
                 cardClass += ' booked-by-me';
             } else if (parseInt(ride.seats) > 0) {
                 actionButton = `<button class="primary-bg" onclick="bookSeat(${ride.id}, this)">Claim a Seat</button>`;
@@ -381,12 +448,18 @@
                 actionButton = `<button style="background-color: #ccc;" disabled>Sold Out</button>`;
             }
 
+            let contactInfo = (amIBooked || ride.email === currentUserEmail) 
+                ? `<div class="private-contact">📧 <strong>Contact Driver:</strong> <a href="mailto:${ride.email}">${ride.email}</a></div>`
+                : `<div class="private-contact" style="color:#888;">🔒 Driver email hidden until seat is claimed.</div>`;
+
+            let badgeClass = ride.direction === 'Returning to Pitt' ? 'direction-badge returning' : 'direction-badge';
             let notesHtml = ride.notes ? `<div class="notes-box"><strong>Driver Notes:</strong> ${ride.notes}</div>` : '';
 
             const card = document.createElement('div');
             card.className = cardClass;
             card.innerHTML = `
-                <div class="ride-header">
+                <div class="${badgeClass}">${ride.direction}</div>
+                <div class="ride-header" style="margin-top: 15px;">
                     <div>
                         <h3 style="margin: 0; color: #1c2957; font-size: 1.5em;">${ride.destination}</h3>
                         <div style="color: #666; font-size: 1.1em; margin-top: 6px;">📅 ${dateFmt} • <strong>${ride.seats} seats left</strong></div>
@@ -395,12 +468,13 @@
                 </div>
                 
                 <div class="badges">
-                    <span class="badge">🚗 ${ride.name} (${ride.email})</span>
+                    <span class="badge">🚗 ${ride.name}</span>
                     <span class="badge">🗣️ ${ride.vibe}</span>
                     <span class="badge">🎵 ${ride.music}</span>
                     <span class="badge">🎒 ${ride.luggage}</span>
                 </div>
                 
+                ${contactInfo}
                 ${notesHtml}
                 ${actionButton}
             `;
