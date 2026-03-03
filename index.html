@@ -9,25 +9,37 @@
         header { background-color: #1c2957; color: white; padding: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         header h1 { margin: 0; font-size: 2em; color: #cdb87d; }
         .container { max-width: 700px; margin: 40px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.05); }
+        
         .primary-bg { background-color: #1c2957; color: white; }
         .accent-bg { background-color: #cdb87d; color: #1c2957; }
         .danger-bg { background-color: #dc3545; color: white; }
+        .success-bg { background-color: #28a745; color: white; border: none; }
+        
         #auth-view { text-align: center; padding: 40px 20px; }
         #auth-view input { text-align: center; font-size: 1.2em; padding: 15px; width: 80%; }
-        .tabs { display: none; margin-bottom: 30px; border-bottom: 2px solid #eee; }
+        .tabs { display: none; margin-bottom: 20px; border-bottom: 2px solid #eee; }
         .tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; font-weight: bold; color: #666; transition: 0.3s; font-size: 1.1em; }
         .tab.active { color: #1c2957; border-bottom: 4px solid #1c2957; }
-        .view { display: none; }
+        .view { display: none; animation: fadeIn 0.3s; }
         .view.active { display: block; }
-        input, select, button, textarea { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 1em; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        input, select, button, textarea { width: 100%; padding: 15px; margin: 10px 0; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-family: inherit; font-size: 1em; transition: 0.2s; }
+        input:focus, select:focus, textarea:focus { border-color: #1c2957; outline: none; box-shadow: 0 0 5px rgba(28, 41, 87, 0.3); }
         textarea { resize: vertical; min-height: 80px; }
-        button { border: none; cursor: pointer; font-weight: bold; font-size: 1.1em; transition: 0.2s; }
-        button:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-        button:disabled { background-color: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+        button { border: none; cursor: pointer; font-weight: bold; font-size: 1.1em; }
+        button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        button:disabled { cursor: not-allowed; opacity: 0.8; transform: none; box-shadow: none; }
         .row { display: flex; gap: 15px; }
         .row > * { flex: 1; }
+
+        .search-container { position: relative; margin-bottom: 20px; }
+        .search-container input { padding-left: 40px; border: 2px solid #eee; }
+        .search-icon { position: absolute; left: 15px; top: 25px; color: #999; }
+
         .ride-card { border: 1px solid #eee; padding: 25px; margin-bottom: 20px; border-radius: 10px; background-color: #fff; border-left: 6px solid #1c2957; transition: 0.2s; }
         .ride-card:hover { box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
+        .ride-card.booked-by-me { border-left: 6px solid #28a745; background-color: #f8fff9; }
         .ride-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; }
         .price-tag { font-size: 1.8em; font-weight: bold; color: #28a745; }
         .badges { display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
@@ -35,6 +47,12 @@
         .notes-box { background: #f8f9fa; padding: 15px; border-radius: 8px; font-style: italic; color: #555; margin-bottom: 15px; border-left: 3px solid #cdb87d; }
         .suggestion { font-size: 0.9em; color: #666; text-align: right; margin-top: -5px; margin-bottom: 15px; display: block; }
         #loading { text-align: center; color: #1c2957; font-weight: bold; display: none; padding: 40px; font-size: 1.2em; }
+
+        #toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 1000; }
+        .toast { background-color: #1c2957; color: white; padding: 15px 25px; border-radius: 8px; margin-top: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); opacity: 0; transform: translateY(20px); transition: all 0.3s ease; display: flex; align-items: center; gap: 10px; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.success { border-left: 5px solid #28a745; }
+        .toast.error { border-left: 5px solid #dc3545; }
     </style>
 </head>
 <body>
@@ -50,7 +68,7 @@
         <p>Please verify your student status to access the marketplace.</p>
         <input type="email" id="student-email" placeholder="Enter your @pitt.edu email" required>
         <button class="primary-bg" onclick="login()" style="width: 80%;">Verify & Enter</button>
-        <p id="auth-error" style="color: red; display: none;">You must use a valid @pitt.edu email address.</p>
+        <p id="auth-error" style="color: red; display: none; margin-top: 15px;">You must use a valid @pitt.edu email address.</p>
     </div>
 
     <div class="tabs" id="nav-tabs">
@@ -61,6 +79,10 @@
     <div id="loading">Syncing database...</div>
 
     <div id="rider-view" class="view">
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-bar" placeholder="Search by destination city..." oninput="filterRides()">
+        </div>
         <div id="rides-list"></div>
     </div>
 
@@ -73,7 +95,7 @@
         <input type="text" id="destination" placeholder="Destination City (e.g., Philadelphia, PA)" oninput="updateSuggestedPrice()" required>
         <div class="row">
             <input type="number" id="seats" placeholder="Seats Available" min="1" max="6" required>
-            <input type="number" id="price" placeholder="Price per Seat ($)" required>
+            <input type="number" id="price" placeholder="Price per Seat ($)" min="0" required>
         </div>
         <span class="suggestion" id="price-suggestion">Recommended: Enter destination to calculate</span>
 
@@ -96,25 +118,48 @@
             <option value="Large Trunk Space">Luggage: Large Trunk Space</option>
         </select>
         
-        <textarea id="notes" placeholder="Trip Notes (Optional details about stops, strict departure times, or car rules)"></textarea>
+        <textarea id="notes" placeholder="Trip Notes (e.g. strict departure times, or if you want to debate the layered social commentary of Get Out on the turnpike)"></textarea>
 
         <button class="accent-bg" id="post-btn" onclick="postRide()" style="margin-top: 20px;">Post Ride Offer</button>
     </div>
 </div>
 
+<div id="toast-container"></div>
+
 <script>
-    // --- REPLACE THIS URL WITH YOUR NEW APPS SCRIPT WEB APP URL ---
-    const API_URL = 'https://script.google.com/macros/s/AKfycbz5fMYurbN4QueAnkE8dZG6UJXPvhhlAWem1RIX1AurcFvmmX-YmqO6b_xy8nI_okE/exec';
+    // Your exact API URL is wired in here
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxrTd517ojS3b5HJTZ3WkyGbfXzOpfvqFIhIv51i-R1fhRd8O99Cr83_3n5ai0Cs1rW/exec';
     
     let currentUserEmail = "";
+    let cachedRides = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById("date").setAttribute('min', today);
+    });
+
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = type === 'success' ? `✅ ${message}` : `⚠️ ${message}`;
+        container.appendChild(toast);
+        void toast.offsetWidth;
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
 
     function login() {
-        const email = document.getElementById('student-email').value.toLowerCase();
+        const email = document.getElementById('student-email').value.toLowerCase().trim();
         if (email.endsWith('@pitt.edu')) {
             currentUserEmail = email;
             document.getElementById('auth-view').classList.remove('active');
             document.getElementById('nav-tabs').style.display = 'flex';
             switchTab('rider');
+            showToast("Successfully verified student status.");
         } else {
             document.getElementById('auth-error').style.display = 'block';
         }
@@ -140,7 +185,7 @@
         if (dest.length > 3) {
             const baseRate = 15;
             const suggested = baseRate + (dest.length * 1.5); 
-            suggestionBox.innerText = `Recommended to cover gas: $${suggested} per seat`;
+            suggestionBox.innerText = `Recommended to cover gas: $${Math.round(suggested)} per seat`;
         } else {
             suggestionBox.innerText = 'Recommended: Enter destination to calculate';
         }
@@ -152,13 +197,21 @@
         
         try {
             const response = await fetch(API_URL);
-            const rides = await response.json();
-            renderRides(rides);
+            cachedRides = await response.json();
+            renderRides(cachedRides);
         } catch (error) {
-            document.getElementById('rides-list').innerHTML = '<p style="color:red; text-align:center;">Error connecting to database. Please check your API URL.</p>';
+            document.getElementById('rides-list').innerHTML = '<p style="color:red; text-align:center;">Error connecting to database. Please check your API deployment.</p>';
         } finally {
             document.getElementById('loading').style.display = 'none';
         }
+    }
+
+    function filterRides() {
+        const searchTerm = document.getElementById('search-bar').value.toLowerCase();
+        const filteredRides = cachedRides.filter(ride => 
+            ride.destination.toLowerCase().includes(searchTerm)
+        );
+        renderRides(filteredRides);
     }
 
     async function postRide() {
@@ -169,7 +222,7 @@
         const price = document.getElementById('price').value;
         
         if (!name || !destination || !date || !seats || !price) {
-            alert("Please fill out all the main trip details.");
+            showToast("Please fill out all required trip details.", "error");
             return;
         }
 
@@ -188,25 +241,43 @@
             notes: document.getElementById('notes').value
         };
 
-        await fetch(API_URL, { method: 'POST', body: JSON.stringify(rideData) });
-
-        document.getElementById('destination').value = '';
-        document.getElementById('price').value = '';
-        document.getElementById('notes').value = '';
-        btn.innerText = "Post Ride Offer";
-        btn.disabled = false;
-        switchTab('rider');
+        try {
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify(rideData) });
+            showToast("Your trip has been posted to the board!");
+            
+            document.getElementById('destination').value = '';
+            document.getElementById('price').value = '';
+            document.getElementById('notes').value = '';
+            switchTab('rider');
+        } catch (error) {
+            showToast("Network error. Could not post ride.", "error");
+        } finally {
+            btn.innerText = "Post Ride Offer";
+            btn.disabled = false;
+        }
     }
 
     async function bookSeat(id, btnElement) {
         btnElement.innerText = "Booking...";
         btnElement.disabled = true;
-        const payload = { action: 'bookSeat', id: id };
         
-        await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-
-        alert(`Success! You claimed a seat. Please reach out to the driver directly via Pitt email to coordinate payment and pickup.`);
-        fetchRides(); 
+        try {
+            // We now send the riderEmail to the database
+            const payload = { action: 'bookSeat', id: id, riderEmail: currentUserEmail };
+            const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
+            const result = await response.json();
+            
+            if (result.status === 'error') {
+                showToast("You have already booked a seat on this ride!", "error");
+            } else {
+                showToast("Seat claimed! The driver has been notified via email.");
+            }
+            fetchRides(); 
+        } catch (error) {
+            showToast("Failed to book seat.", "error");
+            btnElement.innerText = "Claim a Seat";
+            btnElement.disabled = false;
+        }
     }
 
     async function deleteRide(id, btnElement) {
@@ -214,43 +285,59 @@
         
         btnElement.innerText = "Deleting...";
         btnElement.disabled = true;
-        const payload = { action: 'deleteRide', id: id, email: currentUserEmail };
         
-        await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
-
-        fetchRides(); 
+        try {
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'deleteRide', id: id, email: currentUserEmail }) });
+            showToast("Trip successfully removed.");
+            fetchRides(); 
+        } catch (error) {
+            showToast("Failed to delete trip.", "error");
+            btnElement.innerText = "Delete My Ride";
+            btnElement.disabled = false;
+        }
     }
 
-    function renderRides(rides) {
+    function renderRides(ridesToRender) {
         const container = document.getElementById('rides-list');
-        container.innerHTML = '<h2 style="margin-top: 0; color: #1c2957;">Upcoming Trips</h2>';
+        container.innerHTML = '';
 
-        const availableRides = rides.filter(r => parseInt(r.seats) > 0 || r.email === currentUserEmail);
+        // Keep rides that are either available, OR posted by the current user, OR booked by the current user
+        const visibleRides = ridesToRender.filter(r => 
+            parseInt(r.seats) > 0 || 
+            r.email === currentUserEmail || 
+            (r.riders && r.riders.includes(currentUserEmail))
+        );
 
-        if (availableRides.length === 0) {
-            container.innerHTML += '<p style="text-align: center; color: #777; margin-top: 40px; font-size: 1.1em;">No trips posted yet. Be the first to offer a ride home!</p>';
+        if (visibleRides.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: #777; margin-top: 40px; font-size: 1.1em;">No matching trips found.</p>';
             return;
         }
 
-        // Sort rides by date
-        availableRides.sort((a, b) => new Date(a.date) - new Date(b.date));
+        visibleRides.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-        availableRides.forEach(ride => {
+        visibleRides.forEach(ride => {
             const dateFmt = new Date(ride.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: 'UTC' });
             
             let actionButton = '';
+            let cardClass = 'ride-card';
+            let amIBooked = ride.riders && ride.riders.includes(currentUserEmail);
+
+            // Determine what button to show based on user relation to the ride
             if (ride.email === currentUserEmail) {
                 actionButton = `<button class="danger-bg" onclick="deleteRide(${ride.id}, this)">Delete My Ride</button>`;
+            } else if (amIBooked) {
+                actionButton = `<button class="success-bg" disabled>✓ You are booked on this ride</button>`;
+                cardClass += ' booked-by-me'; // Highlights the card visually
             } else if (parseInt(ride.seats) > 0) {
                 actionButton = `<button class="primary-bg" onclick="bookSeat(${ride.id}, this)">Claim a Seat</button>`;
             } else {
-                actionButton = `<button disabled>Sold Out</button>`;
+                actionButton = `<button style="background-color: #ccc;" disabled>Sold Out</button>`;
             }
 
             let notesHtml = ride.notes ? `<div class="notes-box"><strong>Driver Notes:</strong> ${ride.notes}</div>` : '';
 
             const card = document.createElement('div');
-            card.className = 'ride-card';
+            card.className = cardClass;
             card.innerHTML = `
                 <div class="ride-header">
                     <div>
@@ -261,7 +348,7 @@
                 </div>
                 
                 <div class="badges">
-                    <span class="badge">🚗 ${ride.name}</span>
+                    <span class="badge">🚗 ${ride.name} (${ride.email})</span>
                     <span class="badge">🗣️ ${ride.vibe}</span>
                     <span class="badge">🎵 ${ride.music}</span>
                     <span class="badge">🎒 ${ride.luggage}</span>
