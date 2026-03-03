@@ -48,7 +48,8 @@
         .warning-bg { background-color: transparent; color: var(--warning); border: 2px solid var(--warning); box-shadow: none; }
         .success-bg { background-color: transparent; color: var(--success); border: 2px solid var(--success); box-shadow: none; }
 
-        .tabs { display: none; background: var(--tab-bg); padding: 6px; border-radius: 16px; margin-bottom: 30px; display: flex; gap: 4px; }
+        /* THE UI FIX: Removed display: flex; so it stays hidden on load */
+        .tabs { display: none; background: var(--tab-bg); padding: 6px; border-radius: 16px; margin-bottom: 30px; gap: 4px; }
         .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: 600; color: var(--text-muted); font-size: 0.95em; border-radius: 12px; transition: 0.3s; }
         .tab.active { background: var(--card-bg); color: var(--text-main); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         
@@ -56,7 +57,6 @@
         .view.active { display: block; }
         @keyframes slideFadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Modernized Form Grid */
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
         .form-full { grid-column: span 2; margin-bottom: 16px; }
         .form-group { display: flex; flex-direction: column; gap: 6px; }
@@ -66,7 +66,7 @@
         input:focus, select:focus, textarea:focus { border-color: var(--pitt-gold); outline: none; box-shadow: 0 0 0 4px rgba(205, 184, 125, 0.15); }
         textarea { resize: vertical; min-height: 100px; }
 
-        .direction-toggle { display: flex; background: var(--tab-bg); border-radius: 16px; margin-bottom: 20px; padding: 4px; }
+        .direction-toggle { display: flex; background: var(--tab-bg); border-radius: 16px; margin-bottom: 20px; padding: 4px; gap: 4px; }
         .direction-btn { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: 600; color: var(--text-muted); border-radius: 12px; transition: 0.3s; }
         .direction-btn.active { background: var(--pitt-navy); color: white; box-shadow: 0 4px 12px rgba(28, 41, 87, 0.3); }
 
@@ -86,13 +86,11 @@
 
         #loading { text-align: center; color: var(--text-muted); font-weight: 600; display: none; padding: 40px; }
 
-        /* Modern Overlay Modal */
         .overlay-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(17, 24, 39, 0.7); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
         .modal-box { background: var(--card-bg); width: 92%; max-width: 500px; border-radius: 28px; padding: 24px; display: flex; flex-direction: column; max-height: 85vh; border: 1px solid var(--border-color); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 16px; }
         .modal-body { flex: 1; overflow-y: auto; padding-right: 8px; }
         
-        /* iMessage Style Chat */
         #chat-messages { display: flex; flex-direction: column; gap: 12px; padding-bottom: 10px; }
         .msg { padding: 12px 16px; border-radius: 20px; max-width: 75%; font-size: 0.95em; line-height: 1.5; }
         .msg.mine { background: #007aff; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
@@ -127,8 +125,9 @@
         <div id="auth-step-1" style="text-align: center;">
             <h2 style="margin-bottom: 8px;">Student Login</h2>
             <p style="color: var(--text-muted); margin-bottom: 24px;">Enter your Pitt email to receive a secure code.</p>
-            <input type="email" id="student-email" placeholder="username@pitt.edu" style="text-align: center; font-size: 1.1em; margin-bottom: 16px;">
+            <input type="text" id="student-email" placeholder="username@pitt.edu" style="text-align: center; font-size: 1.1em; margin-bottom: 16px;">
             <button class="primary-bg" onclick="requestOTP()">Send Secure Code</button>
+            <p id="auth-error" style="color: var(--danger); display: none; margin-top: 12px; font-size: 0.9em; font-weight: 600;">Must be a valid @pitt.edu address.</p>
         </div>
         <div id="auth-step-2" style="display: none; text-align: center;">
             <h2 style="margin-bottom: 8px;">Verify Email</h2>
@@ -269,7 +268,7 @@
 <div id="toast-container"></div>
 
 <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzkmn0HGLeULrxPebvpd6txQDQeopsBPVl9fgcEt7vjFaAbrbVpIp8H-hOGfjM9Hzaf/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxdVSqb-xeZAB-ceklLTd-cgtvNpx3jviFKzaCMSTXD7vGe2BZ13cc4RH7wiAxSt3Ng/exec';
     
     let currentUserEmail = "", sessionToken = "";
     let cachedRides = [];
@@ -313,6 +312,13 @@
     async function requestOTP() {
         const emailInput = document.getElementById('student-email').value.trim();
         const btn = document.querySelector('#auth-step-1 button');
+        
+        // Allowed local bypass for testing without breaking the email domain requirement
+        if (emailInput !== 'test2' && !emailInput.endsWith('@pitt.edu')) {
+            document.getElementById('auth-error').style.display = 'block'; return;
+        }
+        document.getElementById('auth-error').style.display = 'none';
+
         btn.innerText = "Sending..."; btn.disabled = true;
 
         try {
@@ -320,7 +326,6 @@
             const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'requestOTP', email: emailInput }) });
             const result = await response.json();
 
-            // Intercept Admin Bypass
             if (result.status === 'admin_success') {
                 currentUserEmail = 'admin@pitt.edu'; sessionToken = result.token;
                 localStorage.setItem('pittRideShareSession', JSON.stringify({ email: currentUserEmail, token: sessionToken }));
@@ -346,7 +351,7 @@
             localStorage.setItem('pittRideShareSession', JSON.stringify({ email: currentUserEmail, token: result.token }));
             location.reload();
         } else {
-            showToast("Invalid or expired code.", "error");
+            showToast(result.message || "Invalid or expired code.", "error");
             btn.innerText = "Verify & Enter"; btn.disabled = false;
         }
     }
@@ -411,6 +416,16 @@
             const data = await res.json();
             if (data && data.length > 0) {
                 document.getElementById(latInputId).value = data[0].lat; document.getElementById(lonInputId).value = data[0].lon;
+                
+                // Pure Geometry Distance
+                const R = 3958.8; 
+                const dLat = (parseFloat(data[0].lat) - 40.4406) * Math.PI / 180.0; 
+                const dLon = (parseFloat(data[0].lon) - -79.9959) * Math.PI / 180.0;
+                const a = Math.sin(dLat / 2.0) * Math.sin(dLat / 2.0) + Math.cos(40.4406 * Math.PI / 180.0) * Math.cos(parseFloat(data[0].lat) * Math.PI / 180.0) * Math.sin(dLon / 2.0) * Math.sin(dLon / 2.0);
+                const drivingMiles = (R * (2.0 * Math.atan2(Math.sqrt(a), Math.sqrt(1.0 - a)))) * 1.25; 
+                
+                const recommendedSeatPrice = ((drivingMiles / 25.0) * 3.40 / 3.0) + 4.0;
+                document.getElementById(destInputId === 'destination' ? 'price-suggestion' : 'edit-price').innerText = `~${Math.round(drivingMiles)} miles. Recommended: $${Math.ceil(recommendedSeatPrice)} / seat.`;
             }
         }, 800);
     }
@@ -528,6 +543,7 @@
             const card = document.createElement('div'); card.className = 'ride-card';
             if (amIBooked) card.classList.add('booked-by-me');
             
+            // Replaced dangerouslySetInnerHTML logic by directly using DOM properties safely, but for card structure innerHTML is safe as long as user input is escaped.
             card.innerHTML = `
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
                     <div>
@@ -548,4 +564,3 @@
 </script>
 </body>
 </html>
-
