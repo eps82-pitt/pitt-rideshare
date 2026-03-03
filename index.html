@@ -52,9 +52,9 @@
         .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: 600; color: var(--text-muted); font-size: 0.95em; border-radius: 10px; transition: 0.3s; }
         .tab.active { background: white; color: var(--pitt-navy); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
         
-        .view { display: none; animation: slideFadeUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .view { display: none; animation: slideFadeUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
         .view.active { display: block; }
-        @keyframes slideFadeUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideFadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         input, select, textarea { width: 100%; padding: 16px; margin: 8px 0 16px; border: 1.5px solid var(--border-color); border-radius: 12px; box-sizing: border-box; font-family: 'Inter', sans-serif; font-size: 1em; color: var(--text-main); background-color: #fafafa; transition: all 0.2s; }
         input:focus, select:focus, textarea:focus { background-color: white; border-color: var(--pitt-gold); outline: none; box-shadow: 0 0 0 4px rgba(205, 184, 125, 0.15); }
@@ -66,9 +66,16 @@
         .direction-btn { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: 600; color: var(--text-muted); border-radius: 10px; transition: 0.3s; font-size: 0.95em; }
         .direction-btn.active { background: var(--pitt-navy); color: white; box-shadow: 0 2px 8px rgba(28, 41, 87, 0.2); }
 
-        .search-container { position: relative; margin-bottom: 25px; }
-        .search-container input { padding-left: 45px; background-color: white; border: 1.5px solid var(--border-color); }
-        .search-icon { position: absolute; left: 16px; top: 23px; color: var(--text-muted); font-size: 1.2em; }
+        .search-container { display: flex; gap: 10px; margin-bottom: 25px; }
+        .search-input-wrapper { position: relative; flex: 1; }
+        .search-input-wrapper input { padding-left: 45px; background-color: white; border: 1.5px solid var(--border-color); margin: 0; }
+        .search-icon { position: absolute; left: 16px; top: 16px; color: var(--text-muted); font-size: 1.2em; }
+        
+        /* New Refresh Button */
+        .refresh-btn { width: auto; padding: 0 20px; background-color: #eef0f5; color: var(--pitt-navy); font-size: 1.2em; border-radius: 12px; border: 1.5px solid var(--border-color); }
+        .refresh-btn:hover { background-color: #e5e5ea; }
+        .refreshing { animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
         .ride-card { border: 1px solid var(--border-color); padding: 24px; margin-bottom: 20px; border-radius: 16px; background-color: var(--card-bg); transition: 0.2s; position: relative; overflow: hidden; }
         .ride-card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.06); border-color: #d2d2d7; }
@@ -91,13 +98,19 @@
         .private-contact { background: #f0f4ff; padding: 14px; border-radius: 12px; font-size: 0.95em; margin-bottom: 16px; border: 1px solid #d6e4ff; color: #102a63; font-weight: 500; }
         .suggestion { font-size: 0.85em; color: var(--text-muted); text-align: right; margin-top: -10px; margin-bottom: 20px; display: block; font-weight: 500; }
         
+        /* Loading UI Overhauled */
         #loading { text-align: center; color: var(--text-muted); font-weight: 600; display: none; padding: 50px 20px; font-size: 1.1em; }
+        .sync-dot { display: inline-block; width: 8px; height: 8px; background: var(--pitt-gold); border-radius: 50%; margin: 0 3px; animation: bounce 1.4s infinite ease-in-out both; }
+        .sync-dot:nth-child(1) { animation-delay: -0.32s; }
+        .sync-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
 
         #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 10px; align-items: center; width: 90%; max-width: 400px; }
         .toast { background-color: var(--text-main); color: white; padding: 14px 24px; border-radius: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); font-size: 0.95em; font-weight: 500; opacity: 0; transform: translateY(20px); transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); display: flex; align-items: center; gap: 10px; width: auto; }
         .toast.show { opacity: 1; transform: translateY(0); }
         .toast.success { border-left: 4px solid var(--success); }
         .toast.error { background-color: var(--danger); }
+        .toast.warning { background-color: var(--warning); }
     </style>
 </head>
 <body>
@@ -137,7 +150,10 @@
         <div class="tab" onclick="switchTab('my-trips')">My Itinerary</div>
     </div>
 
-    <div id="loading">Syncing secure database...</div>
+    <div id="loading">
+        Syncing database
+        <div class="sync-dot"></div><div class="sync-dot"></div><div class="sync-dot"></div>
+    </div>
 
     <div id="rider-view" class="view">
         <div class="direction-toggle">
@@ -145,8 +161,11 @@
             <div class="direction-btn" id="filter-returning" onclick="setFilterDirection('Returning to Pitt')">Returning to Pitt</div>
         </div>
         <div class="search-container">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="search-bar" placeholder="Search destinations..." oninput="filterRides()">
+            <div class="search-input-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="search-bar" placeholder="Search destinations..." oninput="filterRides()">
+            </div>
+            <button class="refresh-btn" id="refresh-btn" onclick="fetchRides(true)" title="Refresh Board">↻</button>
         </div>
         <div id="rides-list"></div>
     </div>
@@ -216,6 +235,8 @@
     </div>
 </div>
 
+<div id="toast-container"></div>
+
 <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbz_YY057bItSg3JhKPREP8MC30MiV8tB7bNNMoRV4sI2mftz7HfTy1ZAudPjgyBaIwa/exec';
     
@@ -226,13 +247,20 @@
     const PITT_LAT = 40.4406;
     const PITT_LON = -79.9959;
     let priceDebounceTimer;
+    
+    // NEW: Memory Timer
+    let lastFetchTime = 0;
 
-    // --- ON LOAD: Check Local Storage (Cookies) ---
     document.addEventListener("DOMContentLoaded", () => {
         const today = new Date().toISOString().split('T')[0];
         document.getElementById("date").setAttribute('min', today);
 
+        // 1. Check for valid secure session
         const savedSession = localStorage.getItem('pittRideShareSession');
+        
+        // 2. Check for offline local data backup (The Stale Cache)
+        const savedRides = localStorage.getItem('pittRideShareData');
+
         if (savedSession) {
             const sessionData = JSON.parse(savedSession);
             currentUserEmail = sessionData.email;
@@ -241,6 +269,12 @@
             document.getElementById('auth-view').classList.remove('active');
             document.getElementById('nav-tabs').style.display = 'flex';
             document.getElementById('logout-btn').style.display = 'block';
+            
+            // If we have local backup data, paint it instantly!
+            if (savedRides) {
+                cachedRides = JSON.parse(savedRides);
+            }
+            
             switchTab('rider');
         }
     });
@@ -249,16 +283,19 @@
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
         toast.className = `toast ${type}`;
-        toast.innerHTML = `${type === 'success' ? '✅' : '⚠️'} ${message}`;
+        
+        let icon = type === 'success' ? '✅' : type === 'warning' ? '⚡' : '⚠️';
+        toast.innerHTML = `${icon} ${message}`;
+        
         container.appendChild(toast);
         void toast.offsetWidth;
         toast.classList.add('show');
         setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 4000);
     }
 
-    // --- SECURE AUTHENTICATION ---
     function logout() {
         localStorage.removeItem('pittRideShareSession');
+        localStorage.removeItem('pittRideShareData'); // Clear cache on logout
         currentUserEmail = "";
         sessionToken = "";
         
@@ -337,7 +374,6 @@
         }
     }
 
-    // --- NAVIGATION & UTILS ---
     function switchTab(tabName) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.view:not(#auth-view)').forEach(v => v.classList.remove('active'));
@@ -345,14 +381,14 @@
         if (tabName === 'rider') {
             document.querySelectorAll('.tab')[0].classList.add('active');
             document.getElementById('rider-view').classList.add('active');
-            fetchRides();
+            fetchRides(); // Uses smart cache logic
         } else if (tabName === 'driver') {
             document.querySelectorAll('.tab')[1].classList.add('active');
             document.getElementById('driver-view').classList.add('active');
         } else if (tabName === 'my-trips') {
             document.querySelectorAll('.tab')[2].classList.add('active');
             document.getElementById('my-trips-view').classList.add('active');
-            fetchRides();
+            fetchRides(); // Uses smart cache logic
         }
     }
 
@@ -398,7 +434,6 @@
         }, 800);
     }
 
-    // --- SECURE API CALLS ---
     async function secureFetch(payload) {
         payload.email = currentUserEmail;
         payload.token = sessionToken;
@@ -412,20 +447,42 @@
         return result;
     }
 
-    async function fetchRides() {
-        document.getElementById('loading').style.display = 'block';
-        if(document.getElementById('rider-view').classList.contains('active')) document.getElementById('rides-list').innerHTML = '';
-        if(document.getElementById('my-trips-view').classList.contains('active')) document.getElementById('my-rides-list').innerHTML = '';
+    // --- NEW INTELLIGENT CACHE FETCH ---
+    async function fetchRides(forceRefresh = false) {
+        const now = Date.now();
+        const refreshBtn = document.getElementById('refresh-btn');
         
+        // SWR Logic: If we have data and it's less than 60 seconds old, paint instantly
+        if (!forceRefresh && cachedRides.length > 0 && (now - lastFetchTime < 60000)) {
+            if (document.getElementById('my-trips-view').classList.contains('active')) renderMyTrips();
+            else filterRides();
+            return; // Skip database hit entirely
+        }
+
+        // Only show blocking spinner if we have NO data to show the user
+        if (cachedRides.length === 0) {
+            document.getElementById('loading').style.display = 'block';
+        } else if (forceRefresh) {
+            refreshBtn.classList.add('refreshing'); // Spin the refresh button
+        }
+
         try {
             const result = await secureFetch({ action: 'getRides' });
             cachedRides = result.data;
+            lastFetchTime = Date.now(); // Reset the memory clock
+            
+            // Save fresh data to local storage for the next time they open the app
+            localStorage.setItem('pittRideShareData', JSON.stringify(cachedRides));
+
             if (document.getElementById('my-trips-view').classList.contains('active')) renderMyTrips();
             else filterRides();
+            
+            if (forceRefresh) showToast("Board synced.", "success");
         } catch (error) {
-            if (error.message !== 'unauthorized') showToast("Error syncing board.", "error");
+            if (error.message !== 'unauthorized') showToast("Could not sync with server.", "error");
         } finally {
             document.getElementById('loading').style.display = 'none';
+            refreshBtn.classList.remove('refreshing');
         }
     }
 
@@ -466,6 +523,7 @@
             });
             showToast("Ride posted successfully!");
             document.getElementById('destination').value = ''; document.getElementById('price').value = ''; document.getElementById('notes').value = '';
+            fetchRides(true); // Force a refresh so they see their new post
             switchTab('my-trips'); 
         } catch (error) {} finally { btn.innerText = "Post to Board"; btn.disabled = false; }
     }
@@ -475,8 +533,7 @@
         try {
             const result = await secureFetch({ action: 'bookSeat', id: id });
             if (result.message === 'Already booked') showToast("You already booked a seat!", "error");
-            else showToast("Seat confirmed!");
-            fetchRides(); 
+            else { showToast("Seat confirmed!"); fetchRides(true); }
         } catch (error) { btnElement.innerText = "Claim Seat"; btnElement.disabled = false; }
     }
 
@@ -486,7 +543,7 @@
         try {
             await secureFetch({ action: 'cancelSeat', id: id });
             showToast("Seat returned to board.");
-            fetchRides(); 
+            fetchRides(true); 
         } catch (error) { btnElement.innerText = "Cancel Seat"; btnElement.disabled = false; }
     }
 
@@ -496,7 +553,7 @@
         try {
             await secureFetch({ action: 'deleteRide', id: id });
             showToast("Trip deleted.");
-            fetchRides(); 
+            fetchRides(true); 
         } catch (error) { btnElement.innerText = "Delete Trip"; btnElement.disabled = false; }
     }
 
