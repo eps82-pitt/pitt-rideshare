@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        :root { --navy: #1c2957; --gold: #cdb87d; --bg: #f2f4f7; --card: #ffffff; --text: #111827; --muted: #6b7280; --border: #e5e7eb; }
+        :root { --navy: #1c2957; --gold: #cdb87d; --bg: #f3f4f7; --card: #ffffff; --text: #111827; --muted: #6b7280; --border: #e5e7eb; --success: #10b981; --danger: #ef4444; }
         [data-theme="dark"] { --bg: #030712; --card: #111827; --text: #f9fafb; --muted: #9ca3af; --border: #1f2937; }
         
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 100px; -webkit-tap-highlight-color: transparent; transition: background 0.3s; }
@@ -28,12 +28,12 @@
         .container { max-width: 500px; margin: 0 auto; padding: 0 20px; margin-top: -20px; position: relative; z-index: 10; }
         
         /* FLOATING BOTTOM NAV */
-        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: rgba(255,255,255,0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); display: none; border-radius: 24px; padding: 10px 5px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.2); z-index: 1000; }
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: rgba(255,255,255,0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); display: none; border-radius: 24px; padding: 10px 5px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); z-index: 1000; border: 1px solid rgba(255,255,255,0.2); }
         [data-theme="dark"] .bottom-nav { background: rgba(17,24,39,0.85); border-color: rgba(255,255,255,0.05); }
         .nav-item { flex: 1; text-align: center; font-size: 0.7em; font-weight: 700; cursor: pointer; color: var(--muted); display: flex; flex-direction: column; gap: 4px; transition: 0.2s; }
         .nav-item.active { color: var(--navy); transform: scale(1.05); }
         [data-theme="dark"] .nav-item.active { color: var(--gold); }
-        @media screen and (max-height: 500px) { .bottom-nav { display: none !important; } } /* Keyboard fix */
+        @media screen and (max-height: 500px) { .bottom-nav { display: none !important; } }
 
         .view { display: none; animation: slideUp 0.3s ease-out forwards; }
         .view.active { display: block; }
@@ -44,22 +44,28 @@
         input:focus, select:focus { border-color: var(--gold); outline: none; box-shadow: 0 0 0 4px rgba(205,184,125,0.1); }
         button { width: 100%; padding: 16px; border-radius: 16px; background: var(--navy); color: #fff; border: none; font-weight: 800; font-size: 1.05em; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(28,41,87,0.2); }
         button:active { transform: scale(0.97); }
-        button:disabled { opacity: 0.6; pointer-events: none; }
+        button:disabled { opacity: 0.6; pointer-events: none; background: var(--border); color: var(--text); box-shadow: none; }
         .btn-gold { background: var(--gold); color: #111827; box-shadow: 0 4px 15px rgba(205,184,125,0.2); }
         .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text); box-shadow: none; }
+        .btn-danger { background: transparent; border: 2px solid var(--danger); color: var(--danger); box-shadow: none; }
 
         /* CARDS & UI */
         .ride-card { background: var(--card); border-radius: 24px; padding: 24px; margin-bottom: 16px; border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.03); position: relative; overflow: hidden; }
         .ride-card.booked { border-color: var(--gold); }
         .ride-card.booked::before { content: ''; position: absolute; left: 0; top: 0; width: 6px; height: 100%; background: var(--gold); }
         
+        .chips-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 12px; scrollbar-width: none; }
+        .chips-container::-webkit-scrollbar { display: none; }
+        .chip { padding: 8px 16px; background: var(--card); color: var(--text); border-radius: 20px; font-size: 0.85em; font-weight: 600; white-space: nowrap; cursor: pointer; border: 1px solid var(--border); transition: 0.2s; }
+        .chip.active { background: var(--gold); color: #111827; border-color: var(--gold); }
+
         .badge { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 12px; font-size: 0.75em; font-weight: 700; background: var(--bg); margin: 0 6px 6px 0; color: var(--text); border: 1px solid var(--border); }
         .badge-pink { background: rgba(236,72,153,0.1); color: #ec4899; border-color: rgba(236,72,153,0.2); }
 
         .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 1.1em; }
         
         /* MAP HACK */
-        #map-container { height: 350px; border-radius: 24px; margin-bottom: 20px; border: 2px solid var(--border); }
+        #map-container { height: 350px; border-radius: 24px; margin-bottom: 20px; border: 2px solid var(--navy); }
         .map-hidden { position: absolute; left: -9999px; visibility: hidden; }
 
         /* SKELETON */
@@ -73,12 +79,16 @@
         .stat-val { font-size: 2.2em; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
         [data-theme="dark"] .stat-val { color: var(--gold); }
 
-        /* MODAL */
+        /* MODALS */
         .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 2000; display: none; align-items: center; justify-content: center; }
-        .modal-content { background: var(--bg); width: 90%; max-width: 450px; border-radius: 30px; padding: 24px; max-height: 85vh; display: flex; flex-direction: column; }
+        .modal-content { background: var(--bg); width: 90%; max-width: 450px; border-radius: 30px; padding: 24px; max-height: 85vh; display: flex; flex-direction: column; overflow-y: auto; }
         .chat-msg { padding: 12px 16px; border-radius: 20px; max-width: 75%; font-size: 0.95em; margin-bottom: 8px; line-height: 1.4; }
         .chat-me { background: #007aff; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
         .chat-them { background: var(--border); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; }
+        
+        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 3000; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; }
+        .toast { background: var(--text); color: var(--bg); padding: 16px 24px; border-radius: 16px; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: 0.3s; display: flex; align-items: center; gap: 12px; }
+        .toast.show { opacity: 1; transform: translateY(10px); }
     </style>
 </head>
 <body>
@@ -93,7 +103,7 @@
     </div>
 </header>
 
-<div class="container">
+<div class="container" id="main">
     <div id="auth-view" class="view active" style="background:var(--card); padding:30px 20px; border-radius:30px; box-shadow:0 10px 40px rgba(0,0,0,0.05); border:1px solid var(--border);">
         <h2 id="auth-title" style="text-align:center; margin-top:0;">Student Login</h2>
         <div id="reg-box" style="display:none;">
@@ -112,6 +122,13 @@
             <button id="btn-ret" onclick="setDir('Returning to Pitt')" class="btn-outline" style="flex:1;">🏠 Return</button>
         </div>
         
+        <div class="chips-container">
+            <div class="chip" id="chip-cheap" onclick="toggleChip('cheap')">Under $30</div>
+            <div class="chip" id="chip-women" onclick="toggleChip('women')">💜 Women Only</div>
+            <div class="chip" id="chip-trunk" onclick="toggleChip('trunk')">📦 Trunk Space</div>
+            <div class="chip" id="chip-quiet" onclick="toggleChip('quiet')">🎧 Quiet Vibe</div>
+        </div>
+
         <div id="map-container" class="map-hidden"></div>
         <button onclick="toggleMap()" class="btn-gold" style="margin-bottom:15px;">📍 Toggle Map View</button>
         
@@ -130,7 +147,7 @@
         <div style="background:var(--card); padding:24px; border-radius:30px; border:1px solid var(--border);">
             <h2 style="margin-top:0;">Offer a Seat</h2>
             <select id="p-dir"><option value="Leaving Pitt">🚗 Leaving Pitt</option><option value="Returning to Pitt">🏠 Returning to Pitt</option></select>
-            <input type="text" id="p-dest" placeholder="Final City (e.g. Philadelphia)" oninput="calcPrice()">
+            <input type="text" id="p-dest" placeholder="Final City (e.g. Philadelphia)" oninput="calcPrice('p-dest', 'p-lat', 'p-lon', 'price-hint')">
             <input type="hidden" id="p-lat"><input type="hidden" id="p-lon">
             <input type="text" id="p-stops" placeholder="Waypoints (e.g. State College, Harrisburg)">
             <input type="date" id="p-date">
@@ -171,7 +188,7 @@
             <div class="stat-card"><div class="stat-val" id="s-users">-</div><div style="font-size:0.75em; font-weight:700; color:var(--muted);">TOTAL USERS</div></div>
             <div class="stat-card"><div class="stat-val" id="s-rides">-</div><div style="font-size:0.75em; font-weight:700; color:var(--muted);">ACTIVE RIDES</div></div>
         </div>
-        <div class="stat-card" style="margin-bottom:20px;"><div class="stat-val" id="s-money" style="color:#10b981;">$-</div><div style="font-size:0.75em; font-weight:700; color:var(--muted);">STUDENT ECONOMY MOVED</div></div>
+        <div class="stat-card" style="margin-bottom:20px;"><div class="stat-val" id="s-money" style="color:var(--success);">$-</div><div style="font-size:0.75em; font-weight:700; color:var(--muted);">ECONOMY MOVED</div></div>
     </div>
 </div>
 
@@ -182,6 +199,31 @@
     <div class="nav-item" onclick="switchTab('profile')"><span style="font-size:1.6em;">👤</span>Profile</div>
     <div class="nav-item" id="adm-tab" style="display:none;" onclick="switchTab('admin')"><span style="font-size:1.6em;">⚙️</span>Admin</div>
 </nav>
+
+<div id="edit-modal" class="modal">
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding-bottom:15px; border-bottom:1px solid var(--border);">
+            <h3 style="margin:0;">Edit Trip</h3>
+            <button onclick="closeEditModal()" class="btn-outline" style="width:auto; padding:8px 12px; border-radius:12px; margin:0;">✕</button>
+        </div>
+        <input type="hidden" id="e-id">
+        <select id="e-dir"><option value="Leaving Pitt">🚗 Leaving Pitt</option><option value="Returning to Pitt">🏠 Returning to Pitt</option></select>
+        <input type="text" id="e-dest" placeholder="Final City" oninput="calcPrice('e-dest', 'e-lat', 'e-lon', 'e-price-hint')">
+        <input type="hidden" id="e-lat"><input type="hidden" id="e-lon">
+        <input type="text" id="e-stops" placeholder="Waypoints (e.g. Harrisburg)">
+        <input type="date" id="e-date">
+        <div style="display:flex; gap:12px;"><input type="number" id="e-seats" placeholder="Seats" min="1" max="6"><input type="number" id="e-price" placeholder="Price ($)"></div>
+        <p id="e-price-hint" style="text-align:right; font-size:0.75em; color:var(--muted); margin:-5px 5px 15px 0;"></p>
+        <select id="e-affinity"><option value="Everyone">👥 Everyone</option><option value="Women Only">💜 Women Only</option></select>
+        <div style="display:flex; gap:12px;">
+            <select id="e-vibe"><option value="Chatty">🗣️ Chatty</option><option value="Quiet">🎧 Quiet</option><option value="Mixed">⚖️ Mixed</option></select>
+            <select id="e-music"><option value="Driver's Choice">📻 Driver Aux</option><option value="Pass the Aux">📱 Pass Aux</option></select>
+        </div>
+        <select id="e-luggage"><option value="Backpack Only">🎒 Backpack Only</option><option value="Carry-on Size">🧳 Carry-on</option><option value="Large Trunk Space">📦 Trunk Space</option></select>
+        <textarea id="e-notes" placeholder="Notes"></textarea>
+        <button onclick="submitEditRide()" class="btn-gold">Save Changes</button>
+    </div>
+</div>
 
 <div id="chat-modal" class="modal">
     <div class="modal-content">
@@ -197,24 +239,34 @@
     </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+<div id="toast-container"></div>
+
 <script>
-    // ⚠️ PASTE YOUR APPS SCRIPT URL HERE
-    const API = "https://script.google.com/macros/s/AKfycbxzeldXl8YRt5LouZrPd_V83R5iLYFSkUjPF-1QISvuHcoZ26sSyynzbTJPlUBKVTU/exec"; 
+    // ⚠️ CRITICAL: PASTE YOUR NEW SECURE WEB APP URL HERE
+    const API = "https://script.google.com/macros/s/AKfycbz0kqW9Gio5AbxSWr6IKIzG6N8OpOjPAheD7Rci9Jn8D7rXv5B24NIZ9afimmcZlo4W/exec"; 
     
     let session = JSON.parse(localStorage.getItem('pitt_sess') || "null");
     let cached = JSON.parse(localStorage.getItem('pitt_data') || "[]");
     let map, markers, isMap = false, isReg = false, lastSync = 0, dir = 'Leaving Pitt', activeChat = null, timer;
+    let filters = { cheap: false, women: false, trunk: false, quiet: false };
 
-    // --- UX CORE ---
+    // --- UX & UTILS ---
     function haptic() { if(navigator.vibrate) navigator.vibrate(40); }
     function toggleTheme() { haptic(); const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', t); localStorage.setItem('pitt_theme', t); }
     if (localStorage.getItem('pitt_theme')) document.documentElement.setAttribute('data-theme', localStorage.getItem('pitt_theme'));
     else if (window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.setAttribute('data-theme', 'dark');
+    
+    // Set min date to today
     document.getElementById("p-date").setAttribute('min', new Date().toISOString().split('T')[0]);
+    document.getElementById("e-date").setAttribute('min', new Date().toISOString().split('T')[0]);
 
-    // Pull-to-refresh
+    function showToast(msg, type = 'success') {
+        haptic(); const container = document.getElementById('toast-container'); const toast = document.createElement('div');
+        toast.className = `toast`; toast.innerHTML = `<span style="font-size: 1.4em;">${type === 'success' ? '✅' : '⚠️'}</span> <span>${msg}</span>`;
+        container.appendChild(toast); void toast.offsetWidth; toast.classList.add('show');
+        setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
+    }
+
     let ts = 0;
     window.addEventListener('touchstart', e => ts = e.touches[0].clientY, {passive:true});
     window.addEventListener('touchend', e => {
@@ -231,9 +283,9 @@
         haptic();
         const em = document.getElementById('email').value.trim(); const pw = document.getElementById('pass').value;
         const btn = document.getElementById('auth-btn');
-        if(!em || !pw) return alert("Fill all fields.");
+        if(!em || !pw) return showToast("Fill all fields.", "error");
         let p = { action: isReg ? 'register' : 'login', email: em, password: pw };
-        if(isReg) { p.name = document.getElementById('reg-name').value; p.gender = document.getElementById('reg-gender').value; if(!p.name || !p.gender) return alert("Need name and gender."); }
+        if(isReg) { p.name = document.getElementById('reg-name').value; p.gender = document.getElementById('reg-gender').value; if(!p.name || !p.gender) return showToast("Need name and gender.", "error"); }
         
         btn.innerText = "Loading..."; btn.disabled = true;
         try {
@@ -241,8 +293,8 @@
             if(d.status === 'success' || d.status === 'admin_success') {
                 session = { email: d.status === 'admin_success' ? 'test2' : em, token: d.token };
                 localStorage.setItem('pitt_sess', JSON.stringify(session)); location.reload();
-            } else { alert(d.message); btn.innerText = isReg ? 'Create Account' : 'Access Board'; btn.disabled = false; }
-        } catch(e) { alert("Network Error"); btn.disabled = false; }
+            } else { showToast(d.message, "error"); btn.innerText = isReg ? 'Create Account' : 'Access Board'; btn.disabled = false; }
+        } catch(e) { showToast("Network Error - Did you update the API URL?", "error"); btn.disabled = false; }
     }
     function logout() { haptic(); fetch(API, {method:'POST', body:JSON.stringify({action:'logout', token:session.token, email:session.email})}).finally(()=>{ localStorage.clear(); location.reload(); }); }
 
@@ -256,12 +308,13 @@
             const d = await res.json();
             if(d.status === 'success') { cached = d.data; localStorage.setItem('pitt_data', JSON.stringify(cached)); lastSync = Date.now(); render(); if(isMap) updateMap(); }
             else if(d.status === 'unauthorized') logout();
-        } catch(e){}
+        } catch(e){ console.error("Sync error"); }
         document.getElementById('sync').style.display = 'none'; document.getElementById('skeleton').style.display = 'none';
     }
 
-    // --- UI RENDERING ---
+    // --- RENDERING & FILTERS ---
     function setDir(d) { haptic(); dir = d; document.getElementById('btn-out').className = d==='Leaving Pitt'?'':'btn-outline'; document.getElementById('btn-ret').className = d==='Returning to Pitt'?'':'btn-outline'; render(); if(isMap) updateMap(); }
+    function toggleChip(c) { haptic(); filters[c] = !filters[c]; document.getElementById('chip-'+c).classList.toggle('active'); render(); if(isMap) updateMap(); }
     
     function strToCol(str) { let h=0; for(let i=0;i<str.length;i++) h=str.charCodeAt(i)+((h<<5)-h); return `hsl(${h%360},70%,60%)`; }
     function getInit(n) { let p=n.split(' '); return (p[0][0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase(); }
@@ -270,12 +323,21 @@
         const q = document.getElementById('search').value.toLowerCase();
         const list = document.getElementById('list'); const trips = document.getElementById('trips-list');
         
-        let filtered = cached.filter(r => r.direction === dir && (r.destination.toLowerCase().includes(q) || r.waypoints.toLowerCase().includes(q)));
+        let filtered = cached.filter(r => r.direction === dir && (r.destination.toLowerCase().includes(q) || (r.waypoints||"").toLowerCase().includes(q)));
+        if (filters.cheap) filtered = filtered.filter(r => r.price <= 30);
+        if (filters.women) filtered = filtered.filter(r => r.affinity === 'Women Only');
+        if (filters.trunk) filtered = filtered.filter(r => r.luggage === 'Large Trunk Space');
+        if (filters.quiet) filtered = filtered.filter(r => r.vibe === 'Quiet');
+
         list.innerHTML = filtered.map(r => {
-            let act = '', amIn = (r.riders||"").includes(session.email), me = session.email===r.email;
-            if(me) act = `<button class="btn-outline" style="color:var(--danger); border-color:var(--danger);" onclick="del(${r.id})">Delete</button>`;
+            let act = '', amIn = (r.riders||"").includes(session.email), wait = (r.waitlist||"").includes(session.email), me = session.email===r.email;
+            
+            // Action button logic
+            if(me) act = `<div style="display:flex; gap:10px;"><button class="btn-gold" onclick="openEditModal(${r.id})">Edit</button><button class="btn-danger" onclick="del(${r.id})">Delete</button></div>`;
             else if(amIn) act = `<button class="btn-outline" style="color:var(--gold); border-color:var(--gold);" onclick="canc(${r.id})">Cancel Seat</button>`;
-            else act = `<button onclick="book(${r.id})" ${r.seats<=0?'disabled':''}>${r.seats>0 ? `Claim Seat (${r.seats} left)` : 'Full'}</button>`;
+            else if(r.seats > 0) act = `<button onclick="book(${r.id})">Claim Seat (${r.seats} left)</button>`;
+            else if(wait) act = `<button disabled>On Waitlist</button>`;
+            else act = `<button class="btn-outline" onclick="joinWait(${r.id})">Join Waitlist</button>`;
             
             let w = r.waypoints ? `<div style="font-size:0.8em; color:var(--muted); margin-bottom:8px; font-weight:600;">📍 Via: ${r.waypoints}</div>` : '';
             return `<div class="ride-card ${amIn?'booked':''}">
@@ -287,7 +349,7 @@
                 <h3 style="margin:0 0 4px 0; font-size:1.4em;">${r.destination}</h3> ${w}
                 <div style="font-size:0.85em; font-weight:600; margin-bottom:12px;">📅 ${new Date(r.date).toLocaleDateString()}</div>
                 <div style="margin-bottom:16px;">
-                    <span class="badge">${r.vibe}</span><span class="badge">${r.luggage}</span>
+                    <span class="badge">${r.vibe}</span><span class="badge">${r.music}</span><span class="badge">${r.luggage}</span>
                     ${r.affinity==='Women Only'?'<span class="badge badge-pink">💜 Women Only</span>':''}
                 </div>
                 ${r.notes ? `<div style="background:var(--bg); padding:12px; border-radius:12px; font-size:0.85em; margin-bottom:16px;">${r.notes}</div>`:''}
@@ -303,43 +365,65 @@
         }).join('') || '<div style="text-align:center; color:var(--muted); font-weight:700;">No confirmed trips.</div>';
     }
 
-    // --- ACTIONS (Optimistic) ---
-    async function book(id) { haptic(); if(!confirm("Claim seat?")) return; let r = cached.find(x=>x.id==id); if(r){ r.seats--; r.riders+=session.email; render(); } fetch(API, {method:'POST', body:JSON.stringify({action:'bookSeat', id, token:session.token, email:session.email})}).then(()=>silentSync(true)); }
-    async function canc(id) { haptic(); if(!confirm("Cancel?")) return; let r = cached.find(x=>x.id==id); if(r){ r.seats++; r.riders=r.riders.replace(session.email,""); render(); } fetch(API, {method:'POST', body:JSON.stringify({action:'cancelSeat', id, token:session.token, email:session.email})}).then(()=>silentSync(true)); }
-    async function del(id) { haptic(); if(!confirm("Delete trip?")) return; cached = cached.filter(x=>x.id!=id); render(); fetch(API, {method:'POST', body:JSON.stringify({action:'deleteRide', id, token:session.token, email:session.email})}).then(()=>silentSync(true)); }
+    // --- ACTIONS ---
+    async function book(id) { haptic(); if(!confirm("Claim seat?")) return; let r = cached.find(x=>x.id==id); if(r){ r.seats--; r.riders+=session.email; render(); showToast("Seat Confirmed!"); } fetch(API, {method:'POST', body:JSON.stringify({action:'bookSeat', id, token:session.token, email:session.email})}).then(()=>silentSync(true)); }
+    async function canc(id) { haptic(); if(!confirm("Cancel seat?")) return; let r = cached.find(x=>x.id==id); if(r){ r.seats++; r.riders=r.riders.replace(session.email,""); render(); showToast("Seat Cancelled"); } fetch(API, {method:'POST', body:JSON.stringify({action:'cancelSeat', id, token:session.token, email:session.email})}).then(()=>silentSync(true)); }
+    async function del(id) { haptic(); if(!confirm("Delete trip permanently?")) return; cached = cached.filter(x=>x.id!=id); render(); showToast("Trip Deleted"); fetch(API, {method:'POST', body:JSON.stringify({action:'deleteRide', id, token:session.token, email:session.email})}).then(()=>silentSync(true)); }
+    async function joinWait(id) { haptic(); let r = cached.find(x=>x.id==id); if(r){ r.waitlist+=session.email; render(); showToast("Joined Waitlist!"); } fetch(API, {method:'POST', body:JSON.stringify({action:'joinWaitlist', id, token:session.token, email:session.email})}).then(()=>silentSync(true)); }
 
-    // --- GEO PRICING ---
-    function calcPrice() {
-        clearTimeout(timer); const dest = document.getElementById('p-dest').value.trim();
+    // --- EDIT MODAL ---
+    function openEditModal(id) {
+        haptic(); const r = cached.find(x=>x.id==id); if(!r) return;
+        document.getElementById('e-id').value = r.id; document.getElementById('e-dir').value = r.direction; document.getElementById('e-dest').value = r.destination; document.getElementById('e-lat').value = r.lat; document.getElementById('e-lon').value = r.lon; document.getElementById('e-stops').value = r.waypoints || ""; document.getElementById('e-date').value = r.date.split('T')[0]; document.getElementById('e-seats').value = r.seats; document.getElementById('e-price').value = r.price; document.getElementById('e-affinity').value = r.affinity; document.getElementById('e-vibe').value = r.vibe; document.getElementById('e-music').value = r.music; document.getElementById('e-luggage').value = r.luggage; document.getElementById('e-notes').value = r.notes;
+        document.getElementById('edit-modal').style.display = 'flex';
+    }
+    function closeEditModal() { document.getElementById('edit-modal').style.display = 'none'; }
+    async function submitEditRide() {
+        haptic();
+        const p = { action:'editRide', token:session.token, email:session.email, id:document.getElementById('e-id').value, destination:document.getElementById('e-dest').value, waypoints:document.getElementById('e-stops').value, date:document.getElementById('e-date').value, seats:document.getElementById('e-seats').value, price:document.getElementById('e-price').value, direction:document.getElementById('e-dir').value, affinity:document.getElementById('e-affinity').value, vibe:document.getElementById('e-vibe').value, music:document.getElementById('e-music').value, luggage:document.getElementById('e-luggage').value, notes:document.getElementById('e-notes').value, lat:document.getElementById('e-lat').value, lon:document.getElementById('e-lon').value };
+        closeEditModal(); showToast("Updating..."); await fetch(API, {method:'POST', body:JSON.stringify(p)}); silentSync(true);
+    }
+
+    // --- POST & GEO PRICING ---
+    function calcPrice(destId, latId, lonId, hintId) {
+        clearTimeout(timer); const dest = document.getElementById(destId).value.trim();
         timer = setTimeout(async () => {
             if(!dest) return;
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dest + ', USA')}&limit=1`); const data = await res.json();
-            if(data.length > 0) {
-                document.getElementById('p-lat').value = data[0].lat; document.getElementById('p-lon').value = data[0].lon;
-                const dLat = (data[0].lat - 40.4406)*Math.PI/180; const dLon = (data[0].lon - -79.9959)*Math.PI/180;
-                const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(40.4406*Math.PI/180)*Math.cos(data[0].lat*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
-                const m = (3958.8 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))) * 1.25;
-                document.getElementById('price-hint').innerText = `~${Math.round(m)} miles. Suggested: $${Math.ceil((m/25)*3.4/3 + 4)}/seat`;
-            }
-        }, 800);
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dest + ', USA')}&limit=1`); const data = await res.json();
+                if(data.length > 0) {
+                    document.getElementById(latId).value = data[0].lat; document.getElementById(lonId).value = data[0].lon;
+                    const dLat = (data[0].lat - 40.4406)*Math.PI/180; const dLon = (data[0].lon - -79.9959)*Math.PI/180;
+                    const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(40.4406*Math.PI/180)*Math.cos(data[0].lat*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+                    const m = (3958.8 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))) * 1.25;
+                    document.getElementById(hintId).innerText = `~${Math.round(m)} miles. Suggested: $${Math.ceil((m/25)*3.4/3 + 4)}/seat`;
+                }
+            } catch(e) { console.log("Geocoding rate limited"); }
+        }, 1000);
     }
-    async function postRide() { haptic(); const p = { action:'addRide', token:session.token, email:session.email, id:Date.now(), name:document.getElementById('prof-name').value||'Driver', destination:document.getElementById('p-dest').value, waypoints:document.getElementById('p-stops').value, date:document.getElementById('p-date').value, seats:document.getElementById('p-seats').value, price:document.getElementById('p-price').value, direction:document.getElementById('p-dir').value, affinity:document.getElementById('p-affinity').value, vibe:document.getElementById('p-vibe').value, music:document.getElementById('p-music').value, luggage:document.getElementById('p-luggage').value, notes:document.getElementById('p-notes').value, lat:document.getElementById('p-lat').value, lon:document.getElementById('p-lon').value }; if(!p.destination||!p.date||!p.seats||!p.price) return alert("Fill required fields."); await fetch(API, {method:'POST', body:JSON.stringify(p)}); silentSync(true); switchTab('trips'); }
+    
+    async function postRide() { 
+        haptic(); const p = { action:'addRide', token:session.token, email:session.email, id:Date.now(), name:document.getElementById('prof-name').value||'Driver', destination:document.getElementById('p-dest').value, waypoints:document.getElementById('p-stops').value, date:document.getElementById('p-date').value, seats:document.getElementById('p-seats').value, price:document.getElementById('p-price').value, direction:document.getElementById('p-dir').value, affinity:document.getElementById('p-affinity').value, vibe:document.getElementById('p-vibe').value, music:document.getElementById('p-music').value, luggage:document.getElementById('p-luggage').value, notes:document.getElementById('p-notes').value, lat:document.getElementById('p-lat').value, lon:document.getElementById('p-lon').value }; 
+        if(!p.destination||!p.date||!p.seats||!p.price) return showToast("Fill required fields.", "error"); 
+        document.getElementById('p-dest').value=''; document.getElementById('p-stops').value=''; showToast("Posting..."); 
+        await fetch(API, {method:'POST', body:JSON.stringify(p)}); silentSync(true); switchTab('trips'); 
+    }
 
     // --- MAPS ---
     function initMap() { if(!map) { map = L.map('map-container').setView([40.44,-79.99], 6); L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map); markers = L.markerClusterGroup({showCoverageOnHover:false}); map.addLayer(markers); } }
     function toggleMap() { haptic(); isMap = !isMap; const m = document.getElementById('map-container'); if(isMap) { m.classList.remove('map-hidden'); document.getElementById('list').style.display='none'; initMap(); setTimeout(()=>{map.invalidateSize(); updateMap();},100); } else { m.classList.add('map-hidden'); document.getElementById('list').style.display='block'; } }
-    function updateMap() { if(!map) return; markers.clearLayers(); let b = []; cached.filter(r=>r.direction===dir && r.lat).forEach(r=>{ let m=L.marker([r.lat, r.lon]); m.bindPopup(`<b>${r.destination}</b><br>$${r.price}<br><button onclick="book(${r.id})" style="padding:6px; margin-top:6px; border-radius:8px;">Claim</button>`); markers.addLayer(m); b.push([r.lat,r.lon]); }); if(b.length>0) map.flyToBounds(b, {padding:[30,30]}); else map.flyTo([40.44,-79.99], 6); }
+    function updateMap() { if(!map) return; markers.clearLayers(); let b = []; let filtered = cached.filter(r => r.direction === dir && (r.destination.toLowerCase().includes(document.getElementById('search').value.toLowerCase()) || (r.waypoints||"").toLowerCase().includes(document.getElementById('search').value.toLowerCase()))); if (filters.cheap) filtered = filtered.filter(r => r.price <= 30); if (filters.women) filtered = filtered.filter(r => r.affinity === 'Women Only'); if (filters.trunk) filtered = filtered.filter(r => r.luggage === 'Large Trunk Space'); if (filters.quiet) filtered = filtered.filter(r => r.vibe === 'Quiet'); filtered.filter(r=>r.lat).forEach(r=>{ let m=L.marker([r.lat, r.lon]); m.bindPopup(`<b>${r.destination}</b><br>$${r.price}<br><button onclick="book(${r.id})" style="padding:6px; margin-top:6px; border-radius:8px;">Claim</button>`); markers.addLayer(m); b.push([r.lat,r.lon]); }); if(b.length>0) map.flyToBounds(b, {padding:[30,30]}); else map.flyTo([40.44,-79.99], 6); }
 
-    // --- TABS & PROFILE ---
+    // --- TABS & DATA LOADERS ---
     function switchTab(t) { haptic(); document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById(t+'-view').classList.add('active'); document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active')); event.currentTarget.classList.add('active'); if(t==='rider') silentSync(); if(t==='profile') loadProf(); if(t==='admin') loadAdm(); window.scrollTo(0,0); }
     async function loadProf() { const r=await fetch(API, {method:'POST', body:JSON.stringify({action:'getProfile', token:session.token, email:session.email})}); const d=await r.json(); document.getElementById('prof-name').value=d.name; document.getElementById('prof-gender').value=d.gender; document.getElementById('prof-bio').value=d.bio; document.getElementById('p-avatar').innerText=getInit(d.name); document.getElementById('p-avatar').style.background=strToCol(d.name); }
-    async function saveProfile() { haptic(); await fetch(API, {method:'POST', body:JSON.stringify({action:'updateProfile', token:session.token, email:session.email, bio:document.getElementById('prof-bio').value})}); alert("Saved!"); }
+    async function saveProfile() { haptic(); await fetch(API, {method:'POST', body:JSON.stringify({action:'updateProfile', token:session.token, email:session.email, bio:document.getElementById('prof-bio').value})}); showToast("Profile Saved!"); }
     async function loadAdm() { const r=await fetch(API, {method:'POST', body:JSON.stringify({action:'getAnalytics', token:session.token, email:session.email})}); const d=await r.json(); document.getElementById('s-users').innerText=d.stats.users; document.getElementById('s-rides').innerText=d.stats.rides; document.getElementById('s-money').innerText='$'+d.stats.economy.toLocaleString(); }
 
     // --- CHAT ---
     function openChat(id) { haptic(); activeChat = id; document.getElementById('chat-modal').style.display='flex'; loadMsgs(); }
     function closeChat() { haptic(); document.getElementById('chat-modal').style.display='none'; activeChat = null; }
-    async function loadMsgs() { if(!activeChat) return; const r=await fetch(API, {method:'POST', body:JSON.stringify({action:'getMessages', rideId:activeChat, token:session.token, email:session.email})}); const d=await r.json(); const bx=document.getElementById('chat-box'); bx.innerHTML=d.data.map(m=>`<div class="chat-msg ${m.email===session.email?'chat-me':'chat-them'}"><div style="font-size:0.7em; opacity:0.8; margin-bottom:2px;">${m.email.split('@')[0]}</div>${m.message}</div>`).join(''); bx.scrollTop=bx.scrollHeight; }
+    async function loadMsgs() { if(!activeChat) return; document.getElementById('chat-box').innerHTML='<p style="text-align:center; color:var(--muted);">Loading...</p>'; const r=await fetch(API, {method:'POST', body:JSON.stringify({action:'getMessages', rideId:activeChat, token:session.token, email:session.email})}); const d=await r.json(); const bx=document.getElementById('chat-box'); bx.innerHTML=d.data.map(m=>`<div class="chat-msg ${m.email===session.email?'chat-me':'chat-them'}"><div style="font-size:0.7em; opacity:0.8; margin-bottom:2px;">${m.email.split('@')[0]}</div>${m.message}</div>`).join('') || '<p style="text-align:center; color:var(--muted);">Send the first message!</p>'; bx.scrollTop=bx.scrollHeight; }
     async function sendChat() { haptic(); const i=document.getElementById('chat-in'); if(!i.value.trim()||!activeChat) return; const msg=i.value; i.value=''; await fetch(API, {method:'POST', body:JSON.stringify({action:'sendMessage', rideId:activeChat, message:msg, token:session.token, email:session.email})}); loadMsgs(); }
 
     // --- INIT ---
@@ -347,7 +431,7 @@
         document.getElementById('auth-view').style.display='none'; document.getElementById('rider-view').classList.add('active');
         document.getElementById('menu').style.display='flex'; document.getElementById('logout-btn').style.display='block';
         if(session.email==='test2') document.getElementById('adm-tab').style.display='flex';
-        loadProf(); render(); silentSync();
+        loadProf(); render(); silentSync(true);
     }
 </script>
 </body>
