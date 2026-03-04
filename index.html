@@ -1,311 +1,354 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com https://*.basemaps.cartocdn.com https://nominatim.openstreetmap.org https://script.google.com; img-src 'self' data: https://*.basemaps.cartocdn.com;">
+    
+    <title>Pitt RideShare</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --navy: #1c2957; --gold: #cdb87d; --bg: #f2f4f7; --card: #ffffff; --text: #111827; --muted: #6b7280; --border: #e5e7eb; }
+        [data-theme="dark"] { --bg: #030712; --card: #111827; --text: #f9fafb; --muted: #9ca3af; --border: #1f2937; }
+        
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 100px; -webkit-tap-highlight-color: transparent; transition: background 0.3s; }
+        
+        /* HEADER & PULL TO REFRESH */
+        #ptr { display: none; text-align: center; padding: 15px; font-weight: 700; color: var(--muted); font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; }
+        header { background: linear-gradient(135deg, var(--navy), #0b1433); color: #fff; padding: 30px 20px 40px; border-radius: 0 0 30px 30px; position: sticky; top: 0; z-index: 50; box-shadow: 0 10px 30px rgba(0,0,0,0.15); display: flex; justify-content: space-between; align-items: flex-start; }
+        header h1 { margin: 0; font-size: 2.2em; color: var(--gold); font-weight: 800; letter-spacing: -1px; display: flex; align-items: center; gap: 10px; }
+        .sync-spinner { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 1s linear infinite; display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-<meta http-equiv="Content-Security-Policy"
-content="
-default-src 'self' https://unpkg.com https://fonts.googleapis.com https://fonts.gstatic.com https://*.basemaps.cartocdn.com https://nominatim.openstreetmap.org https://script.google.com https://script.googleusercontent.com;
-connect-src 'self' https://script.google.com https://script.googleusercontent.com https://nominatim.openstreetmap.org;
-style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com;
-script-src 'self' https://unpkg.com;
-img-src 'self' data: https://*.basemaps.cartocdn.com;
-">
+        .container { max-width: 500px; margin: 0 auto; padding: 0 20px; margin-top: -20px; position: relative; z-index: 10; }
+        
+        /* FLOATING BOTTOM NAV */
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: rgba(255,255,255,0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); display: none; border-radius: 24px; padding: 10px 5px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border: 1px solid rgba(255,255,255,0.2); z-index: 1000; }
+        [data-theme="dark"] .bottom-nav { background: rgba(17,24,39,0.85); border-color: rgba(255,255,255,0.05); }
+        .nav-item { flex: 1; text-align: center; font-size: 0.7em; font-weight: 700; cursor: pointer; color: var(--muted); display: flex; flex-direction: column; gap: 4px; transition: 0.2s; }
+        .nav-item.active { color: var(--navy); transform: scale(1.05); }
+        [data-theme="dark"] .nav-item.active { color: var(--gold); }
+        @media screen and (max-height: 500px) { .bottom-nav { display: none !important; } } /* Keyboard fix */
 
-<title>Pitt RideShare</title>
+        .view { display: none; animation: slideUp 0.3s ease-out forwards; }
+        .view.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+        /* FORMS & BUTTONS */
+        input, select, textarea { width: 100%; padding: 16px; border-radius: 16px; border: 2px solid var(--border); background: var(--card); color: var(--text); font-family: inherit; font-size: 1em; margin-bottom: 12px; box-sizing: border-box; transition: 0.2s; }
+        input:focus, select:focus { border-color: var(--gold); outline: none; box-shadow: 0 0 0 4px rgba(205,184,125,0.1); }
+        button { width: 100%; padding: 16px; border-radius: 16px; background: var(--navy); color: #fff; border: none; font-weight: 800; font-size: 1.05em; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(28,41,87,0.2); }
+        button:active { transform: scale(0.97); }
+        button:disabled { opacity: 0.6; pointer-events: none; }
+        .btn-gold { background: var(--gold); color: #111827; box-shadow: 0 4px 15px rgba(205,184,125,0.2); }
+        .btn-outline { background: transparent; border: 2px solid var(--border); color: var(--text); box-shadow: none; }
 
-<style>
-:root{
---bg:#f5f5f7;
---card:#ffffff;
---text:#1d1d1f;
---muted:#6e6e73;
---accent:#1c2957;
---gold:#cdb87d;
---border:#e5e5ea;
---radius:22px;
---shadow:0 8px 30px rgba(0,0,0,0.05);
---shadow-hover:0 14px 40px rgba(0,0,0,0.08);
-}
+        /* CARDS & UI */
+        .ride-card { background: var(--card); border-radius: 24px; padding: 24px; margin-bottom: 16px; border: 1px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.03); position: relative; overflow: hidden; }
+        .ride-card.booked { border-color: var(--gold); }
+        .ride-card.booked::before { content: ''; position: absolute; left: 0; top: 0; width: 6px; height: 100%; background: var(--gold); }
+        
+        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 6px 12px; border-radius: 12px; font-size: 0.75em; font-weight: 700; background: var(--bg); margin: 0 6px 6px 0; color: var(--text); border: 1px solid var(--border); }
+        .badge-pink { background: rgba(236,72,153,0.1); color: #ec4899; border-color: rgba(236,72,153,0.2); }
 
-body{
-margin:0;
-font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
-background:var(--bg);
-color:var(--text);
-}
+        .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 1.1em; }
+        
+        /* MAP HACK */
+        #map-container { height: 350px; border-radius: 24px; margin-bottom: 20px; border: 2px solid var(--border); }
+        .map-hidden { position: absolute; left: -9999px; visibility: hidden; }
 
-header{
-position:sticky;
-top:0;
-background:rgba(255,255,255,0.8);
-backdrop-filter:blur(20px);
-padding:20px;
-font-weight:700;
-font-size:1.2rem;
-border-bottom:1px solid var(--border);
-z-index:50;
-}
+        /* SKELETON */
+        .skeleton { background: var(--border); border-radius: 12px; height: 20px; margin-bottom: 12px; animation: pulse 1.5s infinite; }
+        .skel-circle { width: 40px; height: 40px; border-radius: 50%; background: var(--border); animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 0.8; } 100% { opacity: 0.4; } }
 
-.container{
-max-width:640px;
-margin:0 auto;
-padding:20px;
-}
+        /* ADMIN */
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        .stat-card { background: var(--card); padding: 20px; border-radius: 20px; text-align: center; border: 1px solid var(--border); }
+        .stat-val { font-size: 2.2em; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
+        [data-theme="dark"] .stat-val { color: var(--gold); }
 
-.section-title{
-font-size:1.6rem;
-font-weight:700;
-margin-bottom:4px;
-}
-
-.section-sub{
-color:var(--muted);
-font-size:0.9rem;
-margin-bottom:20px;
-}
-
-.card{
-background:var(--card);
-border-radius:var(--radius);
-padding:22px;
-margin-bottom:16px;
-box-shadow:var(--shadow);
-transition:all .25s ease;
-border:1px solid var(--border);
-}
-
-.card:hover{
-transform:translateY(-3px);
-box-shadow:var(--shadow-hover);
-}
-
-input,select,textarea{
-width:100%;
-padding:14px;
-border-radius:14px;
-border:1px solid var(--border);
-margin-bottom:12px;
-font-size:1rem;
-background:#fff;
-}
-
-button{
-padding:14px 20px;
-border-radius:16px;
-border:none;
-background:var(--accent);
-color:white;
-font-weight:600;
-cursor:pointer;
-transition:.2s;
-}
-
-button.secondary{
-background:#f2f2f7;
-color:var(--text);
-}
-
-button:disabled{
-opacity:.6;
-cursor:not-allowed;
-}
-
-.capacity{
-height:6px;
-background:var(--border);
-border-radius:6px;
-overflow:hidden;
-margin:12px 0;
-}
-
-.capacity-fill{
-height:100%;
-background:var(--gold);
-}
-
-.nav{
-position:fixed;
-bottom:20px;
-left:50%;
-transform:translateX(-50%);
-background:rgba(255,255,255,0.9);
-backdrop-filter:blur(20px);
-border-radius:20px;
-display:flex;
-gap:20px;
-padding:12px 24px;
-box-shadow:var(--shadow);
-border:1px solid var(--border);
-}
-
-.nav button{
-background:none;
-color:var(--muted);
-font-weight:500;
-}
-
-.nav button.active{
-color:var(--accent);
-font-weight:700;
-}
-
-.empty{
-text-align:center;
-color:var(--muted);
-padding:40px 0;
-}
-
-.fade{
-animation:fade .3s ease;
-}
-
-@keyframes fade{
-from{opacity:0;transform:translateY(10px)}
-to{opacity:1;transform:translateY(0)}
-}
-
-</style>
+        /* MODAL */
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); z-index: 2000; display: none; align-items: center; justify-content: center; }
+        .modal-content { background: var(--bg); width: 90%; max-width: 450px; border-radius: 30px; padding: 24px; max-height: 85vh; display: flex; flex-direction: column; }
+        .chat-msg { padding: 12px 16px; border-radius: 20px; max-width: 75%; font-size: 0.95em; margin-bottom: 8px; line-height: 1.4; }
+        .chat-me { background: #007aff; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .chat-them { background: var(--border); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; }
+    </style>
 </head>
-
 <body>
 
-<header>Pitt RideShare</header>
+<div id="ptr">↻ Release to Sync...</div>
+
+<header>
+    <h1>Pitt RideShare <div id="sync" class="sync-spinner"></div></h1>
+    <div style="display:flex; gap:10px;">
+        <button onclick="toggleTheme()" style="background:rgba(255,255,255,0.1); width:40px; height:40px; padding:0; border-radius:12px;">🌓</button>
+        <button id="logout-btn" onclick="logout()" style="display:none; background:rgba(255,255,255,0.1); width:auto; padding:0 15px; border-radius:12px; font-size:0.85em;">Exit</button>
+    </div>
+</header>
 
 <div class="container">
+    <div id="auth-view" class="view active" style="background:var(--card); padding:30px 20px; border-radius:30px; box-shadow:0 10px 40px rgba(0,0,0,0.05); border:1px solid var(--border);">
+        <h2 id="auth-title" style="text-align:center; margin-top:0;">Student Login</h2>
+        <div id="reg-box" style="display:none;">
+            <input type="text" id="reg-name" placeholder="First & Last Name">
+            <select id="reg-gender"><option value="" disabled selected>Gender (For safe routing)</option><option value="Female">Female</option><option value="Male">Male</option><option value="Other">Non-Binary / Other</option></select>
+        </div>
+        <input type="email" id="email" placeholder="username@pitt.edu" autocapitalize="off">
+        <input type="password" id="pass" placeholder="Password">
+        <button onclick="submitAuth()" id="auth-btn">Access Board</button>
+        <p onclick="toggleReg()" id="reg-toggle" style="text-align:center; color:var(--muted); font-size:0.85em; font-weight:700; cursor:pointer; margin-top:20px;">First time? Create an account</p>
+    </div>
 
-<div id="auth-view">
+    <div id="rider-view" class="view">
+        <div style="display:flex; gap:8px; margin-bottom:15px;">
+            <button id="btn-out" onclick="setDir('Leaving Pitt')" style="flex:1;">🚗 Outbound</button>
+            <button id="btn-ret" onclick="setDir('Returning to Pitt')" class="btn-outline" style="flex:1;">🏠 Return</button>
+        </div>
+        
+        <div id="map-container" class="map-hidden"></div>
+        <button onclick="toggleMap()" class="btn-gold" style="margin-bottom:15px;">📍 Toggle Map View</button>
+        
+        <div style="position:relative; margin-bottom:20px;">
+            <span style="position:absolute; left:16px; top:16px;">🔍</span>
+            <input type="text" id="search" placeholder="Search city or stops..." oninput="render()" style="padding-left:45px; margin:0; border-radius:24px;">
+        </div>
 
-<h2 class="section-title">Student Access</h2>
-<p class="section-sub">Verified Pitt email required</p>
+        <div id="skeleton" style="display:none;">
+            <div class="ride-card"><div style="display:flex; gap:12px; margin-bottom:15px;"><div class="skel-circle"></div><div style="flex:1;"><div class="skeleton" style="width:50%;"></div><div class="skeleton" style="width:30%; height:12px;"></div></div></div><div class="skeleton"></div><div class="skeleton" style="width:80%;"></div></div>
+        </div>
+        <div id="list"></div>
+    </div>
 
-<div class="card">
-<input type="email" id="email" placeholder="username@pitt.edu">
-<input type="password" id="pass" placeholder="Password">
-<button onclick="submitAuth()">Continue</button>
+    <div id="driver-view" class="view">
+        <div style="background:var(--card); padding:24px; border-radius:30px; border:1px solid var(--border);">
+            <h2 style="margin-top:0;">Offer a Seat</h2>
+            <select id="p-dir"><option value="Leaving Pitt">🚗 Leaving Pitt</option><option value="Returning to Pitt">🏠 Returning to Pitt</option></select>
+            <input type="text" id="p-dest" placeholder="Final City (e.g. Philadelphia)" oninput="calcPrice()">
+            <input type="hidden" id="p-lat"><input type="hidden" id="p-lon">
+            <input type="text" id="p-stops" placeholder="Waypoints (e.g. State College, Harrisburg)">
+            <input type="date" id="p-date">
+            <div style="display:flex; gap:12px;">
+                <input type="number" id="p-seats" placeholder="Open Seats" min="1" max="6">
+                <input type="number" id="p-price" placeholder="Price ($)">
+            </div>
+            <p id="price-hint" style="text-align:right; font-size:0.75em; color:var(--muted); margin:-5px 5px 15px 0;"></p>
+            <select id="p-affinity"><option value="Everyone">👥 Open to Everyone</option><option value="Women Only">💜 Women Only</option></select>
+            <div style="display:flex; gap:12px;">
+                <select id="p-vibe"><option value="Chatty">🗣️ Chatty</option><option value="Quiet">🎧 Quiet</option><option value="Mixed">⚖️ Mixed</option></select>
+                <select id="p-music"><option value="Driver's Choice">📻 Driver Aux</option><option value="Pass the Aux">📱 Pass Aux</option></select>
+            </div>
+            <select id="p-luggage"><option value="Backpack Only">🎒 Backpack Only</option><option value="Carry-on Size">🧳 Carry-on</option><option value="Large Trunk Space">📦 Trunk Space</option></select>
+            <textarea id="p-notes" placeholder="Departure time, meeting spot..."></textarea>
+            <button onclick="postRide()">Post to Board</button>
+        </div>
+    </div>
+
+    <div id="trips-view" class="view">
+        <h2 style="margin-top:0;">My Itinerary</h2>
+        <div id="trips-list"></div>
+    </div>
+
+    <div id="profile-view" class="view">
+        <div style="background:var(--card); padding:30px 24px; border-radius:30px; text-align:center; border:1px solid var(--border);">
+            <div id="p-avatar" class="avatar" style="width:80px; height:80px; font-size:2em; margin:0 auto 20px; background:var(--navy);">👤</div>
+            <input type="text" id="prof-name" readonly style="text-align:center; font-weight:700; background:var(--bg); border:none;">
+            <input type="text" id="prof-gender" readonly style="text-align:center; font-size:0.85em; color:var(--muted); background:transparent; border:none; padding:0; margin-bottom:20px;">
+            <textarea id="prof-bio" placeholder="Add a short bio... (e.g. 'Senior majoring in CS. Love road trips!')" style="text-align:center; min-height:100px;"></textarea>
+            <button onclick="saveProfile()">Save Profile</button>
+        </div>
+    </div>
+
+    <div id="admin-view" class="view">
+        <h2 style="margin-top:0;">Command Center</h2>
+        <div class="stat-grid">
+            <div class="stat-card"><div class="stat-val" id="s-users">-</div><div style="font-size:0.75em; font-weight:700; color:var(--muted);">TOTAL USERS</div></div>
+            <div class="stat-card"><div class="stat-val" id="s-rides">-</div><div style="font-size:0.75em; font-weight:700; color:var(--muted);">ACTIVE RIDES</div></div>
+        </div>
+        <div class="stat-card" style="margin-bottom:20px;"><div class="stat-val" id="s-money" style="color:#10b981;">$-</div><div style="font-size:0.75em; font-weight:700; color:var(--muted);">STUDENT ECONOMY MOVED</div></div>
+    </div>
 </div>
 
-</div>
+<nav class="bottom-nav" id="menu">
+    <div class="nav-item active" onclick="switchTab('rider')"><span style="font-size:1.6em;">🔍</span>Search</div>
+    <div class="nav-item" onclick="switchTab('driver')"><span style="font-size:1.6em;">🚗</span>Post</div>
+    <div class="nav-item" onclick="switchTab('trips')"><span style="font-size:1.6em;">🎟️</span>Trips</div>
+    <div class="nav-item" onclick="switchTab('profile')"><span style="font-size:1.6em;">👤</span>Profile</div>
+    <div class="nav-item" id="adm-tab" style="display:none;" onclick="switchTab('admin')"><span style="font-size:1.6em;">⚙️</span>Admin</div>
+</nav>
 
-<div id="rider-view" style="display:none;">
-
-<h2 class="section-title">Available Rides</h2>
-<p class="section-sub" id="last-updated"></p>
-
-<div id="rides"></div>
-
-</div>
-
-</div>
-
-<div class="nav" id="menu" style="display:none;">
-<button class="active" onclick="showRides()">Rides</button>
-<button onclick="logout()">Logout</button>
+<div id="chat-modal" class="modal">
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; padding-bottom:15px; border-bottom:1px solid var(--border);">
+            <h3 style="margin:0;">Trip Chat</h3>
+            <button onclick="closeChat()" class="btn-outline" style="width:auto; padding:8px 12px; border-radius:12px; margin:0;">✕</button>
+        </div>
+        <div id="chat-box" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; padding-right:5px; min-height:300px;"></div>
+        <div style="display:flex; gap:10px; margin-top:15px;">
+            <input type="text" id="chat-in" placeholder="Message..." style="margin:0;" onkeypress="if(event.key==='Enter') sendChat()">
+            <button onclick="sendChat()" style="width:auto; padding:0 20px;">↑</button>
+        </div>
+    </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
 <script>
+    // ⚠️ PASTE YOUR APPS SCRIPT URL HERE
+    const API = "https://script.google.com/macros/s/AKfycbxzeldXl8YRt5LouZrPd_V83R5iLYFSkUjPF-1QISvuHcoZ26sSyynzbTJPlUBKVTU/exec"; 
+    
+    let session = JSON.parse(localStorage.getItem('pitt_sess') || "null");
+    let cached = JSON.parse(localStorage.getItem('pitt_data') || "[]");
+    let map, markers, isMap = false, isReg = false, lastSync = 0, dir = 'Leaving Pitt', activeChat = null, timer;
 
-const API="https://script.google.com/macros/s/AKfycbzU3KecA5CBqg5ywqMDfzNrX1DOJV8JZYUUDU5hFgGYApZ0MLEpEKdzf9WoC_md8Ybx/exec";
+    // --- UX CORE ---
+    function haptic() { if(navigator.vibrate) navigator.vibrate(40); }
+    function toggleTheme() { haptic(); const t = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; document.documentElement.setAttribute('data-theme', t); localStorage.setItem('pitt_theme', t); }
+    if (localStorage.getItem('pitt_theme')) document.documentElement.setAttribute('data-theme', localStorage.getItem('pitt_theme'));
+    else if (window.matchMedia('(prefers-color-scheme: dark)').matches) document.documentElement.setAttribute('data-theme', 'dark');
+    document.getElementById("p-date").setAttribute('min', new Date().toISOString().split('T')[0]);
 
-let session=JSON.parse(localStorage.getItem('sess')||"null");
-let rides=[];
-let lastSync=0;
+    // Pull-to-refresh
+    let ts = 0;
+    window.addEventListener('touchstart', e => ts = e.touches[0].clientY, {passive:true});
+    window.addEventListener('touchend', e => {
+        if(window.scrollY === 0 && e.changedTouches[0].clientY - ts > 120 && session) {
+            haptic(); document.getElementById('ptr').style.display='block';
+            setTimeout(() => { document.getElementById('ptr').style.display='none'; lastSync = 0; silentSync(); }, 800);
+        }
+    }, {passive:true});
 
-async function submitAuth(){
-const em=document.getElementById("email").value.trim();
-const pw=document.getElementById("pass").value;
-if(!em||!pw)return alert("Fill fields");
+    // --- AUTHENTICATION ---
+    function toggleReg() { haptic(); isReg = !isReg; document.getElementById('reg-box').style.display = isReg ? 'block' : 'none'; document.getElementById('auth-title').innerText = isReg ? 'Create Account' : 'Student Login'; document.getElementById('auth-btn').innerText = isReg ? 'Create Account' : 'Access Board'; document.getElementById('reg-toggle').innerText = isReg ? 'Have an account? Sign In' : 'First time? Create an account'; }
+    
+    async function submitAuth() {
+        haptic();
+        const em = document.getElementById('email').value.trim(); const pw = document.getElementById('pass').value;
+        const btn = document.getElementById('auth-btn');
+        if(!em || !pw) return alert("Fill all fields.");
+        let p = { action: isReg ? 'register' : 'login', email: em, password: pw };
+        if(isReg) { p.name = document.getElementById('reg-name').value; p.gender = document.getElementById('reg-gender').value; if(!p.name || !p.gender) return alert("Need name and gender."); }
+        
+        btn.innerText = "Loading..."; btn.disabled = true;
+        try {
+            const res = await fetch(API, {method:'POST', body:JSON.stringify(p)}); const d = await res.json();
+            if(d.status === 'success' || d.status === 'admin_success') {
+                session = { email: d.status === 'admin_success' ? 'test2' : em, token: d.token };
+                localStorage.setItem('pitt_sess', JSON.stringify(session)); location.reload();
+            } else { alert(d.message); btn.innerText = isReg ? 'Create Account' : 'Access Board'; btn.disabled = false; }
+        } catch(e) { alert("Network Error"); btn.disabled = false; }
+    }
+    function logout() { haptic(); fetch(API, {method:'POST', body:JSON.stringify({action:'logout', token:session.token, email:session.email})}).finally(()=>{ localStorage.clear(); location.reload(); }); }
 
-const btn=event.target;
-btn.disabled=true;
-btn.innerText="Loading...";
+    // --- OPTIMISTIC SYNC ---
+    async function silentSync(force = false) {
+        if(!session || (!force && Date.now() - lastSync < 10000)) return;
+        document.getElementById('sync').style.display = 'inline-block';
+        if(cached.length === 0) document.getElementById('skeleton').style.display = 'block';
+        try {
+            const res = await fetch(API, {method:'POST', body:JSON.stringify({action:'getRides', token:session.token, email:session.email})});
+            const d = await res.json();
+            if(d.status === 'success') { cached = d.data; localStorage.setItem('pitt_data', JSON.stringify(cached)); lastSync = Date.now(); render(); if(isMap) updateMap(); }
+            else if(d.status === 'unauthorized') logout();
+        } catch(e){}
+        document.getElementById('sync').style.display = 'none'; document.getElementById('skeleton').style.display = 'none';
+    }
 
-try{
-const r=await fetch(API,{method:"POST",body:JSON.stringify({action:"login",email:em,password:pw})});
-const d=await r.json();
-if(d.status==="success"){
-session={email:em,token:d.token};
-localStorage.setItem("sess",JSON.stringify(session));
-initApp();
-}else alert(d.message);
-}catch{alert("Network error");}
+    // --- UI RENDERING ---
+    function setDir(d) { haptic(); dir = d; document.getElementById('btn-out').className = d==='Leaving Pitt'?'':'btn-outline'; document.getElementById('btn-ret').className = d==='Returning to Pitt'?'':'btn-outline'; render(); if(isMap) updateMap(); }
+    
+    function strToCol(str) { let h=0; for(let i=0;i<str.length;i++) h=str.charCodeAt(i)+((h<<5)-h); return `hsl(${h%360},70%,60%)`; }
+    function getInit(n) { let p=n.split(' '); return (p[0][0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase(); }
 
-btn.disabled=false;
-btn.innerText="Continue";
-}
+    function render() {
+        const q = document.getElementById('search').value.toLowerCase();
+        const list = document.getElementById('list'); const trips = document.getElementById('trips-list');
+        
+        let filtered = cached.filter(r => r.direction === dir && (r.destination.toLowerCase().includes(q) || r.waypoints.toLowerCase().includes(q)));
+        list.innerHTML = filtered.map(r => {
+            let act = '', amIn = (r.riders||"").includes(session.email), me = session.email===r.email;
+            if(me) act = `<button class="btn-outline" style="color:var(--danger); border-color:var(--danger);" onclick="del(${r.id})">Delete</button>`;
+            else if(amIn) act = `<button class="btn-outline" style="color:var(--gold); border-color:var(--gold);" onclick="canc(${r.id})">Cancel Seat</button>`;
+            else act = `<button onclick="book(${r.id})" ${r.seats<=0?'disabled':''}>${r.seats>0 ? `Claim Seat (${r.seats} left)` : 'Full'}</button>`;
+            
+            let w = r.waypoints ? `<div style="font-size:0.8em; color:var(--muted); margin-bottom:8px; font-weight:600;">📍 Via: ${r.waypoints}</div>` : '';
+            return `<div class="ride-card ${amIn?'booked':''}">
+                <div style="display:flex; gap:12px; margin-bottom:12px; align-items:center;">
+                    <div class="avatar" style="background:${strToCol(r.name)}">${getInit(r.name)}</div>
+                    <div style="flex:1;"><div style="font-weight:800;">${r.name}</div><div style="font-size:0.75em; color:var(--muted); text-transform:uppercase;">${r.direction}</div></div>
+                    <div style="font-size:1.6em; font-weight:800; color:var(--navy);">$${r.price}</div>
+                </div>
+                <h3 style="margin:0 0 4px 0; font-size:1.4em;">${r.destination}</h3> ${w}
+                <div style="font-size:0.85em; font-weight:600; margin-bottom:12px;">📅 ${new Date(r.date).toLocaleDateString()}</div>
+                <div style="margin-bottom:16px;">
+                    <span class="badge">${r.vibe}</span><span class="badge">${r.luggage}</span>
+                    ${r.affinity==='Women Only'?'<span class="badge badge-pink">💜 Women Only</span>':''}
+                </div>
+                ${r.notes ? `<div style="background:var(--bg); padding:12px; border-radius:12px; font-size:0.85em; margin-bottom:16px;">${r.notes}</div>`:''}
+                ${act} ${(amIn||me) ? `<button class="btn-gold" style="margin-top:8px;" onclick="openChat(${r.id})">💬 Trip Chat</button>` : ''}
+            </div>`;
+        }).join('') || '<div style="text-align:center; padding:40px; color:var(--muted); font-weight:700;">No trips found.</div>';
 
-function logout(){
-localStorage.clear();
-location.reload();
-}
+        trips.innerHTML = cached.filter(r => (r.riders||"").includes(session.email) || r.email === session.email).map(r => {
+            let start = new Date(r.date).toISOString().replace(/-|:|\.\d+/g, '').substring(0,8) + "T140000Z";
+            let end = new Date(r.date).toISOString().replace(/-|:|\.\d+/g, '').substring(0,8) + "T160000Z";
+            let cal = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Ride+to+${r.destination}&dates=${start}/${end}&details=Driver:+${r.name}`;
+            return `<div class="ride-card booked"><h3 style="margin:0;">${r.destination}</h3><div style="font-size:0.85em; font-weight:600; margin:10px 0;">📅 ${new Date(r.date).toLocaleDateString()} • Driver: ${r.name}</div><button class="btn-gold" onclick="window.open('${cal}')" style="margin-bottom:8px;">📅 Add to Calendar</button><button onclick="openChat(${r.id})">💬 Trip Chat</button></div>`;
+        }).join('') || '<div style="text-align:center; color:var(--muted); font-weight:700;">No confirmed trips.</div>';
+    }
 
-function initApp(){
-document.getElementById("auth-view").style.display="none";
-document.getElementById("rider-view").style.display="block";
-document.getElementById("menu").style.display="flex";
-loadRides(true);
-setInterval(()=>loadRides(),15000);
-}
+    // --- ACTIONS (Optimistic) ---
+    async function book(id) { haptic(); if(!confirm("Claim seat?")) return; let r = cached.find(x=>x.id==id); if(r){ r.seats--; r.riders+=session.email; render(); } fetch(API, {method:'POST', body:JSON.stringify({action:'bookSeat', id, token:session.token, email:session.email})}).then(()=>silentSync(true)); }
+    async function canc(id) { haptic(); if(!confirm("Cancel?")) return; let r = cached.find(x=>x.id==id); if(r){ r.seats++; r.riders=r.riders.replace(session.email,""); render(); } fetch(API, {method:'POST', body:JSON.stringify({action:'cancelSeat', id, token:session.token, email:session.email})}).then(()=>silentSync(true)); }
+    async function del(id) { haptic(); if(!confirm("Delete trip?")) return; cached = cached.filter(x=>x.id!=id); render(); fetch(API, {method:'POST', body:JSON.stringify({action:'deleteRide', id, token:session.token, email:session.email})}).then(()=>silentSync(true)); }
 
-async function loadRides(force=false){
-if(!force && Date.now()-lastSync<10000)return;
+    // --- GEO PRICING ---
+    function calcPrice() {
+        clearTimeout(timer); const dest = document.getElementById('p-dest').value.trim();
+        timer = setTimeout(async () => {
+            if(!dest) return;
+            const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dest + ', USA')}&limit=1`); const data = await res.json();
+            if(data.length > 0) {
+                document.getElementById('p-lat').value = data[0].lat; document.getElementById('p-lon').value = data[0].lon;
+                const dLat = (data[0].lat - 40.4406)*Math.PI/180; const dLon = (data[0].lon - -79.9959)*Math.PI/180;
+                const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(40.4406*Math.PI/180)*Math.cos(data[0].lat*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+                const m = (3958.8 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))) * 1.25;
+                document.getElementById('price-hint').innerText = `~${Math.round(m)} miles. Suggested: $${Math.ceil((m/25)*3.4/3 + 4)}/seat`;
+            }
+        }, 800);
+    }
+    async function postRide() { haptic(); const p = { action:'addRide', token:session.token, email:session.email, id:Date.now(), name:document.getElementById('prof-name').value||'Driver', destination:document.getElementById('p-dest').value, waypoints:document.getElementById('p-stops').value, date:document.getElementById('p-date').value, seats:document.getElementById('p-seats').value, price:document.getElementById('p-price').value, direction:document.getElementById('p-dir').value, affinity:document.getElementById('p-affinity').value, vibe:document.getElementById('p-vibe').value, music:document.getElementById('p-music').value, luggage:document.getElementById('p-luggage').value, notes:document.getElementById('p-notes').value, lat:document.getElementById('p-lat').value, lon:document.getElementById('p-lon').value }; if(!p.destination||!p.date||!p.seats||!p.price) return alert("Fill required fields."); await fetch(API, {method:'POST', body:JSON.stringify(p)}); silentSync(true); switchTab('trips'); }
 
-try{
-const r=await fetch(API,{method:"POST",body:JSON.stringify({action:"getRides",token:session.token})});
-const d=await r.json();
-if(d.status==="success"){
-rides=d.data.sort((a,b)=>new Date(a.date)-new Date(b.date));
-render();
-lastSync=Date.now();
-document.getElementById("last-updated").innerText="Updated "+new Date().toLocaleTimeString();
-}
-}catch{}
-}
+    // --- MAPS ---
+    function initMap() { if(!map) { map = L.map('map-container').setView([40.44,-79.99], 6); L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map); markers = L.markerClusterGroup({showCoverageOnHover:false}); map.addLayer(markers); } }
+    function toggleMap() { haptic(); isMap = !isMap; const m = document.getElementById('map-container'); if(isMap) { m.classList.remove('map-hidden'); document.getElementById('list').style.display='none'; initMap(); setTimeout(()=>{map.invalidateSize(); updateMap();},100); } else { m.classList.add('map-hidden'); document.getElementById('list').style.display='block'; } }
+    function updateMap() { if(!map) return; markers.clearLayers(); let b = []; cached.filter(r=>r.direction===dir && r.lat).forEach(r=>{ let m=L.marker([r.lat, r.lon]); m.bindPopup(`<b>${r.destination}</b><br>$${r.price}<br><button onclick="book(${r.id})" style="padding:6px; margin-top:6px; border-radius:8px;">Claim</button>`); markers.addLayer(m); b.push([r.lat,r.lon]); }); if(b.length>0) map.flyToBounds(b, {padding:[30,30]}); else map.flyTo([40.44,-79.99], 6); }
 
-function render(){
-const container=document.getElementById("rides");
-if(rides.length===0){
-container.innerHTML="<div class='empty'>No active rides</div>";
-return;
-}
+    // --- TABS & PROFILE ---
+    function switchTab(t) { haptic(); document.querySelectorAll('.view').forEach(v=>v.classList.remove('active')); document.getElementById(t+'-view').classList.add('active'); document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active')); event.currentTarget.classList.add('active'); if(t==='rider') silentSync(); if(t==='profile') loadProf(); if(t==='admin') loadAdm(); window.scrollTo(0,0); }
+    async function loadProf() { const r=await fetch(API, {method:'POST', body:JSON.stringify({action:'getProfile', token:session.token, email:session.email})}); const d=await r.json(); document.getElementById('prof-name').value=d.name; document.getElementById('prof-gender').value=d.gender; document.getElementById('prof-bio').value=d.bio; document.getElementById('p-avatar').innerText=getInit(d.name); document.getElementById('p-avatar').style.background=strToCol(d.name); }
+    async function saveProfile() { haptic(); await fetch(API, {method:'POST', body:JSON.stringify({action:'updateProfile', token:session.token, email:session.email, bio:document.getElementById('prof-bio').value})}); alert("Saved!"); }
+    async function loadAdm() { const r=await fetch(API, {method:'POST', body:JSON.stringify({action:'getAnalytics', token:session.token, email:session.email})}); const d=await r.json(); document.getElementById('s-users').innerText=d.stats.users; document.getElementById('s-rides').innerText=d.stats.rides; document.getElementById('s-money').innerText='$'+d.stats.economy.toLocaleString(); }
 
-container.innerHTML=rides.map(r=>{
-const percent=(1-r.seats/6)*100;
-return `
-<div class="card fade">
-<div style="display:flex;justify-content:space-between;align-items:center;">
-<div>
-<div style="font-weight:600">${r.destination}</div>
-<div style="font-size:0.85rem;color:var(--muted)">${new Date(r.date).toLocaleDateString()}</div>
-</div>
-<div style="font-weight:700">$${r.price}</div>
-</div>
+    // --- CHAT ---
+    function openChat(id) { haptic(); activeChat = id; document.getElementById('chat-modal').style.display='flex'; loadMsgs(); }
+    function closeChat() { haptic(); document.getElementById('chat-modal').style.display='none'; activeChat = null; }
+    async function loadMsgs() { if(!activeChat) return; const r=await fetch(API, {method:'POST', body:JSON.stringify({action:'getMessages', rideId:activeChat, token:session.token, email:session.email})}); const d=await r.json(); const bx=document.getElementById('chat-box'); bx.innerHTML=d.data.map(m=>`<div class="chat-msg ${m.email===session.email?'chat-me':'chat-them'}"><div style="font-size:0.7em; opacity:0.8; margin-bottom:2px;">${m.email.split('@')[0]}</div>${m.message}</div>`).join(''); bx.scrollTop=bx.scrollHeight; }
+    async function sendChat() { haptic(); const i=document.getElementById('chat-in'); if(!i.value.trim()||!activeChat) return; const msg=i.value; i.value=''; await fetch(API, {method:'POST', body:JSON.stringify({action:'sendMessage', rideId:activeChat, message:msg, token:session.token, email:session.email})}); loadMsgs(); }
 
-<div class="capacity">
-<div class="capacity-fill" style="width:${percent}%"></div>
-</div>
-
-<button onclick="book(${r.id})">Claim Seat (${r.seats} left)</button>
-</div>`;
-}).join("");
-}
-
-async function book(id){
-if(!confirm("Confirm seat?"))return;
-await fetch(API,{method:"POST",body:JSON.stringify({action:"bookSeat",id,token:session.token})});
-loadRides(true);
-}
-
-if(session) initApp();
-
+    // --- INIT ---
+    if(session) {
+        document.getElementById('auth-view').style.display='none'; document.getElementById('rider-view').classList.add('active');
+        document.getElementById('menu').style.display='flex'; document.getElementById('logout-btn').style.display='block';
+        if(session.email==='test2') document.getElementById('adm-tab').style.display='flex';
+        loadProf(); render(); silentSync();
+    }
 </script>
-
 </body>
 </html>
-
