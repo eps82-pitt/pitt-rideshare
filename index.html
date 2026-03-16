@@ -244,7 +244,6 @@
 <div id="toast-container"></div>
 
 <script>
-    // ⚠️ CRITICAL: PASTE YOUR GOOGLE APPS SCRIPT URL HERE
     const API = "https://script.google.com/macros/s/AKfycbz0kqW9Gio5AbxSWr6IKIzG6N8OpOjPAheD7Rci9Jn8D7rXv5B24NIZ9afimmcZlo4W/exec"; 
     
     let session = JSON.parse(localStorage.getItem('pitt_sess') || "null");
@@ -384,7 +383,7 @@
         closeEditModal(); showToast("Updating..."); await fetch(API, {method:'POST', body:JSON.stringify(p)}); silentSync(true);
     }
 
-    // --- THE NEW ADVANCED PRICE CALCULATOR ---
+    // --- PRICE CALCULATOR ---
     function calcPrice(destId, latId, lonId, hintId, seatsId) {
         clearTimeout(timer); 
         const dest = document.getElementById(destId).value.trim();
@@ -432,7 +431,7 @@
         await fetch(API, {method:'POST', body:JSON.stringify(p)}); silentSync(true); switchTab('trips'); 
     }
 
-    // --- MAPS (FIXED L IS NOT DEFINED) ---
+    // --- MAPS ---
     function initMap() { 
         if(!map) { 
             // Check if Leaflet loaded correctly
