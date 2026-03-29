@@ -3,570 +3,597 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Pitt RideShare</title>
+<title>PittRide</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--navy:#003594;--navy-d:#002266;--gold:#FFB81C;--gold-l:#FFD470;--bg:#f4f5f7;--card:#fff;--card-alt:#f9fafb;--text:#0f172a;--text-s:#475569;--border:#e2e8f0;--success:#059669;--danger:#dc2626;--info:#2563eb;--radius:16px;--radius-lg:24px;--shadow:0 1px 3px rgba(0,0,0,.06),0 4px 12px rgba(0,0,0,.04);--shadow-lg:0 8px 30px rgba(0,0,0,.08);--shadow-xl:0 20px 60px rgba(0,0,0,.12);--nav-h:72px;--header-h:64px;font-family:'Inter',system-ui,sans-serif}
-[data-theme="dark"]{--bg:#0c0f1a;--card:#161b2e;--card-alt:#1e2440;--text:#f1f5f9;--text-s:#94a3b8;--border:#1e293b;--shadow:0 1px 3px rgba(0,0,0,.2),0 4px 12px rgba(0,0,0,.15);--shadow-lg:0 8px 30px rgba(0,0,0,.3);--shadow-xl:0 20px 60px rgba(0,0,0,.4)}
-body{background:var(--bg);color:var(--text);-webkit-tap-highlight-color:transparent;overflow-x:hidden;padding-bottom:calc(var(--nav-h) + 30px)}
+:root{--navy:#003594;--navy-d:#001d52;--gold:#FFB81C;--gold-l:#FFD470;--bg:#f0f2f5;--card:#fff;--card-h:#f8f9fb;--text:#0f172a;--ts:#64748b;--border:#e2e8f0;--ok:#059669;--err:#dc2626;--warn:#f59e0b;--r:16px;--rl:24px;--sh:0 1px 3px rgba(0,0,0,.05),0 6px 16px rgba(0,0,0,.04);--shL:0 8px 30px rgba(0,0,0,.08);font-family:'Inter',system-ui,sans-serif;--navH:68px;--hdrH:60px}
+[data-theme="dark"]{--bg:#0a0d17;--card:#13182b;--card-h:#1a2038;--text:#f1f5f9;--ts:#94a3b8;--border:#1e293b;--sh:0 1px 3px rgba(0,0,0,.3),0 6px 16px rgba(0,0,0,.2);--shL:0 8px 30px rgba(0,0,0,.4)}
+body{background:var(--bg);color:var(--text);-webkit-tap-highlight-color:transparent;overflow-x:hidden}
 ::selection{background:var(--gold);color:#000}
 input,select,textarea,button{font-family:inherit}
 
-/* ===== HEADER ===== */
-.header{position:sticky;top:0;z-index:100;background:var(--card);border-bottom:1px solid var(--border);height:var(--header-h);display:flex;align-items:center;justify-content:space-between;padding:0 20px;transition:background .3s,border .3s}
-.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.15em;color:var(--navy);letter-spacing:-.3px}
+/* HEADER */
+.hdr{position:sticky;top:0;z-index:100;height:var(--hdrH);display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:var(--card);border-bottom:1px solid var(--border);transition:.3s}
+.logo{display:flex;align-items:center;gap:8px;font-weight:900;font-size:1.1em;color:var(--navy);letter-spacing:-.4px}
 [data-theme="dark"] .logo{color:var(--gold)}
-.logo svg{width:28px;height:28px}
-.header-actions{display:flex;gap:8px}
-.icon-btn{width:38px;height:38px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s;font-size:1.1em}
-.icon-btn:active{transform:scale(.92)}
-.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--success);display:none;position:absolute;top:6px;right:6px}
-.syncing .sync-dot{display:block;animation:blink 1s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.logo-icon{width:26px;height:26px;background:var(--navy);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:.7em}
+[data-theme="dark"] .logo-icon{background:var(--gold);color:#000}
+.hdr-right{display:flex;gap:6px;align-items:center}
+.ib{width:36px;height:36px;border-radius:10px;border:1px solid var(--border);background:var(--card);color:var(--text);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.15s;position:relative;font-size:0}
+.ib:active{transform:scale(.9)}
+.ib svg{width:18px;height:18px}
+.notif-dot{position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:50%;background:var(--err);display:none;border:2px solid var(--card)}
 
-/* ===== LAYOUT ===== */
-.shell{max-width:540px;margin:0 auto;padding:16px}
-.view{display:none;animation:fadeSlide .25s ease-out}
-.view.active{display:block}
-@keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+/* SHELL */
+.shell{max-width:520px;margin:0 auto;padding:14px 14px calc(var(--navH) + 24px)}
+.vw{display:none;animation:fadeIn .2s ease-out}.vw.on{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-/* ===== BOTTOM NAV ===== */
-.nav{position:fixed;bottom:0;left:0;right:0;z-index:200;display:none;background:var(--card);border-top:1px solid var(--border);height:var(--nav-h);padding:0 8px;padding-bottom:env(safe-area-inset-bottom)}
-.nav-inner{max-width:540px;margin:0 auto;display:flex;height:100%}
-.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--text-s);transition:.15s;position:relative;-webkit-user-select:none;user-select:none;font-size:.65em;font-weight:600;letter-spacing:.3px;text-transform:uppercase}
-.nav-item svg{width:22px;height:22px;stroke-width:1.8;transition:.15s}
-.nav-item.active{color:var(--navy);font-weight:700}
-[data-theme="dark"] .nav-item.active{color:var(--gold)}
-.nav-item.active svg{stroke-width:2.2}
-.nav-item::before{content:'';position:absolute;top:0;left:20%;right:20%;height:2.5px;border-radius:0 0 4px 4px;background:var(--navy);opacity:0;transition:.15s}
-[data-theme="dark"] .nav-item.active::before{background:var(--gold)}
-.nav-item.active::before{opacity:1}
+/* NAV */
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--card);border-top:1px solid var(--border);height:var(--navH);padding-bottom:env(safe-area-inset-bottom);display:none}
+.nav-inner{max-width:520px;margin:0 auto;display:flex;height:100%}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:var(--ts);font-size:.6em;font-weight:700;letter-spacing:.4px;text-transform:uppercase;transition:.15s;position:relative;user-select:none}
+.ni svg{width:20px;height:20px;stroke-width:1.8;transition:.15s}
+.ni.on{color:var(--navy)}
+[data-theme="dark"] .ni.on{color:var(--gold)}
+.ni::after{content:'';position:absolute;top:0;left:25%;right:25%;height:2px;border-radius:0 0 3px 3px;background:var(--navy);opacity:0;transition:.15s}
+[data-theme="dark"] .ni.on::after{background:var(--gold)}
+.ni.on::after{opacity:1}
 
-/* ===== AUTH ===== */
-.auth-wrapper{min-height:calc(100dvh - var(--header-h) - 40px);display:flex;align-items:center;justify-content:center}
-.auth-card{background:var(--card);border-radius:var(--radius-lg);padding:36px 28px;border:1px solid var(--border);box-shadow:var(--shadow-lg);width:100%}
-.auth-card h2{font-size:1.5em;font-weight:800;margin-bottom:4px;letter-spacing:-.3px}
-.auth-card .sub{color:var(--text-s);font-size:.9em;margin-bottom:28px}
-.form-group{margin-bottom:14px}
-.form-group label{display:block;font-size:.78em;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-s);margin-bottom:6px}
-.form-input{width:100%;padding:14px 16px;border-radius:var(--radius);border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-size:.95em;transition:.15s;outline:none}
-.form-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,184,28,.15)}
-select.form-input{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
-textarea.form-input{min-height:80px;resize:vertical}
+/* FORMS */
+.fg{margin-bottom:12px}
+.fg label{display:block;font-size:.72em;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ts);margin-bottom:5px}
+.fi{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-size:.92em;transition:.15s;outline:none}
+.fi:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,184,28,.12)}
+select.fi{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='m2 4 4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+textarea.fi{min-height:70px;resize:vertical}
+.r2{display:flex;gap:8px}.r2>*{flex:1}
 
-/* ===== BUTTONS ===== */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px 20px;border-radius:var(--radius);border:none;font-weight:700;font-size:.95em;cursor:pointer;transition:.15s;outline:none}
-.btn:active{transform:scale(.97)}
-.btn:disabled{opacity:.5;pointer-events:none}
-.btn-primary{background:var(--navy);color:#fff;box-shadow:0 2px 8px rgba(0,53,148,.2)}
-[data-theme="dark"] .btn-primary{background:var(--gold);color:#000}
-.btn-gold{background:var(--gold);color:#000;box-shadow:0 2px 8px rgba(255,184,28,.2)}
-.btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text)}
-.btn-danger{background:transparent;border:1.5px solid var(--danger);color:var(--danger)}
-.btn-ghost{background:transparent;border:none;color:var(--text-s);font-weight:600}
-.btn-sm{padding:10px 16px;font-size:.85em;border-radius:12px}
-.btn-row{display:flex;gap:8px}
-.btn-row .btn{flex:1}
+/* BUTTONS */
+.bt{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:12px 18px;border-radius:12px;border:none;font-weight:700;font-size:.9em;cursor:pointer;transition:.15s;outline:none}
+.bt:active{transform:scale(.97)}.bt:disabled{opacity:.45;pointer-events:none}
+.bp{background:var(--navy);color:#fff}
+[data-theme="dark"] .bp{background:var(--gold);color:#000}
+.bg{background:var(--gold);color:#000}
+.bo{background:transparent;border:1.5px solid var(--border);color:var(--text)}
+.bd{background:transparent;border:1.5px solid var(--err);color:var(--err)}
+.bs{padding:10px 14px;font-size:.82em;border-radius:10px}
+.brow{display:flex;gap:6px}.brow .bt{flex:1}
 
-/* ===== DIRECTION TOGGLE ===== */
-.dir-toggle{display:flex;background:var(--card);border-radius:var(--radius);border:1px solid var(--border);padding:4px;margin-bottom:14px}
-.dir-btn{flex:1;padding:12px;border-radius:12px;border:none;background:transparent;font-weight:700;font-size:.88em;color:var(--text-s);cursor:pointer;transition:.2s}
-.dir-btn.active{background:var(--navy);color:#fff;box-shadow:0 2px 8px rgba(0,53,148,.15)}
-[data-theme="dark"] .dir-btn.active{background:var(--gold);color:#000}
+/* AUTH */
+.auth-wrap{min-height:calc(100dvh - var(--hdrH) - 32px);display:flex;align-items:center;justify-content:center}
+.auth-c{background:var(--card);border-radius:var(--rl);padding:32px 24px;border:1px solid var(--border);box-shadow:var(--shL);width:100%}
+.auth-c h2{font-size:1.4em;font-weight:900;margin-bottom:4px}
+.auth-c .sub{color:var(--ts);font-size:.85em;margin-bottom:24px}
 
-/* ===== FILTERS ===== */
-.filters{display:flex;gap:6px;overflow-x:auto;padding-bottom:14px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+/* DIRECTION TOGGLE */
+.dtog{display:flex;background:var(--card);border-radius:var(--r);border:1px solid var(--border);padding:3px;margin-bottom:12px}
+.dtb{flex:1;padding:10px;border-radius:10px;border:none;background:transparent;font-weight:700;font-size:.82em;color:var(--ts);cursor:pointer;transition:.2s}
+.dtb.on{background:var(--navy);color:#fff;box-shadow:0 2px 8px rgba(0,53,148,.15)}
+[data-theme="dark"] .dtb.on{background:var(--gold);color:#000}
+
+/* FILTERS + SEARCH */
+.filters{display:flex;gap:5px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .filters::-webkit-scrollbar{display:none}
-.filter-chip{flex-shrink:0;padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.8em;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap}
-.filter-chip.active{background:var(--gold);color:#000;border-color:var(--gold)}
+.fchip{flex-shrink:0;padding:7px 12px;border-radius:18px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.78em;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap}
+.fchip.on{background:var(--gold);color:#000;border-color:var(--gold)}
+.swrap{position:relative;margin-bottom:12px}
+.swrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--ts)}
+.sinput{width:100%;padding:11px 14px 11px 38px;border-radius:12px;border:1.5px solid var(--border);background:var(--card);color:var(--text);font-size:.88em;outline:none;transition:.15s}
+.sinput:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,184,28,.1)}
 
-/* ===== SEARCH ===== */
-.search-wrap{position:relative;margin-bottom:14px}
-.search-wrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--text-s)}
-.search-input{width:100%;padding:13px 16px 13px 42px;border-radius:var(--radius);border:1.5px solid var(--border);background:var(--card);color:var(--text);font-size:.92em;outline:none;transition:.15s}
-.search-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(255,184,28,.12)}
+/* SORT BAR */
+.sort-bar{display:flex;gap:6px;margin-bottom:12px;align-items:center}
+.sort-bar label{font-size:.72em;font-weight:700;color:var(--ts);text-transform:uppercase;white-space:nowrap}
+.sort-bar select{padding:7px 28px 7px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.78em;font-weight:600;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='m2 3 3 3 3-3'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;outline:none}
+.ride-count{font-size:.75em;color:var(--ts);font-weight:600;margin-left:auto}
 
-/* ===== RIDE CARDS ===== */
-.ride-card{background:var(--card);border-radius:var(--radius-lg);padding:20px;margin-bottom:12px;border:1px solid var(--border);box-shadow:var(--shadow);transition:.2s;position:relative;overflow:hidden}
-.ride-card.mine{border-left:4px solid var(--navy)}
-[data-theme="dark"] .ride-card.mine{border-left-color:var(--gold)}
-.ride-card.booked{border-left:4px solid var(--gold)}
-.ride-card .top-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-.avatar{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.95em;flex-shrink:0}
-.ride-card .driver-info{flex:1;min-width:0}
-.ride-card .driver-name{font-weight:700;font-size:.95em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ride-card .driver-meta{font-size:.75em;color:var(--text-s);font-weight:500}
-.ride-card .price-tag{font-size:1.5em;font-weight:900;color:var(--navy);letter-spacing:-.5px}
-[data-theme="dark"] .ride-card .price-tag{color:var(--gold)}
-.ride-card .dest{font-size:1.25em;font-weight:800;margin-bottom:2px;letter-spacing:-.3px}
-.ride-card .waypoints{font-size:.8em;color:var(--text-s);margin-bottom:8px;display:flex;align-items:center;gap:4px}
-.ride-card .date-line{font-size:.82em;color:var(--text-s);font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:6px}
-.badge-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
-.badge{padding:5px 10px;border-radius:8px;font-size:.72em;font-weight:700;background:var(--bg);color:var(--text-s);border:1px solid var(--border);white-space:nowrap}
-.badge-women{background:rgba(168,85,247,.1);color:#9333ea;border-color:rgba(168,85,247,.2)}
-.ride-card .notes-box{background:var(--bg);padding:10px 14px;border-radius:12px;font-size:.85em;color:var(--text-s);margin-bottom:14px;line-height:1.5}
-.seats-indicator{display:flex;gap:4px;margin-bottom:14px}
-.seat-dot{width:10px;height:10px;border-radius:50%;background:var(--gold)}
-.seat-dot.taken{background:var(--border)}
+/* RIDE CARDS */
+.rc{background:var(--card);border-radius:var(--rl);padding:18px;margin-bottom:10px;border:1px solid var(--border);box-shadow:var(--sh);position:relative;overflow:hidden;transition:.2s}
+.rc.mine{border-left:3px solid var(--navy)}
+[data-theme="dark"] .rc.mine{border-left-color:var(--gold)}
+.rc.booked{border-left:3px solid var(--gold)}
+.rc .top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.av{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.85em;flex-shrink:0}
+.rc .dinfo{flex:1;min-width:0}
+.rc .dname{font-weight:700;font-size:.88em;display:flex;align-items:center;gap:6px}
+.rc .dmeta{font-size:.7em;color:var(--ts);font-weight:500}
+.rc .price{font-size:1.35em;font-weight:900;color:var(--navy)}
+[data-theme="dark"] .rc .price{color:var(--gold)}
+.rc .dest{font-size:1.15em;font-weight:800;margin-bottom:2px;letter-spacing:-.2px}
+.rc .wp{font-size:.75em;color:var(--ts);margin-bottom:6px;display:flex;align-items:center;gap:3px}
+.rc .dl{font-size:.78em;color:var(--ts);font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.badges{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.bdg{padding:4px 8px;border-radius:6px;font-size:.68em;font-weight:700;background:var(--bg);color:var(--ts);border:1px solid var(--border)}
+.bdg-w{background:rgba(147,51,234,.08);color:#7c3aed;border-color:rgba(147,51,234,.15)}
+.seats-row{display:flex;gap:3px;margin-bottom:12px;align-items:center}
+.sd{width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.sd.tk{background:var(--border)}
+.seats-txt{font-size:.7em;color:var(--ts);font-weight:600;margin-left:6px}
+.rc .notes{background:var(--bg);padding:8px 12px;border-radius:10px;font-size:.82em;color:var(--ts);margin-bottom:12px;line-height:1.45}
+.star{color:var(--warn);font-size:.75em}
+.rating-mini{font-size:.72em;color:var(--ts);font-weight:600}
 
-/* ===== MAP ===== */
-#map-wrap{border-radius:var(--radius-lg);overflow:hidden;height:320px;margin-bottom:14px;border:1px solid var(--border);display:none}
+/* MAP */
+#map-box{border-radius:var(--rl);overflow:hidden;height:280px;margin-bottom:12px;border:1px solid var(--border);display:none}
 
-/* ===== TRIPS ===== */
-.trip-card{background:var(--card);border-radius:var(--radius-lg);padding:20px;margin-bottom:12px;border:1px solid var(--border);box-shadow:var(--shadow);border-left:4px solid var(--gold)}
-.trip-card .dest{font-size:1.15em;font-weight:800;margin-bottom:4px}
-.trip-card .meta{font-size:.82em;color:var(--text-s);font-weight:600;margin-bottom:14px}
+/* TRIPS */
+.tc{background:var(--card);border-radius:var(--rl);padding:18px;margin-bottom:10px;border:1px solid var(--border);box-shadow:var(--sh);border-left:3px solid var(--gold)}
+.tc .dest{font-size:1.1em;font-weight:800;margin-bottom:3px}
+.tc .meta{font-size:.78em;color:var(--ts);font-weight:600;margin-bottom:12px}
 
-/* ===== POST FORM ===== */
-.post-card{background:var(--card);border-radius:var(--radius-lg);padding:28px 22px;border:1px solid var(--border);box-shadow:var(--shadow)}
-.post-card h2{font-size:1.3em;font-weight:800;margin-bottom:4px}
-.post-card .sub{color:var(--text-s);font-size:.85em;margin-bottom:22px}
-.row-2{display:flex;gap:10px}
-.row-2>*{flex:1}
-.hint-text{font-size:.75em;color:var(--text-s);text-align:right;margin:-6px 4px 12px 0;font-weight:600}
+/* POST */
+.postc{background:var(--card);border-radius:var(--rl);padding:24px 20px;border:1px solid var(--border);box-shadow:var(--sh)}
+.postc h2{font-size:1.2em;font-weight:800;margin-bottom:3px}
+.postc .sub{color:var(--ts);font-size:.82em;margin-bottom:20px}
+.hint{font-size:.72em;color:var(--ts);text-align:right;margin:-4px 4px 10px 0;font-weight:600}
 
-/* ===== PROFILE ===== */
-.profile-card{background:var(--card);border-radius:var(--radius-lg);padding:32px 24px;text-align:center;border:1px solid var(--border);box-shadow:var(--shadow)}
-.profile-card .big-avatar{width:80px;height:80px;border-radius:24px;font-size:2em;margin:0 auto 16px}
-.profile-card .pname{font-size:1.2em;font-weight:800;margin-bottom:2px}
-.profile-card .pgender{font-size:.82em;color:var(--text-s);margin-bottom:20px}
+/* PROFILE */
+.profc{background:var(--card);border-radius:var(--rl);padding:28px 20px;text-align:center;border:1px solid var(--border);box-shadow:var(--sh)}
+.profc .big-av{width:72px;height:72px;border-radius:20px;font-size:1.8em;margin:0 auto 14px}
+.profc .pn{font-size:1.15em;font-weight:800;margin-bottom:2px}
+.profc .pg{font-size:.78em;color:var(--ts);margin-bottom:4px}
+.profc .pr{font-size:.82em;color:var(--warn);font-weight:700;margin-bottom:16px}
 
-/* ===== ADMIN ===== */
-.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.stat-card{background:var(--card);border-radius:var(--radius-lg);padding:22px 16px;text-align:center;border:1px solid var(--border);box-shadow:var(--shadow)}
-.stat-val{font-size:2em;font-weight:900;color:var(--navy);letter-spacing:-.5px}
-[data-theme="dark"] .stat-val{color:var(--gold)}
-.stat-label{font-size:.7em;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-s);margin-top:2px}
+/* NOTIFICATIONS */
+.notif-list{max-height:70dvh;overflow-y:auto}
+.notif-item{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start}
+.notif-item.unread{background:rgba(255,184,28,.05)}
+.notif-icon{width:32px;height:32px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1em;flex-shrink:0}
+.notif-icon.book{background:rgba(5,150,105,.1);color:var(--ok)}
+.notif-icon.cancel{background:rgba(220,38,38,.1);color:var(--err)}
+.notif-icon.msg{background:rgba(37,99,235,.1);color:#2563eb}
+.notif-icon.wait{background:rgba(245,158,11,.1);color:var(--warn)}
+.notif-body{flex:1;min-width:0}
+.notif-body p{font-size:.85em;line-height:1.4}
+.notif-body .nt{font-size:.7em;color:var(--ts);margin-top:3px}
 
-/* ===== MODALS ===== */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);z-index:300;display:none;align-items:flex-end;justify-content:center}
-.modal-overlay.open{display:flex}
-.modal-sheet{background:var(--bg);width:100%;max-width:540px;max-height:90dvh;border-radius:var(--radius-lg) var(--radius-lg) 0 0;display:flex;flex-direction:column;animation:sheetUp .25s ease-out}
-@keyframes sheetUp{from{transform:translateY(100%)}to{transform:none}}
-.modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 22px;border-bottom:1px solid var(--border);flex-shrink:0}
-.modal-header h3{font-weight:800;font-size:1.1em}
-.modal-body{padding:22px;overflow-y:auto;flex:1}
-.chat-area{display:flex;flex-direction:column;gap:6px;min-height:250px;margin-bottom:14px}
-.chat-bubble{max-width:78%;padding:10px 16px;border-radius:18px;font-size:.9em;line-height:1.4}
-.chat-me{background:var(--navy);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
-[data-theme="dark"] .chat-me{background:var(--gold);color:#000}
-.chat-them{background:var(--card);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:4px}
-.chat-sender{font-size:.68em;font-weight:700;opacity:.7;margin-bottom:2px}
-.chat-input-row{display:flex;gap:8px}
-.chat-input-row input{flex:1;margin:0}
-.chat-input-row .btn{width:48px;flex-shrink:0}
+/* ADMIN */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.sc{background:var(--card);border-radius:var(--rl);padding:20px 14px;text-align:center;border:1px solid var(--border)}
+.sv{font-size:1.8em;font-weight:900;color:var(--navy)}
+[data-theme="dark"] .sv{color:var(--gold)}
+.sl{font-size:.65em;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ts);margin-top:2px}
 
-/* ===== TOAST ===== */
-.toast-wrap{position:fixed;top:calc(var(--header-h) + 10px);left:50%;transform:translateX(-50%);z-index:400;width:90%;max-width:400px;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast{background:var(--text);color:var(--bg);padding:14px 18px;border-radius:14px;font-weight:600;font-size:.9em;box-shadow:var(--shadow-xl);opacity:0;transform:translateY(-10px);transition:.25s;display:flex;align-items:center;gap:10px;pointer-events:auto}
+/* MODALS */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(6px);z-index:300;display:none;align-items:flex-end;justify-content:center}
+.mo.open{display:flex}
+.ms{background:var(--bg);width:100%;max-width:520px;max-height:88dvh;border-radius:var(--rl) var(--rl) 0 0;display:flex;flex-direction:column;animation:sup .2s ease-out}
+@keyframes sup{from{transform:translateY(100%)}to{transform:none}}
+.mh{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border);flex-shrink:0}
+.mh h3{font-weight:800;font-size:1em}
+.mb{padding:18px;overflow-y:auto;flex:1}
+
+/* CHAT */
+.chat-area{display:flex;flex-direction:column;gap:5px;min-height:200px;margin-bottom:12px}
+.cbub{max-width:78%;padding:9px 14px;border-radius:16px;font-size:.88em;line-height:1.4}
+.cme{background:var(--navy);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+[data-theme="dark"] .cme{background:var(--gold);color:#000}
+.cthem{background:var(--card);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:4px}
+.csend{font-size:.65em;font-weight:700;opacity:.6;margin-bottom:2px}
+.cinrow{display:flex;gap:6px}
+.cinrow input{flex:1;margin:0}
+.cinrow .bt{width:44px;flex-shrink:0;padding:0}
+
+/* RATING MODAL */
+.stars-row{display:flex;gap:8px;justify-content:center;margin:16px 0}
+.star-btn{font-size:2em;cursor:pointer;transition:.15s;opacity:.3}
+.star-btn.lit{opacity:1}
+.star-btn:hover{transform:scale(1.15)}
+
+/* TOAST */
+.tw{position:fixed;top:calc(var(--hdrH) + 8px);left:50%;transform:translateX(-50%);z-index:400;width:90%;max-width:380px;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.toast{background:var(--text);color:var(--bg);padding:12px 16px;border-radius:12px;font-weight:600;font-size:.85em;box-shadow:var(--shL);opacity:0;transform:translateY(-8px);transition:.2s;display:flex;align-items:center;gap:8px;pointer-events:auto}
 .toast.show{opacity:1;transform:none}
 
-/* ===== EMPTY STATE ===== */
-.empty{text-align:center;padding:50px 20px;color:var(--text-s)}
-.empty svg{width:48px;height:48px;margin-bottom:12px;opacity:.4}
-.empty p{font-weight:600;font-size:.95em}
-.empty .sub{font-size:.82em;margin-top:4px}
+/* EMPTY */
+.empty{text-align:center;padding:40px 20px;color:var(--ts)}
+.empty svg{width:40px;height:40px;margin-bottom:10px;opacity:.35}
+.empty p{font-weight:600;font-size:.9em}
+.empty .sub{font-size:.78em;margin-top:3px}
 
-/* ===== SKELETON ===== */
-.skel-card{background:var(--card);border-radius:var(--radius-lg);padding:20px;margin-bottom:12px;border:1px solid var(--border)}
-.skel-line{height:14px;border-radius:8px;background:var(--border);margin-bottom:10px;animation:pulse 1.5s infinite}
-.skel-line.w50{width:50%}
-.skel-line.w70{width:70%}
-.skel-circle{width:42px;height:42px;border-radius:14px;background:var(--border);animation:pulse 1.5s infinite}
-@keyframes pulse{0%,100%{opacity:.4}50%{opacity:.7}}
+/* SKEL */
+.sk{background:var(--card);border-radius:var(--rl);padding:18px;margin-bottom:10px;border:1px solid var(--border)}
+.skl{height:12px;border-radius:6px;background:var(--border);margin-bottom:8px;animation:p 1.5s infinite}
+.skl.w50{width:50%}.skl.w70{width:70%}
+.skc{width:38px;height:38px;border-radius:12px;background:var(--border);animation:p 1.5s infinite}
+@keyframes p{0%,100%{opacity:.35}50%{opacity:.6}}
 </style>
 </head>
 <body>
-
-<!-- HEADER -->
-<div class="header" id="app-header">
- <div class="logo">
-  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-  PittRide
- </div>
- <div class="header-actions">
-  <button class="icon-btn" onclick="toggleTheme()" title="Theme">
-   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-  </button>
-  <button class="icon-btn" id="logout-btn" onclick="logout()" style="display:none" title="Sign Out">
-   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-  </button>
+<div class="hdr">
+ <div class="logo"><div class="logo-icon">PR</div>PittRide</div>
+ <div class="hdr-right">
+  <button class="ib" id="notif-btn" onclick="openNotifs()" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><div class="notif-dot" id="ndot"></div></button>
+  <button class="ib" onclick="toggleTheme()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></button>
+  <button class="ib" id="lob" onclick="logout()" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>
  </div>
 </div>
+<div class="shell" id="app">
 
-<div class="shell" id="main-shell">
-
-<!-- AUTH VIEW -->
-<div id="auth-view" class="view active">
- <div class="auth-wrapper">
-  <div class="auth-card">
-   <h2 id="auth-title">Welcome back</h2>
-   <p class="sub" id="auth-sub">Sign in with your Pitt email to continue</p>
-   <div id="reg-fields" style="display:none">
-    <div class="form-group"><label>Full Name</label><input type="text" id="reg-name" class="form-input" placeholder="Jane Doe"></div>
-    <div class="form-group"><label>Gender</label><select id="reg-gender" class="form-input"><option value="" disabled selected>Select for safe routing</option><option value="Female">Female</option><option value="Male">Male</option><option value="Other">Non-Binary / Other</option></select></div>
-   </div>
-   <div class="form-group"><label>Email</label><input type="email" id="email" class="form-input" placeholder="abc123@pitt.edu" autocapitalize="off"></div>
-   <div class="form-group"><label>Password</label><input type="password" id="pass" class="form-input" placeholder="••••••••"></div>
-   <button class="btn btn-primary" id="auth-btn" onclick="submitAuth()">Sign In</button>
-   <button class="btn btn-ghost" style="margin-top:10px" id="reg-toggle" onclick="toggleReg()">Don't have an account? <strong>Sign up</strong></button>
+<!-- AUTH -->
+<div id="v-auth" class="vw on">
+ <div class="auth-wrap"><div class="auth-c">
+  <h2 id="atit">Welcome back</h2>
+  <p class="sub" id="asub">Sign in with your Pitt email</p>
+  <div id="rfs" style="display:none">
+   <div class="fg"><label>Full Name</label><input class="fi" id="rn" placeholder="Jane Doe"></div>
+   <div class="fg"><label>Gender</label><select class="fi" id="rg"><option value="" disabled selected>For safe routing</option><option value="Female">Female</option><option value="Male">Male</option><option value="Other">Non-Binary / Other</option></select></div>
   </div>
- </div>
+  <div class="fg"><label>Email</label><input type="email" class="fi" id="em" placeholder="abc123@pitt.edu" autocapitalize="off"></div>
+  <div class="fg"><label>Password</label><input type="password" class="fi" id="pw" placeholder="••••••••"></div>
+  <button class="bt bp" id="abtn" onclick="submitAuth()">Sign In</button>
+  <p onclick="toggleReg()" id="rtog" style="text-align:center;color:var(--ts);font-size:.82em;font-weight:600;cursor:pointer;margin-top:14px">Don't have an account? <strong>Sign up</strong></p>
+ </div></div>
 </div>
 
-<!-- RIDER / SEARCH VIEW -->
-<div id="rider-view" class="view">
- <div class="dir-toggle">
-  <button class="dir-btn active" id="btn-out" onclick="setDir('Leaving Pitt')">Leaving Pitt</button>
-  <button class="dir-btn" id="btn-ret" onclick="setDir('Returning to Pitt')">Returning</button>
+<!-- SEARCH -->
+<div id="v-rider" class="vw">
+ <div class="dtog">
+  <button class="dtb on" id="bo" onclick="setDir('Leaving Pitt')">Leaving Pitt</button>
+  <button class="dtb" id="br" onclick="setDir('Returning to Pitt')">Returning</button>
  </div>
  <div class="filters">
-  <div class="filter-chip" id="chip-cheap" onclick="toggleChip('cheap')">Under $30</div>
-  <div class="filter-chip" id="chip-women" onclick="toggleChip('women')">Women Only</div>
-  <div class="filter-chip" id="chip-trunk" onclick="toggleChip('trunk')">Trunk Space</div>
-  <div class="filter-chip" id="chip-quiet" onclick="toggleChip('quiet')">Quiet</div>
+  <div class="fchip" id="fc-cheap" onclick="tChip('cheap')">Under $30</div>
+  <div class="fchip" id="fc-women" onclick="tChip('women')">Women Only</div>
+  <div class="fchip" id="fc-trunk" onclick="tChip('trunk')">Trunk Space</div>
+  <div class="fchip" id="fc-quiet" onclick="tChip('quiet')">Quiet</div>
  </div>
- <div class="search-wrap">
+ <div class="swrap">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-  <input type="text" id="search" class="search-input" placeholder="Search city or stops…" oninput="render()">
+  <input class="sinput" id="search" placeholder="Search city or stops…" oninput="render()">
  </div>
- <button class="btn btn-outline btn-sm" style="margin-bottom:14px" onclick="toggleMap()">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
-  Toggle Map
+ <div class="sort-bar">
+  <label>Sort</label>
+  <select id="sort-sel" onchange="render()">
+   <option value="date-asc">Date (soonest)</option>
+   <option value="price-asc">Price (low→high)</option>
+   <option value="price-desc">Price (high→low)</option>
+   <option value="seats-desc">Most seats</option>
+  </select>
+  <span class="ride-count" id="rcount"></span>
+ </div>
+ <button class="bt bo bs" style="margin-bottom:12px" onclick="toggleMap()">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+  Map
  </button>
- <div id="map-wrap"></div>
- <div id="skeleton" style="display:none">
-  <div class="skel-card"><div style="display:flex;gap:12px;margin-bottom:14px"><div class="skel-circle"></div><div style="flex:1"><div class="skel-line w50"></div><div class="skel-line w70"></div></div></div><div class="skel-line"></div><div class="skel-line w70"></div></div>
-  <div class="skel-card"><div style="display:flex;gap:12px;margin-bottom:14px"><div class="skel-circle"></div><div style="flex:1"><div class="skel-line w50"></div><div class="skel-line w70"></div></div></div><div class="skel-line"></div><div class="skel-line w70"></div></div>
- </div>
- <div id="ride-list"></div>
+ <div id="map-box"></div>
+ <div id="skel" style="display:none"><div class="sk"><div style="display:flex;gap:10px;margin-bottom:12px"><div class="skc"></div><div style="flex:1"><div class="skl w50"></div><div class="skl w70"></div></div></div><div class="skl"></div><div class="skl w70"></div></div><div class="sk"><div style="display:flex;gap:10px;margin-bottom:12px"><div class="skc"></div><div style="flex:1"><div class="skl w50"></div><div class="skl w70"></div></div></div><div class="skl"></div></div></div>
+ <div id="rlist"></div>
 </div>
 
-<!-- POST / DRIVER VIEW -->
-<div id="driver-view" class="view">
- <div class="post-card">
-  <h2>Offer a ride</h2>
-  <p class="sub">Fill in the details and post to the board</p>
-  <div class="form-group"><label>Direction</label><select id="p-dir" class="form-input"><option value="Leaving Pitt">Leaving Pitt</option><option value="Returning to Pitt">Returning to Pitt</option></select></div>
-  <div class="form-group"><label>Destination City</label><input type="text" id="p-dest" class="form-input" placeholder="e.g. Philadelphia" oninput="calcPrice('p-dest','p-lat','p-lon','price-hint','p-seats')"></div>
-  <input type="hidden" id="p-lat"><input type="hidden" id="p-lon">
-  <div class="form-group"><label>Waypoints (optional)</label><input type="text" id="p-stops" class="form-input" placeholder="e.g. Harrisburg, State College"></div>
-  <div class="form-group"><label>Date</label><input type="date" id="p-date" class="form-input"></div>
-  <div class="row-2">
-   <div class="form-group"><label>Open Seats</label><input type="number" id="p-seats" class="form-input" placeholder="1–6" min="1" max="6" oninput="calcPrice('p-dest','p-lat','p-lon','price-hint','p-seats')"></div>
-   <div class="form-group"><label>Price / Seat</label><input type="number" id="p-price" class="form-input" placeholder="$"></div>
+<!-- POST -->
+<div id="v-driver" class="vw">
+ <div class="postc">
+  <h2>Offer a ride</h2><p class="sub">Post to the board for other students</p>
+  <div class="fg"><label>Direction</label><select class="fi" id="pd"><option value="Leaving Pitt">Leaving Pitt</option><option value="Returning to Pitt">Returning to Pitt</option></select></div>
+  <div class="fg"><label>Destination</label><input class="fi" id="pde" placeholder="e.g. Philadelphia" oninput="calcP('pde','pla','plo','ph','pse')"></div>
+  <input type="hidden" id="pla"><input type="hidden" id="plo">
+  <div class="fg"><label>Waypoints</label><input class="fi" id="pst" placeholder="e.g. Harrisburg, State College"></div>
+  <div class="fg"><label>Date</label><input type="date" class="fi" id="pda"></div>
+  <div class="r2">
+   <div class="fg"><label>Seats</label><input type="number" class="fi" id="pse" placeholder="1–6" min="1" max="6" oninput="calcP('pde','pla','plo','ph','pse')"></div>
+   <div class="fg"><label>$/Seat</label><input type="number" class="fi" id="ppr" placeholder="$"></div>
   </div>
-  <p id="price-hint" class="hint-text"></p>
-  <div class="form-group"><label>Who Can Join</label><select id="p-affinity" class="form-input"><option value="Everyone">Open to Everyone</option><option value="Women Only">Women Only</option></select></div>
-  <div class="row-2">
-   <div class="form-group"><label>Vibe</label><select id="p-vibe" class="form-input"><option value="Chatty">Chatty</option><option value="Quiet">Quiet</option><option value="Mixed">Mixed</option></select></div>
-   <div class="form-group"><label>Music</label><select id="p-music" class="form-input"><option value="Driver's Choice">Driver's Aux</option><option value="Pass the Aux">Pass Aux</option><option value="Podcasts/Silence">Podcasts</option></select></div>
+  <p class="hint" id="ph"></p>
+  <div class="fg"><label>Who Can Join</label><select class="fi" id="paf"><option value="Everyone">Everyone</option><option value="Women Only">Women Only</option></select></div>
+  <div class="r2">
+   <div class="fg"><label>Vibe</label><select class="fi" id="pvi"><option value="Chatty">Chatty</option><option value="Quiet">Quiet</option><option value="Mixed">Mixed</option></select></div>
+   <div class="fg"><label>Music</label><select class="fi" id="pmu"><option value="Driver's Choice">Driver's Aux</option><option value="Pass the Aux">Pass Aux</option><option value="Podcasts/Silence">Podcasts</option></select></div>
   </div>
-  <div class="form-group"><label>Luggage</label><select id="p-luggage" class="form-input"><option value="Backpack Only">Backpack Only</option><option value="Carry-on Size">Carry-on</option><option value="Large Trunk Space">Large Trunk</option></select></div>
-  <div class="form-group"><label>Notes</label><textarea id="p-notes" class="form-input" placeholder="Meeting spot, departure time, etc."></textarea></div>
-  <button class="btn btn-primary" onclick="postRide()">Post Ride</button>
+  <div class="fg"><label>Luggage</label><select class="fi" id="plu"><option value="Backpack Only">Backpack</option><option value="Carry-on Size">Carry-on</option><option value="Large Trunk Space">Large Trunk</option></select></div>
+  <div class="fg"><label>Notes</label><textarea class="fi" id="pno" placeholder="Meeting spot, departure time…"></textarea></div>
+  <button class="bt bp" onclick="postRide()">Post Ride</button>
  </div>
 </div>
 
-<!-- TRIPS VIEW -->
-<div id="trips-view" class="view">
- <h2 style="font-weight:800;margin-bottom:16px">My Trips</h2>
- <div id="trips-list"></div>
+<!-- TRIPS -->
+<div id="v-trips" class="vw">
+ <h2 style="font-weight:800;margin-bottom:14px">My Trips</h2>
+ <div id="tlist"></div>
 </div>
 
-<!-- PROFILE VIEW -->
-<div id="profile-view" class="view">
- <div class="profile-card">
-  <div id="p-avatar" class="avatar big-avatar" style="background:var(--navy)">👤</div>
-  <div class="pname" id="prof-name-display">—</div>
-  <div class="pgender" id="prof-gender-display">—</div>
-  <input type="hidden" id="prof-name"><input type="hidden" id="prof-gender">
-  <div class="form-group" style="text-align:left;margin-top:20px"><label>Bio</label><textarea id="prof-bio" class="form-input" placeholder="Senior CS major. Love road trips!"></textarea></div>
-  <button class="btn btn-primary" onclick="saveProfile()">Save Profile</button>
+<!-- PROFILE -->
+<div id="v-profile" class="vw">
+ <div class="profc">
+  <div id="pav" class="av big-av" style="background:var(--navy)">👤</div>
+  <div class="pn" id="pnd">—</div>
+  <div class="pg" id="pgd">—</div>
+  <div class="pr" id="prd"></div>
+  <input type="hidden" id="pfn"><input type="hidden" id="pfg">
+  <div class="fg" style="text-align:left;margin-top:16px"><label>Bio</label><textarea class="fi" id="pfb" placeholder="Tell fellow riders about yourself…"></textarea></div>
+  <button class="bt bp" onclick="saveProf()">Save Profile</button>
  </div>
 </div>
 
-<!-- ADMIN VIEW -->
-<div id="admin-view" class="view">
- <h2 style="font-weight:800;margin-bottom:16px">Admin Dashboard</h2>
- <div class="stats-grid">
-  <div class="stat-card"><div class="stat-val" id="s-users">—</div><div class="stat-label">Users</div></div>
-  <div class="stat-card"><div class="stat-val" id="s-rides">—</div><div class="stat-label">Active Rides</div></div>
+<!-- ADMIN -->
+<div id="v-admin" class="vw">
+ <h2 style="font-weight:800;margin-bottom:14px">Dashboard</h2>
+ <div class="sgrid">
+  <div class="sc"><div class="sv" id="su">—</div><div class="sl">Users</div></div>
+  <div class="sc"><div class="sv" id="sr">—</div><div class="sl">Rides</div></div>
  </div>
- <div class="stat-card" style="margin-bottom:16px"><div class="stat-val" id="s-money" style="color:var(--success)">$—</div><div class="stat-label">Economy Moved</div></div>
+ <div class="sgrid">
+  <div class="sc"><div class="sv" id="sm" style="color:var(--ok)">$—</div><div class="sl">Economy</div></div>
+  <div class="sc"><div class="sv" id="smsg">—</div><div class="sl">Messages</div></div>
+ </div>
+</div>
 </div>
 
-</div><!-- /shell -->
-
-<!-- BOTTOM NAV -->
+<!-- NAV -->
 <nav class="nav" id="nav">
  <div class="nav-inner">
-  <div class="nav-item active" onclick="switchTab('rider',this)">
-   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Search
-  </div>
-  <div class="nav-item" onclick="switchTab('driver',this)">
-   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>Post
-  </div>
-  <div class="nav-item" onclick="switchTab('trips',this)">
-   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>Trips
-  </div>
-  <div class="nav-item" onclick="switchTab('profile',this)">
-   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile
-  </div>
-  <div class="nav-item" id="adm-tab" style="display:none" onclick="switchTab('admin',this)">
-   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z"/><circle cx="12" cy="12" r="3"/></svg>Admin
-  </div>
+  <div class="ni on" data-t="rider" onclick="sw(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Search</div>
+  <div class="ni" data-t="driver" onclick="sw(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>Post</div>
+  <div class="ni" data-t="trips" onclick="sw(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>Trips</div>
+  <div class="ni" data-t="profile" onclick="sw(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</div>
+  <div class="ni" id="atab" style="display:none" data-t="admin" onclick="sw(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>Admin</div>
  </div>
 </nav>
 
 <!-- EDIT MODAL -->
-<div class="modal-overlay" id="edit-modal">
- <div class="modal-sheet">
-  <div class="modal-header"><h3>Edit Ride</h3><button class="icon-btn" onclick="closeEditModal()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
-  <div class="modal-body">
-   <input type="hidden" id="e-id">
-   <div class="form-group"><label>Direction</label><select id="e-dir" class="form-input"><option value="Leaving Pitt">Leaving Pitt</option><option value="Returning to Pitt">Returning to Pitt</option></select></div>
-   <div class="form-group"><label>Destination</label><input type="text" id="e-dest" class="form-input" oninput="calcPrice('e-dest','e-lat','e-lon','e-price-hint','e-seats')"></div>
-   <input type="hidden" id="e-lat"><input type="hidden" id="e-lon">
-   <div class="form-group"><label>Waypoints</label><input type="text" id="e-stops" class="form-input"></div>
-   <div class="form-group"><label>Date</label><input type="date" id="e-date" class="form-input"></div>
-   <div class="row-2">
-    <div class="form-group"><label>Seats</label><input type="number" id="e-seats" class="form-input" min="1" max="6" oninput="calcPrice('e-dest','e-lat','e-lon','e-price-hint','e-seats')"></div>
-    <div class="form-group"><label>Price</label><input type="number" id="e-price" class="form-input"></div>
-   </div>
-   <p id="e-price-hint" class="hint-text"></p>
-   <div class="form-group"><label>Who Can Join</label><select id="e-affinity" class="form-input"><option value="Everyone">Everyone</option><option value="Women Only">Women Only</option></select></div>
-   <div class="row-2">
-    <div class="form-group"><label>Vibe</label><select id="e-vibe" class="form-input"><option value="Chatty">Chatty</option><option value="Quiet">Quiet</option><option value="Mixed">Mixed</option></select></div>
-    <div class="form-group"><label>Music</label><select id="e-music" class="form-input"><option value="Driver's Choice">Driver's Aux</option><option value="Pass the Aux">Pass Aux</option><option value="Podcasts/Silence">Podcasts</option></select></div>
-   </div>
-   <div class="form-group"><label>Luggage</label><select id="e-luggage" class="form-input"><option value="Backpack Only">Backpack</option><option value="Carry-on Size">Carry-on</option><option value="Large Trunk Space">Large Trunk</option></select></div>
-   <div class="form-group"><label>Notes</label><textarea id="e-notes" class="form-input"></textarea></div>
-   <button class="btn btn-gold" onclick="submitEditRide()">Save Changes</button>
-  </div>
- </div>
+<div class="mo" id="emod" onclick="if(event.target===this)closeEdit()">
+ <div class="ms"><div class="mh"><h3>Edit Ride</h3><button class="ib" onclick="closeEdit()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+ <div class="mb">
+  <input type="hidden" id="ei">
+  <div class="fg"><label>Direction</label><select class="fi" id="edi"><option value="Leaving Pitt">Leaving</option><option value="Returning to Pitt">Returning</option></select></div>
+  <div class="fg"><label>Destination</label><input class="fi" id="ede" oninput="calcP('ede','ela','elo','eph','ese')"></div>
+  <input type="hidden" id="ela"><input type="hidden" id="elo">
+  <div class="fg"><label>Waypoints</label><input class="fi" id="est"></div>
+  <div class="fg"><label>Date</label><input type="date" class="fi" id="eda"></div>
+  <div class="r2"><div class="fg"><label>Seats</label><input type="number" class="fi" id="ese" min="1" max="6" oninput="calcP('ede','ela','elo','eph','ese')"></div><div class="fg"><label>Price</label><input type="number" class="fi" id="epr"></div></div>
+  <p class="hint" id="eph"></p>
+  <div class="fg"><label>Affinity</label><select class="fi" id="eaf"><option value="Everyone">Everyone</option><option value="Women Only">Women Only</option></select></div>
+  <div class="r2"><div class="fg"><label>Vibe</label><select class="fi" id="evi"><option value="Chatty">Chatty</option><option value="Quiet">Quiet</option><option value="Mixed">Mixed</option></select></div><div class="fg"><label>Music</label><select class="fi" id="emu"><option value="Driver's Choice">Driver's Aux</option><option value="Pass the Aux">Pass Aux</option><option value="Podcasts/Silence">Podcasts</option></select></div></div>
+  <div class="fg"><label>Luggage</label><select class="fi" id="elu"><option value="Backpack Only">Backpack</option><option value="Carry-on Size">Carry-on</option><option value="Large Trunk Space">Large Trunk</option></select></div>
+  <div class="fg"><label>Notes</label><textarea class="fi" id="eno"></textarea></div>
+  <button class="bt bg" onclick="submitEdit()">Save Changes</button>
+ </div></div>
 </div>
 
 <!-- CHAT MODAL -->
-<div class="modal-overlay" id="chat-modal">
- <div class="modal-sheet">
-  <div class="modal-header"><h3>Trip Chat</h3><button class="icon-btn" onclick="closeChat()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
-  <div class="modal-body" style="display:flex;flex-direction:column">
-   <div id="chat-box" class="chat-area"></div>
-   <div class="chat-input-row">
-    <input type="text" id="chat-in" class="form-input" style="margin:0" placeholder="Type a message…" onkeypress="if(event.key==='Enter')sendChat()">
-    <button class="btn btn-primary btn-sm" onclick="sendChat()" style="width:48px;padding:0">
-     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-    </button>
-   </div>
-  </div>
- </div>
+<div class="mo" id="cmod" onclick="if(event.target===this)closeChat()">
+ <div class="ms"><div class="mh"><h3>Trip Chat</h3><button class="ib" onclick="closeChat()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+ <div class="mb" style="display:flex;flex-direction:column">
+  <div id="cbox" class="chat-area"></div>
+  <div class="cinrow"><input class="fi" id="cin" style="margin:0" placeholder="Message…" onkeypress="if(event.key==='Enter')sendMsg()"><button class="bt bp bs" onclick="sendMsg()" style="width:44px;padding:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div>
+ </div></div>
 </div>
 
-<div class="toast-wrap" id="toast-wrap"></div>
+<!-- NOTIF MODAL -->
+<div class="mo" id="nmod" onclick="if(event.target===this)closeNotifs()">
+ <div class="ms"><div class="mh"><h3>Notifications</h3><button class="ib" onclick="closeNotifs()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+ <div class="mb" style="padding:0"><div class="notif-list" id="nlist"></div></div></div>
+</div>
+
+<!-- RATE MODAL -->
+<div class="mo" id="rmod" onclick="if(event.target===this)closeRate()">
+ <div class="ms" style="max-height:auto"><div class="mh"><h3>Rate Rider</h3><button class="ib" onclick="closeRate()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+ <div class="mb" style="text-align:center">
+  <p id="rate-who" style="font-weight:700;margin-bottom:4px"></p>
+  <div class="stars-row" id="stars-row"></div>
+  <input type="hidden" id="rate-email"><input type="hidden" id="rate-ride">
+  <button class="bt bp" onclick="submitRate()">Submit Rating</button>
+ </div></div>
+</div>
+
+<div class="tw" id="tw"></div>
 
 <script>
 const API="https://script.google.com/macros/s/AKfycbz0kqW9Gio5AbxSWr6IKIzG6N8OpOjPAheD7Rci9Jn8D7rXv5B24NIZ9afimmcZlo4W/exec";
-let session=JSON.parse(localStorage.getItem('pitt_sess')||"null");
-let cached=JSON.parse(localStorage.getItem('pitt_data')||"[]");
-let map,markers,isMap=false,isReg=false,lastSync=0,dir='Leaving Pitt',activeChat=null,timer;
-let filters={cheap:false,women:false,trunk:false,quiet:false};
+let S=JSON.parse(localStorage.getItem('ps')||"null"),D=JSON.parse(localStorage.getItem('pd')||"[]");
+let map,markers,isMap=false,isReg=false,lSync=0,dir='Leaving Pitt',aChat=null,tmr,role='user';
+let F={cheap:false,women:false,trunk:false,quiet:false};
+let selRating=0;
 
 // Theme
-function toggleTheme(){const t=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',t);localStorage.setItem('pitt_theme',t)}
-if(localStorage.getItem('pitt_theme'))document.documentElement.setAttribute('data-theme',localStorage.getItem('pitt_theme'));
-else if(window.matchMedia('(prefers-color-scheme:dark)').matches)document.documentElement.setAttribute('data-theme','dark');
+function toggleTheme(){const t=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',t);localStorage.setItem('pt',t)}
+(function(){const t=localStorage.getItem('pt');if(t)document.documentElement.setAttribute('data-theme',t);else if(matchMedia('(prefers-color-scheme:dark)').matches)document.documentElement.setAttribute('data-theme','dark')})();
 
-// Dates
-document.getElementById('p-date').min=new Date().toISOString().split('T')[0];
-document.getElementById('e-date').min=new Date().toISOString().split('T')[0];
+document.getElementById('pda').min=new Date().toISOString().split('T')[0];
+document.getElementById('eda').min=new Date().toISOString().split('T')[0];
 
-// Toast
-function showToast(msg,type='success'){const w=document.getElementById('toast-wrap');const t=document.createElement('div');t.className='toast';t.innerHTML=`<span>${type==='success'?'✓':'!'}</span> ${msg}`;w.appendChild(t);requestAnimationFrame(()=>t.classList.add('show'));setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300)},2500)}
+function toast(m,t='ok'){const w=document.getElementById('tw'),e=document.createElement('div');e.className='toast';e.innerHTML=`<span>${t==='ok'?'✓':'⚠'}</span>${m}`;w.appendChild(e);requestAnimationFrame(()=>e.classList.add('show'));setTimeout(()=>{e.classList.remove('show');setTimeout(()=>e.remove(),250)},2400)}
+async function api(d){const r=await fetch(API,{method:'POST',body:JSON.stringify({...d,token:S?.token,email:S?.email})});return r.json()}
 
 // Auth
-function toggleReg(){isReg=!isReg;document.getElementById('reg-fields').style.display=isReg?'block':'none';document.getElementById('auth-title').textContent=isReg?'Create account':'Welcome back';document.getElementById('auth-sub').textContent=isReg?'Sign up with your Pitt email':'Sign in with your Pitt email to continue';document.getElementById('auth-btn').textContent=isReg?'Create Account':'Sign In';document.getElementById('reg-toggle').innerHTML=isReg?'Already have an account? <strong>Sign in</strong>':'Don\'t have an account? <strong>Sign up</strong>'}
-
+function toggleReg(){isReg=!isReg;document.getElementById('rfs').style.display=isReg?'block':'none';document.getElementById('atit').textContent=isReg?'Create account':'Welcome back';document.getElementById('asub').textContent=isReg?'Sign up with your Pitt email':'Sign in with your Pitt email';document.getElementById('abtn').textContent=isReg?'Create Account':'Sign In';document.getElementById('rtog').innerHTML=isReg?'Have an account? <strong>Sign in</strong>':'Don\'t have an account? <strong>Sign up</strong>'}
 async function submitAuth(){
- const em=document.getElementById('email').value.trim(),pw=document.getElementById('pass').value,btn=document.getElementById('auth-btn');
- if(!em||!pw)return showToast('Fill all fields','error');
+ const em=document.getElementById('em').value.trim(),pw=document.getElementById('pw').value,btn=document.getElementById('abtn');
+ if(!em||!pw)return toast('Fill all fields','err');
  let p={action:isReg?'register':'login',email:em,password:pw};
- if(isReg){p.name=document.getElementById('reg-name').value;p.gender=document.getElementById('reg-gender').value;if(!p.name||!p.gender)return showToast('Name and gender required','error')}
+ if(isReg){p.name=document.getElementById('rn').value;p.gender=document.getElementById('rg').value;if(!p.name||!p.gender)return toast('Name & gender required','err')}
  btn.textContent='Loading…';btn.disabled=true;
- try{const res=await fetch(API,{method:'POST',body:JSON.stringify(p)});const d=await res.json();
-  if(d.status==='success'||d.status==='admin_success'){session={email:d.status==='admin_success'?'test2':em,token:d.token};localStorage.setItem('pitt_sess',JSON.stringify(session));location.reload()}
-  else{showToast(d.message,'error');btn.textContent=isReg?'Create Account':'Sign In';btn.disabled=false}
- }catch(e){showToast('Network error','error');btn.textContent=isReg?'Create Account':'Sign In';btn.disabled=false}
-}
-function logout(){fetch(API,{method:'POST',body:JSON.stringify({action:'logout',token:session.token,email:session.email})}).finally(()=>{localStorage.clear();location.reload()})}
+ try{const d=await api(p);
+  if(d.status==='success'){S={email:em,token:d.token};role=d.role||'user';localStorage.setItem('ps',JSON.stringify(S));location.reload()}
+  else{toast(d.message,'err');btn.textContent=isReg?'Create Account':'Sign In';btn.disabled=false}
+ }catch(e){toast('Network error','err');btn.textContent=isReg?'Create Account':'Sign In';btn.disabled=false}}
+function logout(){api({action:'logout'}).finally(()=>{localStorage.clear();location.reload()})}
 
 // Sync
-async function silentSync(force=false){
- if(!session||(!force&&Date.now()-lastSync<10000))return;
- if(cached.length===0)document.getElementById('skeleton').style.display='block';
- try{const res=await fetch(API,{method:'POST',body:JSON.stringify({action:'getRides',token:session.token,email:session.email})});const d=await res.json();
-  if(d.status==='success'){cached=d.data;localStorage.setItem('pitt_data',JSON.stringify(cached));lastSync=Date.now();render();if(isMap)updateMap()}
+async function sync(force=false){
+ if(!S||(!force&&Date.now()-lSync<10000))return;
+ if(!D.length)document.getElementById('skel').style.display='block';
+ try{const d=await api({action:'getRides'});
+  if(d.status==='success'){D=d.data;localStorage.setItem('pd',JSON.stringify(D));lSync=Date.now();render();if(isMap)upMap()}
   else if(d.status==='unauthorized')logout()
- }catch(e){console.error('Sync err')}
- document.getElementById('skeleton').style.display='none';
-}
+ }catch(e){}
+ document.getElementById('skel').style.display='none';
+ pollNotifs()}
+async function pollNotifs(){
+ if(!S)return;
+ try{const d=await api({action:'getNotifications'});
+  document.getElementById('ndot').style.display=d.unread>0?'block':'none';
+  window._notifs=d.data||[]
+ }catch(e){}}
 
-// Direction & Filters
-function setDir(d){dir=d;document.getElementById('btn-out').className='dir-btn'+(d==='Leaving Pitt'?' active':'');document.getElementById('btn-ret').className='dir-btn'+(d==='Returning to Pitt'?' active':'');render();if(isMap)updateMap()}
-function toggleChip(c){filters[c]=!filters[c];document.getElementById('chip-'+c).classList.toggle('active');render();if(isMap)updateMap()}
+// Dir & filters
+function setDir(d){dir=d;document.getElementById('bo').className='dtb'+(d==='Leaving Pitt'?' on':'');document.getElementById('br').className='dtb'+(d==='Returning to Pitt'?' on':'');render();if(isMap)upMap()}
+function tChip(c){F[c]=!F[c];document.getElementById('fc-'+c).classList.toggle('on');render();if(isMap)upMap()}
 
 // Helpers
-function strToCol(s){let h=0;for(let i=0;i<s.length;i++)h=s.charCodeAt(i)+((h<<5)-h);return`hsl(${Math.abs(h)%360},55%,55%)`}
-function getInit(n){let p=n.split(' ');return(p[0][0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase()}
-function fmtDate(d){try{return new Date(d).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}catch(e){return d}}
+function col(s){let h=0;for(let i=0;i<s.length;i++)h=s.charCodeAt(i)+((h<<5)-h);return`hsl(${Math.abs(h)%360},50%,52%)`}
+function ini(n){let p=n.split(' ');return(p[0][0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase()}
+function fD(d){try{return new Date(d).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}catch(e){return d}}
+function ago(t){const d=Date.now()-new Date(t).getTime(),m=Math.floor(d/60000);if(m<1)return'just now';if(m<60)return m+'m ago';const h=Math.floor(m/60);if(h<24)return h+'h ago';return Math.floor(h/24)+'d ago'}
 
-// Render
-function render(){
+function getFiltered(){
  const q=document.getElementById('search').value.toLowerCase();
- const list=document.getElementById('ride-list'),trips=document.getElementById('trips-list');
- let f=cached.filter(r=>r.direction===dir&&(r.destination.toLowerCase().includes(q)||(r.waypoints||'').toLowerCase().includes(q)));
- if(filters.cheap)f=f.filter(r=>r.price<=30);
- if(filters.women)f=f.filter(r=>r.affinity==='Women Only');
- if(filters.trunk)f=f.filter(r=>r.luggage==='Large Trunk Space');
- if(filters.quiet)f=f.filter(r=>r.vibe==='Quiet');
+ let f=D.filter(r=>r.direction===dir&&(r.destination.toLowerCase().includes(q)||(r.waypoints||'').toLowerCase().includes(q)));
+ if(F.cheap)f=f.filter(r=>r.price<=30);
+ if(F.women)f=f.filter(r=>r.affinity==='Women Only');
+ if(F.trunk)f=f.filter(r=>r.luggage==='Large Trunk Space');
+ if(F.quiet)f=f.filter(r=>r.vibe==='Quiet');
+ const s=document.getElementById('sort-sel').value;
+ f.sort((a,b)=>{
+  if(s==='date-asc')return new Date(a.date)-new Date(b.date);
+  if(s==='price-asc')return a.price-b.price;
+  if(s==='price-desc')return b.price-a.price;
+  if(s==='seats-desc')return b.seats-a.seats;
+  return 0;
+ });
+ return f;
+}
+
+function render(){
+ const f=getFiltered();
+ document.getElementById('rcount').textContent=f.length+' ride'+(f.length!==1?'s':'');
+ const list=document.getElementById('rlist');
 
  list.innerHTML=f.map(r=>{
-  let amIn=(r.riders||'').includes(session.email),wait=(r.waitlist||'').includes(session.email),me=session.email===r.email;
+  let amIn=(r.riders||'').includes(S.email),wait=(r.waitlist||'').includes(S.email),me=S.email===r.email;
   let act='';
-  if(me)act=`<div class="btn-row"><button class="btn btn-gold btn-sm" onclick="openEditModal(${r.id})">Edit</button><button class="btn btn-danger btn-sm" onclick="del(${r.id})">Delete</button></div>`;
-  else if(amIn)act=`<button class="btn btn-outline btn-sm" onclick="canc(${r.id})">Cancel Booking</button>`;
-  else if(r.seats>0)act=`<button class="btn btn-primary btn-sm" onclick="book(${r.id})">Claim Seat</button>`;
-  else if(wait)act=`<button class="btn btn-outline btn-sm" disabled>On Waitlist</button>`;
-  else act=`<button class="btn btn-outline btn-sm" onclick="joinWait(${r.id})">Join Waitlist</button>`;
+  if(me)act=`<div class="brow"><button class="bt bg bs" onclick="openEdit('${r.id}')">Edit</button><button class="bt bd bs" onclick="del('${r.id}')">Delete</button></div>`;
+  else if(amIn)act=`<div class="brow"><button class="bt bo bs" onclick="canc('${r.id}')">Cancel</button><button class="bt bo bs" onclick="openRate2('${r.email}','${r.id}','${r.name}')">⭐ Rate</button></div>`;
+  else if(r.seats>0)act=`<button class="bt bp bs" onclick="book('${r.id}')">Claim Seat</button>`;
+  else if(wait)act=`<button class="bt bo bs" disabled>On Waitlist</button>`;
+  else act=`<button class="bt bo bs" onclick="joinW('${r.id}')">Join Waitlist</button>`;
 
-  let totalSeats=r.seats+((r.riders||'').split(',').filter(x=>x).length);
-  let takenSeats=totalSeats-r.seats;
-  let dots='';for(let i=0;i<totalSeats;i++)dots+=`<div class="seat-dot${i<takenSeats?' taken':''}"></div>`;
+  let total=r.seats+((r.riders||'').split(',').filter(x=>x).length);
+  let taken=total-r.seats;
+  let dots='';for(let i=0;i<Math.min(total,6);i++)dots+=`<div class="sd${i<taken?' tk':''}"></div>`;
 
-  let wp=r.waypoints?`<div class="waypoints"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg> Via ${r.waypoints}</div>`:'';
-  let chatBtn=(amIn||me)?`<button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="openChat(${r.id})">💬 Chat</button>`:'';
+  let wp=r.waypoints?`<div class="wp"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>Via ${r.waypoints}</div>`:'';
+  let chat=(amIn||me)?`<button class="bt bo bs" style="margin-top:6px" onclick="openChat('${r.id}')">💬 Chat</button>`:'';
 
-  return`<div class="ride-card${me?' mine':''}${amIn?' booked':''}">
-   <div class="top-row">
-    <div class="avatar" style="background:${strToCol(r.name)}">${getInit(r.name)}</div>
-    <div class="driver-info"><div class="driver-name">${r.name}</div><div class="driver-meta">${r.direction}</div></div>
-    <div class="price-tag">$${r.price}</div>
-   </div>
+  return`<div class="rc${me?' mine':''}${amIn?' booked':''}">
+   <div class="top"><div class="av" style="background:${col(r.name)}">${ini(r.name)}</div>
+    <div class="dinfo"><div class="dname">${r.name}</div><div class="dmeta">${r.direction}</div></div>
+    <div class="price">$${r.price}</div></div>
    <div class="dest">${r.destination}</div>${wp}
-   <div class="date-line"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> ${fmtDate(r.date)}</div>
-   <div class="badge-row">
-    <span class="badge">${r.vibe}</span><span class="badge">${r.music}</span><span class="badge">${r.luggage}</span>
-    ${r.affinity==='Women Only'?'<span class="badge badge-women">Women Only</span>':''}
-   </div>
-   <div class="seats-indicator" title="${r.seats} seats left">${dots}</div>
-   ${r.notes?`<div class="notes-box">${r.notes}</div>`:''}
-   ${act}${chatBtn}
-  </div>`;
- }).join('')||'<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 15h8M9 9h.01M15 9h.01"/></svg><p>No rides found</p><p class="sub">Try adjusting your filters or check back later</p></div>';
+   <div class="dl"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>${fD(r.date)}</div>
+   <div class="badges"><span class="bdg">${r.vibe}</span><span class="bdg">${r.music}</span><span class="bdg">${r.luggage}</span>${r.affinity==='Women Only'?'<span class="bdg bdg-w">Women Only</span>':''}</div>
+   <div class="seats-row">${dots}<span class="seats-txt">${r.seats} left</span></div>
+   ${r.notes?`<div class="notes">${r.notes}</div>`:''}
+   ${act}${chat}</div>`;
+ }).join('')||`<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 15h8M9 9h.01M15 9h.01"/></svg><p>No rides found</p><p class="sub">Adjust filters or check back later</p></div>`;
 
- trips.innerHTML=cached.filter(r=>(r.riders||'').includes(session.email)||r.email===session.email).map(r=>{
-  let start=new Date(r.date).toISOString().replace(/-|:|\.\d+/g,'').substring(0,8)+'T140000Z';
-  let end=new Date(r.date).toISOString().replace(/-|:|\.\d+/g,'').substring(0,8)+'T160000Z';
-  let cal=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=Ride+to+${encodeURIComponent(r.destination)}&dates=${start}/${end}&details=Driver:+${encodeURIComponent(r.name)}`;
-  return`<div class="trip-card">
-   <div class="dest">${r.destination}</div>
-   <div class="meta">${fmtDate(r.date)} · ${r.name}</div>
-   <div class="btn-row"><button class="btn btn-gold btn-sm" onclick="window.open('${cal}')">Add to Calendar</button><button class="btn btn-outline btn-sm" onclick="openChat(${r.id})">💬 Chat</button></div>
-  </div>`;
- }).join('')||'<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg><p>No trips yet</p><p class="sub">Book a ride or post one to get started</p></div>';
+ // Trips
+ document.getElementById('tlist').innerHTML=D.filter(r=>(r.riders||'').includes(S.email)||r.email===S.email).map(r=>{
+  let s=new Date(r.date).toISOString().replace(/-|:|\.\d+/g,'').substring(0,8)+'T140000Z';
+  let e=new Date(r.date).toISOString().replace(/-|:|\.\d+/g,'').substring(0,8)+'T160000Z';
+  let cal=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=Ride+to+${encodeURIComponent(r.destination)}&dates=${s}/${e}&details=Driver:+${encodeURIComponent(r.name)}`;
+  return`<div class="tc"><div class="dest">${r.destination}</div><div class="meta">${fD(r.date)} · ${r.name}</div><div class="brow"><button class="bt bg bs" onclick="window.open('${cal}')">📅 Calendar</button><button class="bt bo bs" onclick="openChat('${r.id}')">💬 Chat</button></div></div>`;
+ }).join('')||`<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg><p>No trips yet</p><p class="sub">Book or post a ride to get started</p></div>`;
 }
 
 // Actions
-async function book(id){if(!confirm('Claim this seat?'))return;let r=cached.find(x=>x.id==id);if(r){r.seats--;r.riders=(r.riders?r.riders+',':'')+session.email;render();showToast('Seat confirmed!')}fetch(API,{method:'POST',body:JSON.stringify({action:'bookSeat',id,token:session.token,email:session.email})}).then(()=>silentSync(true))}
-async function canc(id){if(!confirm('Cancel your seat?'))return;let r=cached.find(x=>x.id==id);if(r){r.seats++;r.riders=r.riders.replace(session.email,'').replace(',,',',').replace(/^,|,$/g,'');render();showToast('Booking cancelled')}fetch(API,{method:'POST',body:JSON.stringify({action:'cancelSeat',id,token:session.token,email:session.email})}).then(()=>silentSync(true))}
-async function del(id){if(!confirm('Delete this ride?'))return;cached=cached.filter(x=>x.id!=id);render();showToast('Ride deleted');fetch(API,{method:'POST',body:JSON.stringify({action:'deleteRide',id,token:session.token,email:session.email})}).then(()=>silentSync(true))}
-async function joinWait(id){let r=cached.find(x=>x.id==id);if(r){r.waitlist=(r.waitlist?r.waitlist+',':'')+session.email;render();showToast('Joined waitlist')}fetch(API,{method:'POST',body:JSON.stringify({action:'joinWaitlist',id,token:session.token,email:session.email})}).then(()=>silentSync(true))}
+async function book(id){if(!confirm('Claim this seat?'))return;let r=D.find(x=>x.id==id);if(r){r.seats--;r.riders=(r.riders?r.riders+',':'')+S.email;render();toast('Seat confirmed!')}api({action:'bookSeat',id}).then(()=>sync(true))}
+async function canc(id){if(!confirm('Cancel seat?'))return;let r=D.find(x=>x.id==id);if(r){r.seats++;r.riders=r.riders.replace(S.email,'').replace(',,',',').replace(/^,|,$/g,'');render();toast('Cancelled')}api({action:'cancelSeat',id}).then(()=>sync(true))}
+async function del(id){if(!confirm('Delete this ride?'))return;D=D.filter(x=>x.id!=id);render();toast('Deleted');api({action:'deleteRide',id}).then(()=>sync(true))}
+async function joinW(id){let r=D.find(x=>x.id==id);if(r){r.waitlist=(r.waitlist?r.waitlist+',':'')+S.email;render();toast('Joined waitlist')}api({action:'joinWaitlist',id}).then(()=>sync(true))}
 
-// Edit Modal
-function openEditModal(id){
- const r=cached.find(x=>x.id==id);if(!r)return;
- document.getElementById('e-id').value=r.id;document.getElementById('e-dir').value=r.direction;document.getElementById('e-dest').value=r.destination;document.getElementById('e-lat').value=r.lat;document.getElementById('e-lon').value=r.lon;document.getElementById('e-stops').value=r.waypoints||'';document.getElementById('e-date').value=(r.date||'').split('T')[0];document.getElementById('e-seats').value=r.seats;document.getElementById('e-price').value=r.price;document.getElementById('e-affinity').value=r.affinity;document.getElementById('e-vibe').value=r.vibe;document.getElementById('e-music').value=r.music;document.getElementById('e-luggage').value=r.luggage;document.getElementById('e-notes').value=r.notes;
- document.getElementById('edit-modal').classList.add('open');
-}
-function closeEditModal(){document.getElementById('edit-modal').classList.remove('open')}
-async function submitEditRide(){
- const p={action:'editRide',token:session.token,email:session.email,id:document.getElementById('e-id').value,destination:document.getElementById('e-dest').value,waypoints:document.getElementById('e-stops').value,date:document.getElementById('e-date').value,seats:document.getElementById('e-seats').value,price:document.getElementById('e-price').value,direction:document.getElementById('e-dir').value,affinity:document.getElementById('e-affinity').value,vibe:document.getElementById('e-vibe').value,music:document.getElementById('e-music').value,luggage:document.getElementById('e-luggage').value,notes:document.getElementById('e-notes').value,lat:document.getElementById('e-lat').value,lon:document.getElementById('e-lon').value};
- closeEditModal();showToast('Updating…');await fetch(API,{method:'POST',body:JSON.stringify(p)});silentSync(true);
-}
+// Edit
+function openEdit(id){const r=D.find(x=>x.id==id);if(!r)return;
+ document.getElementById('ei').value=r.id;document.getElementById('edi').value=r.direction;document.getElementById('ede').value=r.destination;document.getElementById('ela').value=r.lat;document.getElementById('elo').value=r.lon;document.getElementById('est').value=r.waypoints||'';document.getElementById('eda').value=(r.date||'').split('T')[0];document.getElementById('ese').value=r.seats;document.getElementById('epr').value=r.price;document.getElementById('eaf').value=r.affinity;document.getElementById('evi').value=r.vibe;document.getElementById('emu').value=r.music;document.getElementById('elu').value=r.luggage;document.getElementById('eno').value=r.notes;
+ document.getElementById('emod').classList.add('open')}
+function closeEdit(){document.getElementById('emod').classList.remove('open')}
+async function submitEdit(){const p={action:'editRide',id:document.getElementById('ei').value,destination:document.getElementById('ede').value,waypoints:document.getElementById('est').value,date:document.getElementById('eda').value,seats:document.getElementById('ese').value,price:document.getElementById('epr').value,direction:document.getElementById('edi').value,affinity:document.getElementById('eaf').value,vibe:document.getElementById('evi').value,music:document.getElementById('emu').value,luggage:document.getElementById('elu').value,notes:document.getElementById('eno').value,lat:document.getElementById('ela').value,lon:document.getElementById('elo').value};closeEdit();toast('Saving…');await api(p);sync(true)}
 
-// Price Calc
-function calcPrice(dI,laI,loI,hI,sI){
- clearTimeout(timer);const dest=document.getElementById(dI).value.trim();let seats=parseInt(document.getElementById(sI).value)||3;
- timer=setTimeout(async()=>{if(!dest)return;try{const res=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dest+', USA')}&limit=1`);const data=await res.json();
-  if(data.length>0){document.getElementById(laI).value=data[0].lat;document.getElementById(loI).value=data[0].lon;
-   const dLat=(data[0].lat-40.4406)*Math.PI/180,dLon=(data[0].lon- -79.9959)*Math.PI/180;
-   const a=Math.sin(dLat/2)**2+Math.cos(40.4406*Math.PI/180)*Math.cos(data[0].lat*Math.PI/180)*Math.sin(dLon/2)**2;
+// Price calc
+function calcP(dI,laI,loI,hI,sI){clearTimeout(tmr);const dest=document.getElementById(dI).value.trim();let seats=parseInt(document.getElementById(sI).value)||3;
+ tmr=setTimeout(async()=>{if(!dest)return;try{const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(dest+', USA')}&limit=1`);const d=await r.json();
+  if(d.length){document.getElementById(laI).value=d[0].lat;document.getElementById(loI).value=d[0].lon;
+   const dL=(d[0].lat-40.4406)*Math.PI/180,dN=(d[0].lon- -79.9959)*Math.PI/180;
+   const a=Math.sin(dL/2)**2+Math.cos(40.4406*Math.PI/180)*Math.cos(d[0].lat*Math.PI/180)*Math.sin(dN/2)**2;
    const mi=3958.8*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))*1.25;
-   const cost=(mi/25)*3.5+mi*.05+5;const pp=Math.max(5,Math.ceil(cost/(1+seats)));
-   document.getElementById(hI).textContent=`~${Math.round(mi)} mi · Fair split: $${pp}/seat`;
-  }}catch(e){}},1000);
-}
+   const c=(mi/25)*3.5+mi*.05+5;const pp=Math.max(5,Math.ceil(c/(1+seats)));
+   document.getElementById(hI).textContent=`~${Math.round(mi)} mi · Fair split: $${pp}/seat`}}catch(e){}},1000)}
 
-// Post Ride
-async function postRide(){
- const p={action:'addRide',token:session.token,email:session.email,id:Date.now(),name:document.getElementById('prof-name').value||'Driver',destination:document.getElementById('p-dest').value,waypoints:document.getElementById('p-stops').value,date:document.getElementById('p-date').value,seats:document.getElementById('p-seats').value,price:document.getElementById('p-price').value,direction:document.getElementById('p-dir').value,affinity:document.getElementById('p-affinity').value,vibe:document.getElementById('p-vibe').value,music:document.getElementById('p-music').value,luggage:document.getElementById('p-luggage').value,notes:document.getElementById('p-notes').value,lat:document.getElementById('p-lat').value,lon:document.getElementById('p-lon').value};
- if(!p.destination||!p.date||!p.seats||!p.price)return showToast('Fill all required fields','error');
- document.getElementById('p-dest').value='';document.getElementById('p-stops').value='';document.getElementById('p-notes').value='';
- showToast('Posting ride…');await fetch(API,{method:'POST',body:JSON.stringify(p)});silentSync(true);switchTab('trips',document.querySelectorAll('.nav-item')[2]);
-}
+// Post
+async function postRide(){const p={action:'addRide',id:Date.now(),name:document.getElementById('pfn').value||'Driver',destination:document.getElementById('pde').value,waypoints:document.getElementById('pst').value,date:document.getElementById('pda').value,seats:document.getElementById('pse').value,price:document.getElementById('ppr').value,direction:document.getElementById('pd').value,affinity:document.getElementById('paf').value,vibe:document.getElementById('pvi').value,music:document.getElementById('pmu').value,luggage:document.getElementById('plu').value,notes:document.getElementById('pno').value,lat:document.getElementById('pla').value,lon:document.getElementById('plo').value};
+ if(!p.destination||!p.date||!p.seats||!p.price)return toast('Fill required fields','err');
+ // Validate date is not in past
+ if(new Date(p.date)<new Date(new Date().toDateString()))return toast('Date cannot be in the past','err');
+ if(parseInt(p.seats)<1||parseInt(p.seats)>6)return toast('Seats must be 1–6','err');
+ if(parseFloat(p.price)<0||parseFloat(p.price)>500)return toast('Price must be $0–$500','err');
+ ['pde','pst','pno'].forEach(x=>document.getElementById(x).value='');
+ toast('Posting…');await api(p);sync(true);sw(document.querySelectorAll('.ni')[2])}
 
 // Map
-function toggleMap(){
- isMap=!isMap;const w=document.getElementById('map-wrap');
- if(isMap){w.style.display='block';document.getElementById('ride-list').style.display='none';
-  if(!map){map=L.map('map-wrap').setView([40.44,-79.99],6);L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:''}).addTo(map);markers=L.layerGroup().addTo(map)}
-  setTimeout(()=>{map.invalidateSize();updateMap()},100);
- }else{w.style.display='none';document.getElementById('ride-list').style.display='block'}
-}
-function updateMap(){if(!map)return;markers.clearLayers();let b=[];
- cached.filter(r=>r.direction===dir&&r.lat).forEach(r=>{let m=L.marker([r.lat,r.lon]);m.bindPopup(`<b>${r.destination}</b><br>$${r.price} · ${r.seats} seats`);markers.addLayer(m);b.push([r.lat,r.lon])});
- if(b.length)map.flyToBounds(b,{padding:[40,40]});else map.flyTo([40.44,-79.99],6);
-}
+function toggleMap(){isMap=!isMap;const w=document.getElementById('map-box');
+ if(isMap){w.style.display='block';document.getElementById('rlist').style.display='none';
+  if(!map){map=L.map('map-box').setView([40.44,-79.99],6);L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:''}).addTo(map);markers=L.layerGroup().addTo(map)}
+  setTimeout(()=>{map.invalidateSize();upMap()},100)
+ }else{w.style.display='none';document.getElementById('rlist').style.display='block'}}
+function upMap(){if(!map)return;markers.clearLayers();let b=[];
+ getFiltered().filter(r=>r.lat).forEach(r=>{let m=L.marker([r.lat,r.lon]);m.bindPopup(`<b>${r.destination}</b><br>$${r.price} · ${r.seats} seats`);markers.addLayer(m);b.push([r.lat,r.lon])});
+ if(b.length)map.flyToBounds(b,{padding:[35,35]});else map.flyTo([40.44,-79.99],6)}
 
 // Tabs
-function switchTab(t,el){
- document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
- document.getElementById(t+'-view').classList.add('active');
- document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
- if(el)el.classList.add('active');
- if(t==='rider')silentSync();if(t==='profile')loadProf();if(t==='admin')loadAdm();
- window.scrollTo({top:0,behavior:'smooth'});
-}
+function sw(el){const t=el.dataset.t;document.querySelectorAll('.vw').forEach(v=>v.classList.remove('on'));document.getElementById('v-'+t).classList.add('on');document.querySelectorAll('.ni').forEach(i=>i.classList.remove('on'));el.classList.add('on');if(t==='rider')sync();if(t==='profile')loadProf();if(t==='admin')loadAdm();window.scrollTo({top:0,behavior:'smooth'})}
 
 // Profile
-async function loadProf(){try{const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'getProfile',token:session.token,email:session.email})});const d=await r.json();if(d.status==='success'){document.getElementById('prof-name').value=d.name;document.getElementById('prof-gender').value=d.gender;document.getElementById('prof-name-display').textContent=d.name;document.getElementById('prof-gender-display').textContent=d.gender;document.getElementById('prof-bio').value=d.bio||'';document.getElementById('p-avatar').textContent=getInit(d.name);document.getElementById('p-avatar').style.background=strToCol(d.name)}}catch(e){}}
-async function saveProfile(){await fetch(API,{method:'POST',body:JSON.stringify({action:'updateProfile',token:session.token,email:session.email,bio:document.getElementById('prof-bio').value})});showToast('Profile saved!')}
-async function loadAdm(){try{const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'getAnalytics',token:session.token,email:session.email})});const d=await r.json();if(d.stats){document.getElementById('s-users').textContent=d.stats.users;document.getElementById('s-rides').textContent=d.stats.rides;document.getElementById('s-money').textContent='$'+d.stats.economy.toLocaleString()}}catch(e){}}
+async function loadProf(){try{const d=await api({action:'getProfile'});if(d.status==='success'){document.getElementById('pfn').value=d.name;document.getElementById('pfg').value=d.gender;document.getElementById('pnd').textContent=d.name;document.getElementById('pgd').textContent=d.gender;document.getElementById('pfb').value=d.bio||'';document.getElementById('pav').textContent=ini(d.name);document.getElementById('pav').style.background=col(d.name);role=d.role||'user';
+ let rs=d.rating>0?'★'.repeat(Math.round(d.rating))+' '+d.rating+' ('+d.ratingCount+' ratings)':'No ratings yet';document.getElementById('prd').textContent=rs}}catch(e){}}
+async function saveProf(){await api({action:'updateProfile',bio:document.getElementById('pfb').value});toast('Saved!')}
+async function loadAdm(){try{const d=await api({action:'getAnalytics'});if(d.stats){document.getElementById('su').textContent=d.stats.users;document.getElementById('sr').textContent=d.stats.rides;document.getElementById('sm').textContent='$'+d.stats.economy.toLocaleString();document.getElementById('smsg').textContent=d.stats.messages}}catch(e){}}
 
 // Chat
-function openChat(id){activeChat=id;document.getElementById('chat-modal').classList.add('open');loadMsgs()}
-function closeChat(){document.getElementById('chat-modal').classList.remove('open');activeChat=null}
-async function loadMsgs(){if(!activeChat)return;const bx=document.getElementById('chat-box');bx.innerHTML='<p style="text-align:center;color:var(--text-s);padding:20px">Loading…</p>';
- try{const r=await fetch(API,{method:'POST',body:JSON.stringify({action:'getMessages',rideId:activeChat,token:session.token,email:session.email})});const d=await r.json();
-  bx.innerHTML=d.data.map(m=>`<div class="chat-bubble ${m.email===session.email?'chat-me':'chat-them'}"><div class="chat-sender">${m.email.split('@')[0]}</div>${m.message}</div>`).join('')||'<p style="text-align:center;color:var(--text-s);padding:40px">No messages yet</p>';
-  bx.scrollTop=bx.scrollHeight;
- }catch(e){bx.innerHTML='<p style="text-align:center;color:var(--text-s)">Failed to load</p>'}}
-async function sendChat(){const i=document.getElementById('chat-in');if(!i.value.trim()||!activeChat)return;const msg=i.value;i.value='';await fetch(API,{method:'POST',body:JSON.stringify({action:'sendMessage',rideId:activeChat,message:msg,token:session.token,email:session.email})});loadMsgs()}
+function openChat(id){aChat=id;document.getElementById('cmod').classList.add('open');loadMsgs()}
+function closeChat(){document.getElementById('cmod').classList.remove('open');aChat=null;clearInterval(window._chatPoll)}
+async function loadMsgs(){if(!aChat)return;const bx=document.getElementById('cbox');
+ try{const d=await api({action:'getMessages',rideId:aChat});
+  bx.innerHTML=d.data.map(m=>`<div class="cbub ${m.email===S.email?'cme':'cthem'}"><div class="csend">${m.name||m.email.split('@')[0]}</div>${m.message}</div>`).join('')||'<p style="text-align:center;color:var(--ts);padding:30px">No messages yet</p>';
+  bx.scrollTop=bx.scrollHeight}catch(e){bx.innerHTML='<p style="text-align:center;color:var(--ts)">Failed</p>'}
+ // Auto-refresh chat every 8s
+ clearInterval(window._chatPoll);window._chatPoll=setInterval(()=>{if(aChat)loadMsgs()},8000)}
+async function sendMsg(){const i=document.getElementById('cin');if(!i.value.trim()||!aChat)return;const m=i.value;i.value='';await api({action:'sendMessage',rideId:aChat,message:m});loadMsgs()}
 
-// Close modals on overlay click
-document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m){m.classList.remove('open');activeChat=null}})});
+// Notifications
+function openNotifs(){document.getElementById('nmod').classList.add('open');renderNotifs();api({action:'markNotifRead'}).then(()=>{document.getElementById('ndot').style.display='none'})}
+function closeNotifs(){document.getElementById('nmod').classList.remove('open')}
+function renderNotifs(){const nl=document.getElementById('nlist');const ns=window._notifs||[];
+ nl.innerHTML=ns.length?ns.map(n=>{
+  let ic='msg',emoji='💬';
+  if(n.type==='new_booking'){ic='book';emoji='✅'}
+  else if(n.type==='booking_cancelled'||n.type==='ride_cancelled'){ic='cancel';emoji='❌'}
+  else if(n.type==='waitlist_promoted'){ic='wait';emoji='🎉'}
+  return`<div class="notif-item${!n.read?' unread':''}"><div class="notif-icon ${ic}">${emoji}</div><div class="notif-body"><p>${n.message}</p><div class="nt">${ago(n.time)}</div></div></div>`
+ }).join(''):'<div style="text-align:center;padding:40px;color:var(--ts)"><p style="font-weight:600">No notifications</p></div>'}
+
+// Ratings
+function openRate2(email,rideId,name){selRating=0;document.getElementById('rate-email').value=email;document.getElementById('rate-ride').value=rideId;document.getElementById('rate-who').textContent='Rate '+name;
+ const sr=document.getElementById('stars-row');sr.innerHTML='';
+ for(let i=1;i<=5;i++){const s=document.createElement('span');s.className='star-btn';s.textContent='★';s.onclick=()=>{selRating=i;sr.querySelectorAll('.star-btn').forEach((b,j)=>b.classList.toggle('lit',j<i))};sr.appendChild(s)}
+ document.getElementById('rmod').classList.add('open')}
+function closeRate(){document.getElementById('rmod').classList.remove('open')}
+async function submitRate(){if(selRating<1)return toast('Select a rating','err');
+ const d=await api({action:'rateUser',ratedUser:document.getElementById('rate-email').value,rideId:document.getElementById('rate-ride').value,score:selRating});
+ if(d.status==='success'){closeRate();toast('Rating submitted!')}else toast(d.message||'Error','err')}
 
 // Init
-if(session){
- document.getElementById('auth-view').style.display='none';
- document.getElementById('rider-view').classList.add('active');
- document.getElementById('nav').style.display='block';
- document.getElementById('logout-btn').style.display='flex';
- if(session.email==='test2')document.getElementById('adm-tab').style.display='flex';
- loadProf();render();silentSync(true);
+if(S){
+ document.getElementById('v-auth').style.display='none';document.getElementById('v-rider').classList.add('on');
+ document.getElementById('nav').style.display='block';document.getElementById('lob').style.display='flex';document.getElementById('notif-btn').style.display='flex';
+ loadProf().then(()=>{if(role==='admin')document.getElementById('atab').style.display='flex'});
+ render();sync(true);
+ // Poll for new data every 30s
+ setInterval(()=>sync(),30000);
+ setInterval(pollNotifs,30000);
 }
 </script>
 </body>
