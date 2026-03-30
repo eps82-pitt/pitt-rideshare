@@ -15,11 +15,11 @@
   --t1:#0b1222;--t2:#3d4663;--t3:#8892a8;
   --b1:#dfe2ea;--b2:#eceef3;
   --ok:#16a34a;--err:#dc2626;--warn:#ea8c00;
-  --r:14px;--rl:20px;--rr:28px;
+  --r:14px;--rl:20px;
   --sh:0 1px 2px rgba(11,18,34,.04),0 4px 16px rgba(11,18,34,.03);
   --shh:0 2px 8px rgba(11,18,34,.06),0 12px 32px rgba(11,18,34,.06);
   --shm:0 16px 48px rgba(11,18,34,.12);
-  font-family:'DM Sans',system-ui,-apple-system,sans-serif;
+  font-family:'DM Sans',system-ui,sans-serif;
   --hdr:56px;--nav:64px
 }
 [data-theme="dark"]{
@@ -32,27 +32,70 @@
 }
 body{background:var(--bg);color:var(--t1);-webkit-tap-highlight-color:transparent;overflow-x:hidden;min-height:100dvh}
 ::selection{background:var(--g1);color:#000}
+input,select,textarea,button{font-family:inherit}
 
-/* === HEADER === */
-.hdr{position:sticky;top:0;z-index:100;height:var(--hdr);display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:var(--s1);border-bottom:1px solid var(--b1);backdrop-filter:blur(12px)}
+/* HEADER */
+.hdr{position:sticky;top:0;z-index:100;height:var(--hdr);display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:var(--s1);border-bottom:1px solid var(--b1)}
 .logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:1.05em;color:var(--c1);letter-spacing:-.3px}
 [data-theme="dark"] .logo{color:var(--g1)}
-.logo-mark{width:28px;height:28px;background:linear-gradient(135deg,var(--c1),var(--c2));border-radius:8px;display:grid;place-items:center;color:#fff;font-size:.6em;font-weight:800;letter-spacing:0}
-[data-theme="dark"] .logo-mark{background:linear-gradient(135deg,var(--g1),var(--g2))}
+.logo-mark{width:28px;height:28px;background:linear-gradient(135deg,var(--c1),var(--c2));border-radius:8px;display:grid;place-items:center;color:#fff;font-size:.6em;font-weight:800}
+[data-theme="dark"] .logo-mark{background:linear-gradient(135deg,var(--g1),var(--g2));color:#000}
 .hdr-r{display:flex;gap:4px}
 .ib{width:34px;height:34px;border-radius:10px;border:1px solid var(--b1);background:var(--s1);color:var(--t2);display:grid;place-items:center;cursor:pointer;transition:.12s;position:relative}
 .ib:active{transform:scale(.9)}
 .ib svg{width:17px;height:17px}
 .nd{position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:var(--err);display:none;border:2px solid var(--s1)}
 
-/* === LAYOUT === */
-.sh{max-width:480px;margin:0 auto;padding:12px 12px calc(var(--nav) + 20px)}
+/* LAYOUT — responsive */
+.sh{margin:0 auto;padding:12px 16px calc(var(--nav) + 20px);max-width:100%}
+@media(min-width:768px){
+  .sh{max-width:720px;padding:20px 24px calc(var(--nav) + 20px)}
+}
+@media(min-width:1024px){
+  .sh{max-width:960px;padding:24px 32px 40px}
+  .nv{display:none !important}
+  body{padding-bottom:0}
+}
+@media(min-width:1280px){
+  .sh{max-width:1100px}
+}
+
+/* Desktop sidebar nav */
+.desk-nav{display:none}
+@media(min-width:1024px){
+  .desk-nav{display:flex;position:fixed;left:0;top:var(--hdr);bottom:0;width:220px;background:var(--s1);border-right:1px solid var(--b1);flex-direction:column;padding:16px 10px;gap:4px;z-index:90}
+  .desk-nav .dni{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;cursor:pointer;font-size:.88em;font-weight:600;color:var(--t2);transition:.12s;user-select:none}
+  .desk-nav .dni:hover{background:var(--s3)}
+  .desk-nav .dni.on{background:var(--c1);color:#fff}
+  [data-theme="dark"] .desk-nav .dni.on{background:var(--g1);color:#000}
+  .desk-nav .dni svg{width:18px;height:18px;flex-shrink:0}
+  .sh{margin-left:220px;max-width:calc(100% - 220px)}
+  .hdr{padding-left:240px}
+}
+@media(min-width:1280px){
+  .desk-nav{width:240px}
+  .sh{margin-left:240px;max-width:calc(100% - 240px)}
+  .hdr{padding-left:260px}
+}
+
+/* Ride grid on desktop */
+.ride-grid{display:flex;flex-direction:column;gap:8px}
+@media(min-width:768px){
+  .ride-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+}
+@media(min-width:1024px){
+  .ride-grid{grid-template-columns:1fr 1fr}
+}
+@media(min-width:1280px){
+  .ride-grid{grid-template-columns:1fr 1fr 1fr}
+}
+
 .v{display:none;animation:fi .18s ease-out}.v.on{display:block}
 @keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 
-/* === NAV === */
+/* MOBILE NAV */
 .nv{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--s1);border-top:1px solid var(--b1);height:var(--nav);padding-bottom:env(safe-area-inset-bottom);display:none}
-.nv-i{max-width:480px;margin:0 auto;display:flex;height:100%}
+.nv-i{max-width:600px;margin:0 auto;display:flex;height:100%}
 .ni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;color:var(--t3);font-size:.58em;font-weight:700;letter-spacing:.4px;text-transform:uppercase;transition:.12s;position:relative;user-select:none}
 .ni svg{width:19px;height:19px;stroke-width:1.7}
 .ni.on{color:var(--c1)}
@@ -61,7 +104,7 @@ body{background:var(--bg);color:var(--t1);-webkit-tap-highlight-color:transparen
 [data-theme="dark"] .ni.on::after{background:var(--g1)}
 .ni.on::after{opacity:1}
 
-/* === FORMS === */
+/* FORMS */
 .fg{margin-bottom:10px}
 .fg>label{display:block;font-size:.68em;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--t3);margin-bottom:4px}
 .fi{width:100%;padding:11px 13px;border-radius:10px;border:1.5px solid var(--b1);background:var(--s2);color:var(--t1);font-size:.88em;transition:.12s;outline:none}
@@ -72,8 +115,8 @@ textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
 .r2{display:flex;gap:8px}.r2>*{flex:1}
 .hint{font-size:.68em;color:var(--t3);text-align:right;margin:-4px 2px 8px 0;font-weight:600}
 
-/* === BUTTONS === */
-.bt{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:11px 16px;border-radius:10px;border:none;font-weight:700;font-size:.86em;cursor:pointer;transition:.12s;outline:none;letter-spacing:-.1px}
+/* BUTTONS */
+.bt{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:11px 16px;border-radius:10px;border:none;font-weight:700;font-size:.86em;cursor:pointer;transition:.12s;outline:none}
 .bt:active{transform:scale(.97)}.bt:disabled{opacity:.4;pointer-events:none}
 .bp{background:var(--c1);color:#fff}
 [data-theme="dark"] .bp{background:var(--g1);color:#000}
@@ -84,57 +127,64 @@ textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
 .brow{display:flex;gap:5px}.brow .bt{flex:1}
 .bt-ghost{background:none;border:none;color:var(--t3);font-weight:600;padding:10px}
 
-/* === ONBOARDING === */
+/* ONBOARDING */
 .onboard{text-align:center;padding:0 8px}
+@media(min-width:768px){.onboard{padding:0 40px}}
 .onboard .hero{margin:32px 0 24px}
+@media(min-width:768px){.onboard .hero{margin:48px 0 32px}}
 .onboard .hero-icon{width:72px;height:72px;border-radius:22px;background:linear-gradient(135deg,var(--c1),var(--c2));display:grid;place-items:center;margin:0 auto 16px;box-shadow:0 8px 24px rgba(0,53,148,.2)}
 [data-theme="dark"] .onboard .hero-icon{background:linear-gradient(135deg,var(--g1),var(--g2));box-shadow:0 8px 24px rgba(255,184,28,.15)}
 .onboard .hero-icon svg{width:32px;height:32px;color:#fff}
 [data-theme="dark"] .onboard .hero-icon svg{color:#000}
 .onboard h1{font-size:1.6em;font-weight:800;letter-spacing:-.5px;margin-bottom:6px}
-.onboard .sub{color:var(--t2);font-size:.92em;line-height:1.5;margin-bottom:28px;max-width:320px;margin-left:auto;margin-right:auto}
-.features{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:28px;text-align:left}
+@media(min-width:768px){.onboard h1{font-size:2em}}
+.onboard .sub{color:var(--t2);font-size:.92em;line-height:1.5;margin-bottom:28px;max-width:420px;margin-left:auto;margin-right:auto}
+.features{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:28px;text-align:left;max-width:500px;margin-left:auto;margin-right:auto}
+@media(min-width:768px){.features{grid-template-columns:1fr 1fr 1fr 1fr;max-width:700px}}
 .feat{background:var(--s1);border-radius:var(--r);padding:14px;border:1px solid var(--b1)}
 .feat .fi-icon{font-size:1.2em;margin-bottom:6px}
 .feat .fi-title{font-weight:700;font-size:.82em;margin-bottom:2px}
 .feat .fi-desc{font-size:.72em;color:var(--t3);line-height:1.4}
-
-/* === AUTH === */
-.auth-box{background:var(--s1);border-radius:var(--rl);padding:28px 20px;border:1px solid var(--b1);box-shadow:var(--shh)}
+.auth-wrap{display:flex;justify-content:center}
+.auth-box{background:var(--s1);border-radius:var(--rl);padding:28px 20px;border:1px solid var(--b1);box-shadow:var(--shh);width:100%;max-width:400px}
 .auth-box h2{font-size:1.2em;font-weight:800;margin-bottom:3px}
 .auth-box .sub{color:var(--t3);font-size:.82em;margin-bottom:20px}
 
-/* === DIRECTION === */
+/* DIRECTION */
 .dtg{display:flex;background:var(--s2);border-radius:10px;border:1px solid var(--b1);padding:3px;margin-bottom:10px}
 .db{flex:1;padding:9px;border-radius:8px;border:none;background:transparent;font-weight:700;font-size:.78em;color:var(--t3);cursor:pointer;transition:.15s}
 .db.on{background:var(--c1);color:#fff;box-shadow:0 2px 6px rgba(0,53,148,.12)}
 [data-theme="dark"] .db.on{background:var(--g1);color:#000}
 
-/* === FILTERS === */
+/* TOOLBAR ROW */
+.toolbar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center}
+@media(min-width:768px){.toolbar{flex-wrap:nowrap}}
+
+/* FILTERS */
 .fl{display:flex;gap:4px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}
 .fl::-webkit-scrollbar{display:none}
 .fc{flex-shrink:0;padding:6px 11px;border-radius:16px;border:1px solid var(--b1);background:var(--s1);color:var(--t2);font-size:.74em;font-weight:600;cursor:pointer;transition:.12s;white-space:nowrap}
 .fc.on{background:var(--g1);color:#000;border-color:var(--g1)}
 
-/* === DATE CHIPS === */
+/* DATE CHIPS */
 .date-chips{display:flex;gap:4px;margin-bottom:8px}
 .dc{flex:1;padding:7px 4px;border-radius:8px;border:1px solid var(--b1);background:var(--s1);color:var(--t2);font-size:.72em;font-weight:700;cursor:pointer;transition:.12s;text-align:center}
 .dc.on{background:var(--c1);color:#fff;border-color:var(--c1)}
 [data-theme="dark"] .dc.on{background:var(--g1);color:#000;border-color:var(--g1)}
 
-/* === SEARCH === */
-.sw{position:relative;margin-bottom:8px}
+/* SEARCH */
+.sw{position:relative;margin-bottom:8px;flex:1;min-width:200px}
 .sw svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--t3)}
 .si{width:100%;padding:10px 12px 10px 34px;border-radius:10px;border:1.5px solid var(--b1);background:var(--s1);color:var(--t1);font-size:.85em;outline:none;transition:.12s}
 .si:focus{border-color:var(--g1);box-shadow:0 0 0 3px rgba(255,184,28,.08)}
 
-/* === SORT === */
-.sb{display:flex;gap:5px;margin-bottom:10px;align-items:center}
+/* SORT */
+.sb{display:flex;gap:5px;align-items:center;flex-shrink:0}
 .sb select{padding:6px 24px 6px 8px;border-radius:7px;border:1px solid var(--b1);background:var(--s1);color:var(--t1);font-size:.74em;font-weight:600;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' fill='none' stroke='%238892a8' stroke-width='2'%3E%3Cpath d='m2 3 2 2 2-2'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center;outline:none}
-.rc-count{font-size:.72em;color:var(--t3);font-weight:600;margin-left:auto}
+.rc-count{font-size:.72em;color:var(--t3);font-weight:600}
 
-/* === RIDE CARDS === */
-.rc{background:var(--s1);border-radius:var(--rl);padding:16px;margin-bottom:8px;border:1px solid var(--b1);box-shadow:var(--sh);position:relative;overflow:hidden;transition:.15s}
+/* RIDE CARDS */
+.rc{background:var(--s1);border-radius:var(--rl);padding:16px;border:1px solid var(--b1);box-shadow:var(--sh);position:relative;overflow:hidden;transition:.15s;display:flex;flex-direction:column}
 .rc:hover{box-shadow:var(--shh)}
 .rc.mine{border-left:3px solid var(--c1)}
 [data-theme="dark"] .rc.mine{border-left-color:var(--g1)}
@@ -143,7 +193,7 @@ textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
 .av{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:.8em;flex-shrink:0}
 .rc .di{flex:1;min-width:0}
 .rc .dn{font-weight:700;font-size:.85em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rc .dm{font-size:.68em;color:var(--t3);display:flex;align-items:center;gap:4px}
+.rc .dm{font-size:.68em;color:var(--t3)}
 .rc .pr{font-size:1.3em;font-weight:800;color:var(--c1);letter-spacing:-.5px}
 [data-theme="dark"] .rc .pr{color:var(--g1)}
 .rc .dst{font-size:1.1em;font-weight:800;letter-spacing:-.2px;margin-bottom:1px}
@@ -159,48 +209,57 @@ textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
 .sd.tk{background:var(--b2)}
 .sl{font-size:.68em;color:var(--t3);font-weight:600;margin-left:4px}
 .rc .nt{background:var(--s3);padding:8px 10px;border-radius:8px;font-size:.78em;color:var(--t2);margin-bottom:10px;line-height:1.4}
+.rc .actions{margin-top:auto}
 .share-btn{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:8px;border:1px solid var(--b1);background:var(--s2);display:grid;place-items:center;cursor:pointer;transition:.12s}
 .share-btn:active{transform:scale(.9)}
 .share-btn svg{width:13px;height:13px;color:var(--t3)}
 
-/* === MAP === */
+/* MAP */
 #mapbox{border-radius:var(--rl);overflow:hidden;height:260px;margin-bottom:10px;border:1px solid var(--b1);display:none}
+@media(min-width:768px){#mapbox{height:360px}}
 
-/* === TRIPS === */
-.tc{background:var(--s1);border-radius:var(--rl);padding:16px;margin-bottom:8px;border:1px solid var(--b1);box-shadow:var(--sh);border-left:3px solid var(--g1)}
+/* TRIPS */
+.trips-grid{display:flex;flex-direction:column;gap:8px}
+@media(min-width:768px){.trips-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}}
+.tc{background:var(--s1);border-radius:var(--rl);padding:16px;border:1px solid var(--b1);box-shadow:var(--sh);border-left:3px solid var(--g1)}
 .tc .dst{font-size:1.05em;font-weight:800;margin-bottom:2px}
 .tc .meta{font-size:.75em;color:var(--t3);font-weight:600;margin-bottom:10px}
 
-/* === POST === */
-.pc{background:var(--s1);border-radius:var(--rl);padding:22px 18px;border:1px solid var(--b1);box-shadow:var(--sh)}
+/* POST — wider on desktop */
+.pc{background:var(--s1);border-radius:var(--rl);padding:22px 18px;border:1px solid var(--b1);box-shadow:var(--sh);max-width:560px}
+@media(min-width:768px){.pc{padding:28px 24px}}
 .pc h2{font-size:1.15em;font-weight:800;margin-bottom:2px}
 .pc .sub{color:var(--t3);font-size:.78em;margin-bottom:18px}
 
-/* === PROFILE === */
-.prc{background:var(--s1);border-radius:var(--rl);padding:26px 18px;text-align:center;border:1px solid var(--b1);box-shadow:var(--sh)}
+/* PROFILE */
+.prc{background:var(--s1);border-radius:var(--rl);padding:26px 18px;text-align:center;border:1px solid var(--b1);box-shadow:var(--sh);max-width:460px}
 .prc .ba{width:64px;height:64px;border-radius:18px;font-size:1.6em;margin:0 auto 12px}
 .prc .pn{font-size:1.1em;font-weight:800;margin-bottom:1px}
 .prc .pg{font-size:.75em;color:var(--t3);margin-bottom:3px}
 .prc .prr{font-size:.78em;color:var(--warn);font-weight:700;margin-bottom:14px}
 
-/* === ADMIN === */
+/* ADMIN */
 .sg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+@media(min-width:768px){.sg{grid-template-columns:1fr 1fr 1fr 1fr}}
 .sc{background:var(--s1);border-radius:var(--rl);padding:18px 12px;text-align:center;border:1px solid var(--b1)}
 .sc .sv{font-size:1.7em;font-weight:800;color:var(--c1)}
 [data-theme="dark"] .sc .sv{color:var(--g1)}
 .sc .sl{font-size:.62em;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);margin-top:1px}
 
-/* === MODALS === */
+/* MODALS */
 .mo{position:fixed;inset:0;background:rgba(11,18,34,.4);backdrop-filter:blur(8px);z-index:300;display:none;align-items:flex-end;justify-content:center}
+@media(min-width:768px){.mo{align-items:center}}
 .mo.open{display:flex}
-.ms{background:var(--bg);width:100%;max-width:480px;max-height:85dvh;border-radius:var(--rl) var(--rl) 0 0;display:flex;flex-direction:column;animation:su .18s ease-out}
-@keyframes su{from{transform:translateY(100%)}to{transform:none}}
+.ms{background:var(--bg);width:100%;max-width:520px;max-height:85dvh;border-radius:var(--rl) var(--rl) 0 0;display:flex;flex-direction:column;animation:su .18s ease-out}
+@media(min-width:768px){.ms{border-radius:var(--rl);max-height:80vh}}
+@keyframes su{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
 .mh{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--b1);flex-shrink:0}
 .mh h3{font-weight:800;font-size:.95em}
 .mb{padding:16px;overflow-y:auto;flex:1}
 
-/* === CHAT === */
+/* CHAT */
 .ca{display:flex;flex-direction:column;gap:4px;min-height:180px;margin-bottom:10px}
+@media(min-width:768px){.ca{min-height:280px}}
 .cb{max-width:78%;padding:8px 12px;border-radius:14px;font-size:.84em;line-height:1.4}
 .cm{background:var(--c1);color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
 [data-theme="dark"] .cm{background:var(--g1);color:#000}
@@ -210,36 +269,37 @@ textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
 .ci input{flex:1;margin:0}
 .ci .bt{width:40px;flex-shrink:0;padding:0}
 
-/* === NOTIFS === */
+/* NOTIFS */
 .nl{max-height:70dvh;overflow-y:auto}
 .nit{padding:12px 14px;border-bottom:1px solid var(--b1);display:flex;gap:8px}
 .nit.ur{background:rgba(255,184,28,.04)}
 .nit .nic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-size:.9em;flex-shrink:0}
-.nit .nb{flex:1;min-width:0}
+.nit .nb{flex:1}
 .nit .nb p{font-size:.82em;line-height:1.35}
-.nit .nb .nt{font-size:.66em;color:var(--t3);margin-top:2px}
+.nit .nb .nt2{font-size:.66em;color:var(--t3);margin-top:2px}
 
-/* === RATING === */
+/* RATING */
 .sr{display:flex;gap:6px;justify-content:center;margin:14px 0}
 .sb2{font-size:1.8em;cursor:pointer;transition:.12s;opacity:.2}
 .sb2.lit{opacity:1}
 .sb2:hover{transform:scale(1.1)}
 
-/* === TOAST === */
+/* TOAST */
 .tw{position:fixed;top:calc(var(--hdr) + 6px);left:50%;transform:translateX(-50%);z-index:400;width:88%;max-width:360px;display:flex;flex-direction:column;gap:5px;pointer-events:none}
 .tt{padding:10px 14px;border-radius:10px;font-weight:600;font-size:.82em;box-shadow:var(--shm);opacity:0;transform:translateY(-6px);transition:.2s;display:flex;align-items:center;gap:7px;pointer-events:auto}
 .tt.ok{background:#065f46;color:#d1fae5}
 .tt.er{background:#7f1d1d;color:#fecaca}
 .tt.show{opacity:1;transform:none}
 
-/* === EMPTY === */
+/* EMPTY */
 .emp{text-align:center;padding:36px 16px;color:var(--t3)}
+@media(min-width:768px){.emp{grid-column:1/-1}}
 .emp svg{width:36px;height:36px;margin-bottom:8px;opacity:.3}
 .emp p{font-weight:600;font-size:.88em}
 .emp .sub{font-size:.76em;margin-top:2px}
 
-/* === SKELETON === */
-.sk{background:var(--s1);border-radius:var(--rl);padding:16px;margin-bottom:8px;border:1px solid var(--b1)}
+/* SKELETON */
+.sk{background:var(--s1);border-radius:var(--rl);padding:16px;border:1px solid var(--b1)}
 .skl{height:10px;border-radius:5px;background:var(--b2);margin-bottom:7px;animation:pu 1.5s infinite}
 .skl.w50{width:50%}.skl.w70{width:70%}.skl.w30{width:30%}
 .skc{width:36px;height:36px;border-radius:10px;background:var(--b2);animation:pu 1.5s infinite}
@@ -257,28 +317,38 @@ textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
  </div>
 </div>
 
+<!-- DESKTOP SIDEBAR NAV -->
+<nav class="desk-nav" id="dnav">
+ <div class="dni on" data-t="rider" onclick="sw2(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Search Rides</div>
+ <div class="dni" data-t="driver" onclick="sw2(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>Post a Ride</div>
+ <div class="dni" data-t="trips" onclick="sw2(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>My Trips</div>
+ <div class="dni" data-t="profile" onclick="sw2(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</div>
+ <div class="dni" id="atab2" style="display:none" data-t="admin" onclick="sw2(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>Admin</div>
+</nav>
+
 <div class="sh" id="app">
 
-<!-- ONBOARDING + AUTH -->
+<!-- AUTH -->
 <div id="v-auth" class="v on">
  <div class="onboard" id="onboard-screen">
   <div class="hero">
    <div class="hero-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
    <h1>PittRide</h1>
-   <p class="sub">The rideshare board built for Pitt students. Split gas, share the road, and travel safer together.</p>
+   <p class="sub">The rideshare board built for Pitt students. Split gas, share the road, travel safer together.</p>
   </div>
   <div class="features">
-   <div class="feat"><div class="fi-icon">🔍</div><div class="fi-title">Find Rides</div><div class="fi-desc">Search by city, date, price, and vibe</div></div>
-   <div class="feat"><div class="fi-icon">🚗</div><div class="fi-title">Offer Seats</div><div class="fi-desc">Post trips and split costs with riders</div></div>
-   <div class="feat"><div class="fi-icon">💜</div><div class="fi-title">Safe Routing</div><div class="fi-desc">Women-only rides and verified .edu accounts</div></div>
-   <div class="feat"><div class="fi-icon">💬</div><div class="fi-title">Trip Chat</div><div class="fi-desc">Coordinate with your driver and co-riders</div></div>
+   <div class="feat"><div class="fi-icon">🔍</div><div class="fi-title">Find Rides</div><div class="fi-desc">Search by city, date, price, vibe</div></div>
+   <div class="feat"><div class="fi-icon">🚗</div><div class="fi-title">Offer Seats</div><div class="fi-desc">Post trips and split costs</div></div>
+   <div class="feat"><div class="fi-icon">💜</div><div class="fi-title">Safe Routing</div><div class="fi-desc">Women-only rides and .edu verified</div></div>
+   <div class="feat"><div class="fi-icon">💬</div><div class="fi-title">Trip Chat</div><div class="fi-desc">Coordinate with your group</div></div>
   </div>
-  <button class="bt bp" onclick="showAuthForm()" style="margin-bottom:8px">Get Started</button>
-  <button class="bt bt-ghost" onclick="showAuthForm(true)">I already have an account</button>
+  <div style="max-width:340px;margin:0 auto">
+   <button class="bt bp" onclick="showAuthForm()" style="margin-bottom:8px">Get Started</button>
+   <button class="bt bt-ghost" onclick="showAuthForm(true)">I already have an account</button>
+  </div>
  </div>
-
  <div id="auth-form" style="display:none">
-  <div class="auth-box">
+  <div class="auth-wrap"><div class="auth-box">
    <h2 id="atit">Sign in</h2>
    <p class="sub" id="asub">Use your @pitt.edu email</p>
    <div id="rfs" style="display:none">
@@ -289,7 +359,7 @@ textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
    <div class="fg"><label>Password</label><input type="password" class="fi" id="pw" placeholder="6+ characters" onkeypress="if(event.key==='Enter')submitAuth()"></div>
    <button class="bt bp" id="abtn" onclick="submitAuth()">Sign In</button>
    <button class="bt bt-ghost" id="rtog" onclick="toggleReg()">Need an account? Sign up</button>
-  </div>
+  </div></div>
  </div>
 </div>
 
@@ -297,34 +367,36 @@ textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
 <div id="v-rider" class="v">
  <div class="dtg"><button class="db on" id="bo" onclick="setDir('Leaving Pitt')">Leaving</button><button class="db" id="br" onclick="setDir('Returning to Pitt')">Returning</button></div>
  <div class="date-chips">
-  <div class="dc" id="dc-all" onclick="setDate('all')">All</div>
+  <div class="dc on" id="dc-all" onclick="setDate('all')">All</div>
   <div class="dc" id="dc-today" onclick="setDate('today')">Today</div>
   <div class="dc" id="dc-tmrw" onclick="setDate('tmrw')">Tomorrow</div>
   <div class="dc" id="dc-wknd" onclick="setDate('wknd')">Weekend</div>
  </div>
- <div class="fl">
+ <div class="fl" id="filter-row">
   <div class="fc" id="fc-cheap" onclick="tF('cheap')">Under $30</div>
-  <div class="fc" id="fc-women" onclick="tF('women')">Women Only</div>
+  <div class="fc" id="fc-women" onclick="tF('women')" style="display:none">Women Only</div>
   <div class="fc" id="fc-trunk" onclick="tF('trunk')">Trunk</div>
   <div class="fc" id="fc-quiet" onclick="tF('quiet')">Quiet</div>
  </div>
- <div class="sw"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input class="si" id="srch" placeholder="Search city or stops…" oninput="render()"></div>
- <div class="sb">
-  <select id="srt" onchange="render()"><option value="date">Soonest</option><option value="price">Cheapest</option><option value="priceh">Highest $</option><option value="seats">Most seats</option></select>
-  <span class="rc-count" id="cnt"></span>
+ <div class="toolbar">
+  <div class="sw"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input class="si" id="srch" placeholder="Search city or stops…" oninput="render()"></div>
+  <div class="sb">
+   <select id="srt" onchange="render()"><option value="date">Soonest</option><option value="price">Cheapest</option><option value="priceh">Highest $</option><option value="seats">Most seats</option></select>
+   <span class="rc-count" id="cnt"></span>
+  </div>
   <button class="bt bo bs" style="width:auto;flex-shrink:0" onclick="toggleMap()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg>Map</button>
  </div>
  <div id="mapbox"></div>
- <div id="skel" style="display:none"><div class="sk"><div style="display:flex;gap:10px;margin-bottom:10px"><div class="skc"></div><div style="flex:1"><div class="skl w50"></div><div class="skl w70"></div></div></div><div class="skl"></div><div class="skl w30"></div></div><div class="sk"><div style="display:flex;gap:10px;margin-bottom:10px"><div class="skc"></div><div style="flex:1"><div class="skl w50"></div><div class="skl w70"></div></div></div><div class="skl"></div></div></div>
- <div id="rl"></div>
+ <div id="skel" style="display:none"><div class="ride-grid"><div class="sk"><div style="display:flex;gap:10px;margin-bottom:10px"><div class="skc"></div><div style="flex:1"><div class="skl w50"></div><div class="skl w70"></div></div></div><div class="skl"></div><div class="skl w30"></div></div><div class="sk"><div style="display:flex;gap:10px;margin-bottom:10px"><div class="skc"></div><div style="flex:1"><div class="skl w50"></div><div class="skl w70"></div></div></div><div class="skl"></div></div></div></div>
+ <div id="rl" class="ride-grid"></div>
 </div>
 
 <!-- POST -->
 <div id="v-driver" class="v">
  <div class="pc">
   <h2>Offer a ride</h2><p class="sub">Post to the board for students to book</p>
-  <div class="fg"><label>Direction</label><select class="fi" id="pd"><option value="Leaving Pitt">Leaving Pitt</option><option value="Returning to Pitt">Returning to Pitt</option></select></div>
-  <div class="fg"><label>Destination</label><input class="fi" id="pde" placeholder="e.g. Philadelphia" oninput="calcP('pde','pla','plo','ph','pse')"></div>
+  <div class="fg"><label>Direction</label><select class="fi" id="pd" onchange="updPostLabel()"><option value="Leaving Pitt">Leaving Pitt</option><option value="Returning to Pitt">Returning to Pitt</option></select></div>
+  <div class="fg"><label id="pde-label">Destination</label><input class="fi" id="pde" placeholder="e.g. Philadelphia" oninput="calcP('pde','pla','plo','ph','pse')"></div>
   <input type="hidden" id="pla"><input type="hidden" id="plo">
   <div class="fg"><label>Waypoints</label><input class="fi" id="pst" placeholder="e.g. Harrisburg"></div>
   <div class="r2">
@@ -348,7 +420,7 @@ textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
 </div>
 
 <!-- TRIPS -->
-<div id="v-trips" class="v"><h2 style="font-weight:800;font-size:1.1em;margin-bottom:12px">My Trips</h2><div id="tl"></div></div>
+<div id="v-trips" class="v"><h2 style="font-weight:800;font-size:1.1em;margin-bottom:12px">My Trips</h2><div id="tl" class="trips-grid"></div></div>
 
 <!-- PROFILE -->
 <div id="v-profile" class="v">
@@ -364,9 +436,10 @@ textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
 </div>
 
 <!-- ADMIN -->
-<div id="v-admin" class="v"><h2 style="font-weight:800;font-size:1.1em;margin-bottom:12px">Dashboard</h2><div class="sg"><div class="sc"><div class="sv" id="su">—</div><div class="sl">Users</div></div><div class="sc"><div class="sv" id="sr">—</div><div class="sl">Rides</div></div></div><div class="sg"><div class="sc"><div class="sv" id="sm" style="color:var(--ok)">$—</div><div class="sl">Economy</div></div><div class="sc"><div class="sv" id="smg">—</div><div class="sl">Messages</div></div></div></div>
+<div id="v-admin" class="v"><h2 style="font-weight:800;font-size:1.1em;margin-bottom:12px">Dashboard</h2><div class="sg"><div class="sc"><div class="sv" id="su">—</div><div class="sl">Users</div></div><div class="sc"><div class="sv" id="sr">—</div><div class="sl">Rides</div></div><div class="sc"><div class="sv" id="sm" style="color:var(--ok)">$—</div><div class="sl">Economy</div></div><div class="sc"><div class="sv" id="smg">—</div><div class="sl">Messages</div></div></div></div>
 </div>
 
+<!-- MOBILE NAV -->
 <nav class="nv" id="nav"><div class="nv-i">
  <div class="ni on" data-t="rider" onclick="sw(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Search</div>
  <div class="ni" data-t="driver" onclick="sw(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>Post</div>
@@ -379,7 +452,7 @@ textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
 <div class="mo" id="emod" onclick="if(event.target===this)closeE()"><div class="ms"><div class="mh"><h3>Edit Ride</h3><button class="ib" onclick="closeE()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div><div class="mb">
  <input type="hidden" id="ei">
  <div class="fg"><label>Direction</label><select class="fi" id="edi"><option value="Leaving Pitt">Leaving</option><option value="Returning to Pitt">Returning</option></select></div>
- <div class="fg"><label>Destination</label><input class="fi" id="ede" oninput="calcP('ede','ela','elo','eph','ese')"></div>
+ <div class="fg"><label>Destination / Coming From</label><input class="fi" id="ede" oninput="calcP('ede','ela','elo','eph','ese')"></div>
  <input type="hidden" id="ela"><input type="hidden" id="elo">
  <div class="fg"><label>Waypoints</label><input class="fi" id="est"></div>
  <div class="r2"><div class="fg"><label>Date</label><input type="date" class="fi" id="eda"></div><div class="fg"><label>Departure</label><select class="fi" id="etm"><option value="Flexible">Flexible</option><option value="Early Morning">Early AM</option><option value="Morning">Morning</option><option value="Afternoon">Afternoon</option><option value="Evening">Evening</option><option value="Late Night">Late</option></select></div></div>
@@ -414,26 +487,22 @@ textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
 <script>
 const API="https://script.google.com/macros/s/AKfycbyFFReeiQ4NWRcfnvoME3ZVk5bndYR2wqM1Y1xevvrOBMETUnRX3WZigYJ1mzmFl-HQ/exec";
 let S=JSON.parse(localStorage.getItem('ps')||"null"),D=JSON.parse(localStorage.getItem('pd')||"[]");
-let map,mkrs,isMap=0,isReg=0,lS=0,dir='Leaving Pitt',aC=null,tmr,role='user',selR=0;
+let map,mkrs,isMap=0,isReg=0,lS=0,dir='Leaving Pitt',aC=null,tmr,role='user',selR=0,userGender='Unknown';
 let F={cheap:0,women:0,trunk:0,quiet:0},dateF='all';
 
-// Theme
 function toggleTheme(){const t=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',t);localStorage.setItem('pt',t)}
 (()=>{const t=localStorage.getItem('pt');if(t)document.documentElement.setAttribute('data-theme',t);else if(matchMedia('(prefers-color-scheme:dark)').matches)document.documentElement.setAttribute('data-theme','dark')})();
 
 document.getElementById('pda').min=new Date().toISOString().split('T')[0];
 document.getElementById('eda').min=new Date().toISOString().split('T')[0];
 
-// Toast
 function T(m,ok=1){const w=document.getElementById('tw'),e=document.createElement('div');e.className='tt '+(ok?'ok':'er');e.innerHTML=`<span>${ok?'✓':'!'}</span>${m}`;w.appendChild(e);requestAnimationFrame(()=>e.classList.add('show'));setTimeout(()=>{e.classList.remove('show');setTimeout(()=>e.remove(),200)},2200)}
 async function api(d){const r=await fetch(API,{method:'POST',body:JSON.stringify({token:S?.token,email:S?.email,...d})});return r.json()}
 
-// Onboarding
 function showAuthForm(login){document.getElementById('onboard-screen').style.display='none';document.getElementById('auth-form').style.display='block';if(login){isReg=0;updAuth()}}
-
-// Auth
 function updAuth(){document.getElementById('rfs').style.display=isReg?'block':'none';document.getElementById('atit').textContent=isReg?'Create account':'Sign in';document.getElementById('asub').textContent=isReg?'Sign up with your @pitt.edu email':'Use your @pitt.edu email';document.getElementById('abtn').textContent=isReg?'Create Account':'Sign In';document.getElementById('rtog').textContent=isReg?'Have an account? Sign in':'Need an account? Sign up'}
 function toggleReg(){isReg=!isReg;updAuth()}
+
 async function submitAuth(){
  const em=document.getElementById('em').value.trim(),pw=document.getElementById('pw').value,btn=document.getElementById('abtn');
  if(!em||!pw)return T('Fill all fields',0);
@@ -444,7 +513,6 @@ async function submitAuth(){
  catch(e){T('Network error',0);btn.textContent=isReg?'Create Account':'Sign In';btn.disabled=0}}
 function logout(){api({action:'logout'}).finally(()=>{localStorage.clear();location.reload()})}
 
-// Sync
 async function sync(f){
  if(!S||(!f&&Date.now()-lS<10000))return;
  if(!D.length)document.getElementById('skel').style.display='block';
@@ -452,27 +520,29 @@ async function sync(f){
  document.getElementById('skel').style.display='none';pollN()}
 async function pollN(){if(!S)return;try{const d=await api({action:'getNotifications'});document.getElementById('nd').style.display=d.unread>0?'block':'none';window._nf=d.data||[]}catch(e){}}
 
-// Helpers
 function col(s){let h=0;for(let i=0;i<s.length;i++)h=s.charCodeAt(i)+((h<<5)-h);return`hsl(${Math.abs(h)%360},48%,50%)`}
 function ini(n){let p=n.split(' ');return(p[0][0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase()}
 function fD(d){try{return new Date(d).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}catch(e){return d}}
 function ago(t){const d=Date.now()-new Date(t).getTime(),m=Math.floor(d/60000);if(m<1)return'now';if(m<60)return m+'m';const h=Math.floor(m/60);if(h<24)return h+'h';return Math.floor(h/24)+'d'}
-function isToday(d){const t=new Date(),r=new Date(d);return t.toDateString()===r.toDateString()}
+function isToday(d){return new Date().toDateString()===new Date(d).toDateString()}
 function isTmrw(d){const t=new Date();t.setDate(t.getDate()+1);return t.toDateString()===new Date(d).toDateString()}
-function isWknd(d){const r=new Date(d);const day=r.getDay();const now=new Date();now.setHours(0,0,0,0);
- // Find next Saturday and Sunday
- const daysUntilSat=(6-now.getDay()+7)%7||7;const sat=new Date(now);sat.setDate(now.getDate()+daysUntilSat);const sun=new Date(sat);sun.setDate(sat.getDate()+1);
- return r.toDateString()===sat.toDateString()||r.toDateString()===sun.toDateString()}
-function timeIcon(t){const m={'Early Morning':'🌅','Morning':'☀️','Afternoon':'🌤','Evening':'🌆','Late Night':'🌙','Flexible':'🕐'};return m[t]||'🕐'}
+function isWknd(d){const r=new Date(d),now=new Date();now.setHours(0,0,0,0);const ds=(6-now.getDay()+7)%7||7;const sat=new Date(now);sat.setDate(now.getDate()+ds);const sun=new Date(sat);sun.setDate(sat.getDate()+1);return r.toDateString()===sat.toDateString()||r.toDateString()===sun.toDateString()}
+function timeIcon(t){return{'Early Morning':'🌅','Morning':'☀️','Afternoon':'🌤','Evening':'🌆','Late Night':'🌙','Flexible':'🕐'}[t]||'🕐'}
 
-// Dir, date, filters
 function setDir(d){dir=d;document.getElementById('bo').className='db'+(d==='Leaving Pitt'?' on':'');document.getElementById('br').className='db'+(d==='Returning to Pitt'?' on':'');render();if(isMap)upMap()}
-function setDate(v){dateF=v;document.querySelectorAll('.dc').forEach(c=>c.classList.remove('on'));document.getElementById('dc-'+v.replace('tmrw','tmrw')).classList.add('on');render()}
+function updPostLabel(){const v=document.getElementById('pd').value;document.getElementById('pde-label').textContent=v==='Returning to Pitt'?'Coming From':'Destination';document.getElementById('pde').placeholder=v==='Returning to Pitt'?'e.g. Philadelphia (where you\'re leaving from)':'e.g. Philadelphia'}
+function setDate(v){dateF=v;document.querySelectorAll('.dc').forEach(c=>c.classList.remove('on'));document.getElementById('dc-'+v).classList.add('on');render()}
 function tF(c){F[c]=!F[c];document.getElementById('fc-'+c).classList.toggle('on');render();if(isMap)upMap()}
 
 function getF(){
  const q=document.getElementById('srch').value.toLowerCase();
- let f=D.filter(r=>r.direction===dir&&(r.destination.toLowerCase().includes(q)||(r.waypoints||'').toLowerCase().includes(q)));
+ let f=D.filter(r=>{
+  if(r.direction!==dir)return false;
+  if(!(r.destination.toLowerCase().includes(q)||(r.waypoints||'').toLowerCase().includes(q)))return false;
+  // Women-only: completely hide from non-female users unless they own it or are a rider
+  if(r.affinity==='Women Only'&&userGender!=='Female'&&r.email!==S.email&&!(r.riders||'').includes(S.email))return false;
+  return true;
+ });
  if(F.cheap)f=f.filter(r=>r.price<=30);
  if(F.women)f=f.filter(r=>r.affinity==='Women Only');
  if(F.trunk)f=f.filter(r=>r.luggage==='Large Trunk Space');
@@ -485,14 +555,14 @@ function getF(){
  return f;
 }
 
-// Share
-function shareRide(r){
- const txt=`🚗 Ride to ${r.destination} on ${fD(r.date)} — $${r.price}/seat\n${r.seats} seats left. Book on PittRide!`;
- if(navigator.share){navigator.share({title:'PittRide: '+r.destination,text:txt}).catch(()=>{})}
- else{navigator.clipboard?.writeText(txt);T('Copied to clipboard!')}
+function shareRide(id){
+ const r=D.find(x=>x.id==id);if(!r)return;
+ const label=r.direction==='Returning to Pitt'?r.destination+' → Pitt':r.destination;
+ const txt=`🚗 Ride: ${label} on ${fD(r.date)} — $${r.price}/seat\n${r.seats} seats left. Book on PittRide!`;
+ if(navigator.share){navigator.share({title:'PittRide: '+label,text:txt}).catch(()=>{})}
+ else{navigator.clipboard?.writeText(txt);T('Copied!')}
 }
 
-// Render
 function render(){
  const f=getF();
  document.getElementById('cnt').textContent=f.length+' ride'+(f.length!==1?'s':'');
@@ -512,13 +582,14 @@ function render(){
   let wp=r.waypoints?`<div class="wp">↳ Via ${r.waypoints}</div>`:'';
   let timeStr=r.time&&r.time!=='Flexible'?`<span>${timeIcon(r.time)} ${r.time}</span>`:`<span>🕐 Flexible</span>`;
   let chat=(amIn||me)?`<button class="bt bo bs" style="margin-top:5px" onclick="openC('${r.id}')">💬 Chat</button>`:'';
+  let destLabel=r.direction==='Returning to Pitt'?r.destination+' → Pitt':r.destination;
 
   return`<div class="rc${me?' mine':''}${amIn?' booked':''}">
-   <div class="share-btn" onclick="shareRide(${JSON.stringify(r).replace(/"/g,'&quot;')})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>
+   <div class="share-btn" onclick="shareRide('${r.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>
    <div class="top"><div class="av" style="background:${col(r.name)}">${ini(r.name)}</div>
     <div class="di"><div class="dn">${r.name}</div><div class="dm">${r.direction}</div></div>
     <div class="pr">$${r.price}</div></div>
-   <div class="dst">${r.destination}</div>${wp}
+   <div class="dst">${destLabel}</div>${wp}
    <div class="meta-row">
     <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>${fD(r.date)}</span>
     ${timeStr}
@@ -526,33 +597,29 @@ function render(){
    <div class="tags"><span class="tg">${r.vibe}</span><span class="tg">${r.music}</span><span class="tg">${r.luggage}</span>${r.affinity==='Women Only'?'<span class="tg tg-w">Women Only</span>':''}</div>
    <div class="seats-vis">${dots}<span class="sl">${r.seats} left</span></div>
    ${r.notes?`<div class="nt">${r.notes}</div>`:''}
-   ${act}${chat}</div>`
+   <div class="actions">${act}${chat}</div></div>`
  }).join('')||`<div class="emp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 15h8M9 9h.01M15 9h.01"/></svg><p>No rides match</p><p class="sub">Try different filters or dates</p></div>`;
 
- // Trips
  document.getElementById('tl').innerHTML=D.filter(r=>(r.riders||'').includes(S.email)||r.email===S.email).map(r=>{
-  let s=new Date(r.date).toISOString().replace(/-|:|\.\d+/g,'').substring(0,8)+'T140000Z',e2=new Date(r.date).toISOString().replace(/-|:|\.\d+/g,'').substring(0,8)+'T160000Z';
-  let cal=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=Ride+to+${encodeURIComponent(r.destination)}&dates=${s}/${e2}&details=Driver:+${encodeURIComponent(r.name)}`;
+  let s2=new Date(r.date).toISOString().replace(/-|:|\.\d+/g,'').substring(0,8)+'T140000Z',e2=new Date(r.date).toISOString().replace(/-|:|\.\d+/g,'').substring(0,8)+'T160000Z';
+  let destLabel=r.direction==='Returning to Pitt'?r.destination+' → Pitt':r.destination;
+  let cal=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=Ride+to+${encodeURIComponent(destLabel)}&dates=${s2}/${e2}&details=Driver:+${encodeURIComponent(r.name)}`;
   let tm=r.time&&r.time!=='Flexible'?' · '+r.time:'';
-  return`<div class="tc"><div class="dst">${r.destination}</div><div class="meta">${fD(r.date)}${tm} · ${r.name}</div><div class="brow"><button class="bt bg bs" onclick="window.open('${cal}')">📅 Calendar</button><button class="bt bo bs" onclick="openC('${r.id}')">💬 Chat</button></div></div>`
+  return`<div class="tc"><div class="dst">${destLabel}</div><div class="meta">${fD(r.date)}${tm} · ${r.name}</div><div class="brow"><button class="bt bg bs" onclick="window.open('${cal}')">📅 Calendar</button><button class="bt bo bs" onclick="openC('${r.id}')">💬 Chat</button></div></div>`
  }).join('')||`<div class="emp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg><p>No trips yet</p><p class="sub">Book or post a ride</p></div>`;
 }
 
-// Actions
 async function book(id){if(!confirm('Claim seat?'))return;let r=D.find(x=>x.id==id);if(r){r.seats--;r.riders=(r.riders?r.riders+',':'')+S.email;render();T('Confirmed!')}api({action:'bookSeat',id}).then(()=>sync(1))}
 async function canc(id){if(!confirm('Cancel?'))return;let r=D.find(x=>x.id==id);if(r){r.seats++;r.riders=r.riders.replace(S.email,'').replace(',,',',').replace(/^,|,$/g,'');render();T('Cancelled')}api({action:'cancelSeat',id}).then(()=>sync(1))}
 async function del(id){if(!confirm('Delete?'))return;D=D.filter(x=>x.id!=id);render();T('Deleted');api({action:'deleteRide',id}).then(()=>sync(1))}
 async function joinW(id){let r=D.find(x=>x.id==id);if(r){r.waitlist=(r.waitlist?r.waitlist+',':'')+S.email;render();T('Waitlisted')}api({action:'joinWaitlist',id}).then(()=>sync(1))}
 
-// Edit
 function openE(id){const r=D.find(x=>x.id==id);if(!r)return;
- 'ei edi ede ela elo est eda ese epr eaf evi emu elu eno etm'.split(' ').forEach(k=>{const el=document.getElementById(k);if(!el)return});
  document.getElementById('ei').value=r.id;document.getElementById('edi').value=r.direction;document.getElementById('ede').value=r.destination;document.getElementById('ela').value=r.lat;document.getElementById('elo').value=r.lon;document.getElementById('est').value=r.waypoints||'';document.getElementById('eda').value=(r.date||'').split('T')[0];document.getElementById('ese').value=r.seats;document.getElementById('epr').value=r.price;document.getElementById('eaf').value=r.affinity;document.getElementById('evi').value=r.vibe;document.getElementById('emu').value=r.music;document.getElementById('elu').value=r.luggage;document.getElementById('eno').value=r.notes;document.getElementById('etm').value=r.time||'Flexible';
  document.getElementById('emod').classList.add('open')}
 function closeE(){document.getElementById('emod').classList.remove('open')}
 async function submitE(){const p={action:'editRide',id:document.getElementById('ei').value,destination:document.getElementById('ede').value,waypoints:document.getElementById('est').value,date:document.getElementById('eda').value,seats:document.getElementById('ese').value,price:document.getElementById('epr').value,direction:document.getElementById('edi').value,affinity:document.getElementById('eaf').value,vibe:document.getElementById('evi').value,music:document.getElementById('emu').value,luggage:document.getElementById('elu').value,notes:document.getElementById('eno').value,lat:document.getElementById('ela').value,lon:document.getElementById('elo').value,time:document.getElementById('etm').value};closeE();T('Saving…');await api(p);sync(1)}
 
-// Price
 function calcP(dI,laI,loI,hI,sI){clearTimeout(tmr);const d=document.getElementById(dI).value.trim();let seats=parseInt(document.getElementById(sI).value)||3;
  tmr=setTimeout(async()=>{if(!d)return;try{const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(d+', USA')}&limit=1`);const j=await r.json();
   if(j.length){document.getElementById(laI).value=j[0].lat;document.getElementById(loI).value=j[0].lon;
@@ -562,34 +629,47 @@ function calcP(dI,laI,loI,hI,sI){clearTimeout(tmr);const d=document.getElementBy
    const c=(mi/25)*3.5+mi*.05+5;const pp=Math.max(5,Math.ceil(c/(1+seats)));
    document.getElementById(hI).textContent=`~${Math.round(mi)} mi · $${pp}/seat suggested`}}catch(e){}},1000)}
 
-// Post
 async function postRide(){const p={action:'addRide',id:Date.now(),name:document.getElementById('pfn').value||'Driver',destination:document.getElementById('pde').value,waypoints:document.getElementById('pst').value,date:document.getElementById('pda').value,seats:document.getElementById('pse').value,price:document.getElementById('ppr').value,direction:document.getElementById('pd').value,affinity:document.getElementById('paf').value,vibe:document.getElementById('pvi').value,music:document.getElementById('pmu').value,luggage:document.getElementById('plu').value,notes:document.getElementById('pno').value,lat:document.getElementById('pla').value,lon:document.getElementById('plo').value,time:document.getElementById('ptm').value};
  if(!p.destination||!p.date||!p.seats||!p.price)return T('Fill required fields',0);
  if(new Date(p.date)<new Date(new Date().toDateString()))return T('Past date',0);
  if(parseInt(p.seats)<1||parseInt(p.seats)>6)return T('Seats: 1-6',0);
  if(parseFloat(p.price)<0||parseFloat(p.price)>500)return T('Price: $0-500',0);
  ['pde','pst','pno'].forEach(x=>document.getElementById(x).value='');
- T('Posting…');await api(p);sync(1);sw(document.querySelectorAll('.ni')[2])}
+ T('Posting…');await api(p);sync(1);
+ // Switch to trips tab
+ const tripsBtn=document.querySelector('.ni[data-t="trips"]')||document.querySelector('.dni[data-t="trips"]');
+ if(tripsBtn)sw(tripsBtn)}
 
-// Map
 function toggleMap(){isMap=!isMap;const w=document.getElementById('mapbox');
  if(isMap){w.style.display='block';document.getElementById('rl').style.display='none';
   if(!map){map=L.map('mapbox').setView([40.44,-79.99],6);L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:''}).addTo(map);mkrs=L.layerGroup().addTo(map)}
   setTimeout(()=>{map.invalidateSize();upMap()},100)}
- else{w.style.display='none';document.getElementById('rl').style.display='block'}}
+ else{w.style.display='none';document.getElementById('rl').style.display=''}}
 function upMap(){if(!map)return;mkrs.clearLayers();let b=[];
- getF().filter(r=>r.lat).forEach(r=>{let m=L.marker([r.lat,r.lon]);m.bindPopup(`<b>${r.destination}</b><br>$${r.price} · ${r.seats} seats`);mkrs.addLayer(m);b.push([r.lat,r.lon])});
+ getF().filter(r=>r.lat).forEach(r=>{let m=L.marker([r.lat,r.lon]);const lb=r.direction==='Returning to Pitt'?r.destination+' → Pitt':r.destination;m.bindPopup(`<b>${lb}</b><br>$${r.price} · ${r.seats} seats`);mkrs.addLayer(m);b.push([r.lat,r.lon])});
  if(b.length)map.flyToBounds(b,{padding:[30,30]});else map.flyTo([40.44,-79.99],6)}
 
-// Tabs
-function sw(el){const t=el.dataset.t;document.querySelectorAll('.v').forEach(v=>v.classList.remove('on'));document.getElementById('v-'+t).classList.add('on');document.querySelectorAll('.ni').forEach(i=>i.classList.remove('on'));el.classList.add('on');if(t==='rider')sync();if(t==='profile')ldPf();if(t==='admin')ldAd();window.scrollTo({top:0,behavior:'smooth'})}
+// Tab switching — works for both mobile and desktop nav
+function sw(el){const t=el.dataset.t;document.querySelectorAll('.v').forEach(v=>v.classList.remove('on'));document.getElementById('v-'+t).classList.add('on');
+ document.querySelectorAll('.ni').forEach(i=>i.classList.remove('on'));document.querySelectorAll('.dni').forEach(i=>i.classList.remove('on'));
+ document.querySelectorAll(`[data-t="${t}"]`).forEach(i=>i.classList.add('on'));
+ if(t==='rider')sync();if(t==='profile')ldPf();if(t==='admin')ldAd();window.scrollTo({top:0,behavior:'smooth'})}
+function sw2(el){sw(el)} // alias for desktop nav
 
-// Profile
-async function ldPf(){try{const d=await api({action:'getProfile'});if(d.status==='success'){document.getElementById('pfn').value=d.name;document.getElementById('pfg').value=d.gender;document.getElementById('pnd').textContent=d.name;document.getElementById('pgd').textContent=d.gender;document.getElementById('pfb').value=d.bio||'';document.getElementById('pav').textContent=ini(d.name);document.getElementById('pav').style.background=col(d.name);role=d.role||'user';document.getElementById('prd').textContent=d.rating>0?'★'.repeat(Math.round(d.rating))+' '+d.rating+' ('+d.ratingCount+')':'No ratings yet'}}catch(e){}}
+async function ldPf(){try{const d=await api({action:'getProfile'});if(d.status==='success'){
+ document.getElementById('pfn').value=d.name;document.getElementById('pfg').value=d.gender;
+ document.getElementById('pnd').textContent=d.name;document.getElementById('pgd').textContent=d.gender;
+ document.getElementById('pfb').value=d.bio||'';document.getElementById('pav').textContent=ini(d.name);
+ document.getElementById('pav').style.background=col(d.name);role=d.role||'user';userGender=d.gender;
+ // Show/hide women-only filter chip based on gender
+ document.getElementById('fc-women').style.display=userGender==='Female'?'':'none';
+ document.getElementById('prd').textContent=d.rating>0?'★'.repeat(Math.round(d.rating))+' '+d.rating+' ('+d.ratingCount+')':'No ratings yet';
+ // Re-render to apply gender filter
+ render();
+}}catch(e){}}
 async function savePf(){await api({action:'updateProfile',bio:document.getElementById('pfb').value});T('Saved!')}
 async function ldAd(){try{const d=await api({action:'getAnalytics'});if(d.stats){document.getElementById('su').textContent=d.stats.users;document.getElementById('sr').textContent=d.stats.rides;document.getElementById('sm').textContent='$'+d.stats.economy.toLocaleString();document.getElementById('smg').textContent=d.stats.messages}}catch(e){}}
 
-// Chat
 function openC(id){aC=id;document.getElementById('cmod').classList.add('open');ldM()}
 function closeC(){document.getElementById('cmod').classList.remove('open');aC=null;clearInterval(window._cp)}
 async function ldM(){if(!aC)return;const bx=document.getElementById('cbox');
@@ -599,14 +679,12 @@ async function ldM(){if(!aC)return;const bx=document.getElementById('cbox');
  clearInterval(window._cp);window._cp=setInterval(()=>{if(aC)ldM()},8000)}
 async function sendM(){const i=document.getElementById('cin');if(!i.value.trim()||!aC)return;const m=i.value;i.value='';await api({action:'sendMessage',rideId:aC,message:m});ldM()}
 
-// Notifs
 function openN(){document.getElementById('nmod').classList.add('open');renderN();api({action:'markNotifRead'}).then(()=>document.getElementById('nd').style.display='none')}
 function closeN(){document.getElementById('nmod').classList.remove('open')}
 function renderN(){const nl=document.getElementById('nlist'),ns=window._nf||[];
  nl.innerHTML=ns.length?ns.map(n=>{let ic='💬';if(n.type==='new_booking')ic='✅';else if(n.type.includes('cancel'))ic='❌';else if(n.type==='waitlist_promoted')ic='🎉';
-  return`<div class="nit${!n.read?' ur':''}"><div class="nic">${ic}</div><div class="nb"><p>${n.message}</p><div class="nt">${ago(n.time)}</div></div></div>`}).join(''):'<div style="text-align:center;padding:32px;color:var(--t3);font-size:.85em">No notifications</div>'}
+  return`<div class="nit${!n.read?' ur':''}"><div class="nic">${ic}</div><div class="nb"><p>${n.message}</p><div class="nt2">${ago(n.time)}</div></div></div>`}).join(''):'<div style="text-align:center;padding:32px;color:var(--t3);font-size:.85em">No notifications</div>'}
 
-// Rating
 function openRt(email,rideId,name){selR=0;document.getElementById('re').value=email;document.getElementById('rr').value=rideId;document.getElementById('rw').textContent='Rate '+name;
  const sr=document.getElementById('srow');sr.innerHTML='';
  for(let i=1;i<=5;i++){const s=document.createElement('span');s.className='sb2';s.textContent='★';s.onclick=()=>{selR=i;sr.querySelectorAll('.sb2').forEach((b,j)=>b.classList.toggle('lit',j<i))};sr.appendChild(s)}
@@ -614,14 +692,13 @@ function openRt(email,rideId,name){selR=0;document.getElementById('re').value=em
 function closeR(){document.getElementById('rmod').classList.remove('open')}
 async function submitR(){if(selR<1)return T('Pick a rating',0);const d=await api({action:'rateUser',ratedUser:document.getElementById('re').value,rideId:document.getElementById('rr').value,score:selR});if(d.status==='success'){closeR();T('Rated!')}else T(d.message||'Error',0)}
 
-// Init date chip
-document.getElementById('dc-all').classList.add('on');
-
 // Init
 if(S){
  document.getElementById('v-auth').style.display='none';document.getElementById('v-rider').classList.add('on');
  document.getElementById('nav').style.display='block';document.getElementById('lob').style.display='flex';document.getElementById('nbtn').style.display='flex';
- ldPf().then(()=>{if(role==='admin')document.getElementById('atab').style.display='flex'});
+ ldPf().then(()=>{
+  if(role==='admin'){document.getElementById('atab').style.display='flex';document.getElementById('atab2').style.display='flex'}
+ });
  render();sync(1);setInterval(()=>sync(),30000);setInterval(pollN,30000);
 }
 </script>
