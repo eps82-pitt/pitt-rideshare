@@ -426,7 +426,7 @@ document.getElementById('eda').min=new Date().toISOString().split('T')[0];
 
 // Toast
 function T(m,ok=1){const w=document.getElementById('tw'),e=document.createElement('div');e.className='tt '+(ok?'ok':'er');e.innerHTML=`<span>${ok?'✓':'!'}</span>${m}`;w.appendChild(e);requestAnimationFrame(()=>e.classList.add('show'));setTimeout(()=>{e.classList.remove('show');setTimeout(()=>e.remove(),200)},2200)}
-async function api(d){const r=await fetch(API,{method:'POST',body:JSON.stringify({...d,token:S?.token,email:S?.email})});return r.json()}
+async function api(d){const r=await fetch(API,{method:'POST',body:JSON.stringify({token:S?.token,email:S?.email,...d})});return r.json()}
 
 // Onboarding
 function showAuthForm(login){document.getElementById('onboard-screen').style.display='none';document.getElementById('auth-form').style.display='block';if(login){isReg=0;updAuth()}}
