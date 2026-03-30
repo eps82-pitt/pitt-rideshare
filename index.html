@@ -210,9 +210,7 @@ textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
 .sl{font-size:.68em;color:var(--t3);font-weight:600;margin-left:4px}
 .rc .nt{background:var(--s3);padding:8px 10px;border-radius:8px;font-size:.78em;color:var(--t2);margin-bottom:10px;line-height:1.4}
 .rc .actions{margin-top:auto}
-.share-btn{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:8px;border:1px solid var(--b1);background:var(--s2);display:grid;place-items:center;cursor:pointer;transition:.12s}
-.share-btn:active{transform:scale(.9)}
-.share-btn svg{width:13px;height:13px;color:var(--t3)}
+
 
 /* MAP */
 #mapbox{border-radius:var(--rl);overflow:hidden;height:260px;margin-bottom:10px;border:1px solid var(--b1);display:none}
@@ -318,7 +316,7 @@ textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
 </div>
 
 <!-- DESKTOP SIDEBAR NAV -->
-<nav class="desk-nav" id="dnav">
+<nav class="desk-nav" id="dnav" style="display:none">
  <div class="dni on" data-t="rider" onclick="sw2(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Search Rides</div>
  <div class="dni" data-t="driver" onclick="sw2(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>Post a Ride</div>
  <div class="dni" data-t="trips" onclick="sw2(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>My Trips</div>
@@ -555,13 +553,7 @@ function getF(){
  return f;
 }
 
-function shareRide(id){
- const r=D.find(x=>x.id==id);if(!r)return;
- const label=r.direction==='Returning to Pitt'?r.destination+' → Pitt':r.destination;
- const txt=`🚗 Ride: ${label} on ${fD(r.date)} — $${r.price}/seat\n${r.seats} seats left. Book on PittRide!`;
- if(navigator.share){navigator.share({title:'PittRide: '+label,text:txt}).catch(()=>{})}
- else{navigator.clipboard?.writeText(txt);T('Copied!')}
-}
+
 
 function render(){
  const f=getF();
@@ -585,7 +577,7 @@ function render(){
   let destLabel=r.direction==='Returning to Pitt'?r.destination+' → Pitt':r.destination;
 
   return`<div class="rc${me?' mine':''}${amIn?' booked':''}">
-   <div class="share-btn" onclick="shareRide('${r.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div>
+
    <div class="top"><div class="av" style="background:${col(r.name)}">${ini(r.name)}</div>
     <div class="di"><div class="dn">${r.name}</div><div class="dm">${r.direction}</div></div>
     <div class="pr">$${r.price}</div></div>
@@ -695,7 +687,7 @@ async function submitR(){if(selR<1)return T('Pick a rating',0);const d=await api
 // Init
 if(S){
  document.getElementById('v-auth').style.display='none';document.getElementById('v-rider').classList.add('on');
- document.getElementById('nav').style.display='block';document.getElementById('lob').style.display='flex';document.getElementById('nbtn').style.display='flex';
+ document.getElementById('nav').style.display='block';document.getElementById('dnav').style.display='';document.getElementById('lob').style.display='flex';document.getElementById('nbtn').style.display='flex';
  ldPf().then(()=>{
   if(role==='admin'){document.getElementById('atab').style.display='flex';document.getElementById('atab2').style.display='flex'}
  });
