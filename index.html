@@ -1,913 +1,649 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>PittRide</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --c1:#003594;--c2:#001a4d;--g1:#FFB81C;--g2:#FFA500;
-  --bg:#f5f6f8;--s1:#ffffff;--s2:#f9fafb;--s3:#f0f1f4;
-  --t1:#0b1222;--t2:#3d4663;--t3:#8892a8;
-  --b1:#dfe2ea;--b2:#eceef3;
-  --ok:#16a34a;--err:#dc2626;--warn:#ea8c00;
-  --r:14px;--rl:20px;
-  --sh:0 1px 2px rgba(11,18,34,.04),0 4px 16px rgba(11,18,34,.03);
-  --shh:0 2px 8px rgba(11,18,34,.06),0 12px 32px rgba(11,18,34,.06);
-  --shm:0 16px 48px rgba(11,18,34,.12);
-  font-family:'DM Sans',system-ui,sans-serif;
-  --hdr:56px;--nav:64px
-}
-[data-theme="dark"]{
-  --bg:#080b14;--s1:#111827;--s2:#151c2e;--s3:#1a2340;
-  --t1:#f0f2f7;--t2:#a0a9c0;--t3:#636d85;
-  --b1:#1e2a42;--b2:#16203a;
-  --sh:0 1px 2px rgba(0,0,0,.15),0 4px 16px rgba(0,0,0,.12);
-  --shh:0 2px 8px rgba(0,0,0,.2),0 12px 32px rgba(0,0,0,.15);
-  --shm:0 16px 48px rgba(0,0,0,.3)
-}
-body{background:var(--bg);color:var(--t1);-webkit-tap-highlight-color:transparent;overflow-x:hidden;min-height:100dvh}
-::selection{background:var(--g1);color:#000}
-input,select,textarea,button{font-family:inherit}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>PittRide</title>
+  <link rel="manifest" href="manifest.json">
 
-/* HEADER — logo always far left */
-.hdr{position:sticky;top:0;z-index:100;height:var(--hdr);display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:var(--s1);border-bottom:1px solid var(--b1)}
-.logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:1.05em;color:var(--c1);letter-spacing:-.3px}
-[data-theme="dark"] .logo{color:var(--g1)}
-.logo-mark{width:28px;height:28px;background:linear-gradient(135deg,var(--c1),var(--c2));border-radius:8px;display:grid;place-items:center;color:#fff;font-size:.6em;font-weight:800}
-[data-theme="dark"] .logo-mark{background:linear-gradient(135deg,var(--g1),var(--g2));color:#000}
-.hdr-r{display:flex;gap:4px}
-.ib{width:34px;height:34px;border-radius:10px;border:1px solid var(--b1);background:var(--s1);color:var(--t2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.12s;position:relative;padding:0}
-.ib:active{transform:scale(.9)}
-.ib svg{width:17px;height:17px;display:block}
-.nd{position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:var(--err);display:none;border:2px solid var(--s1)}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
 
-/* LAYOUT — centered before login, sidebar after login on desktop */
-.sh{margin:0 auto;padding:12px 16px calc(var(--nav) + 20px);max-width:100%}
-@media(min-width:768px){.sh{max-width:720px;padding:20px 24px calc(var(--nav) + 20px)}}
-@media(min-width:1024px){.sh{max-width:960px;padding:24px 32px 40px}}
-@media(min-width:1280px){.sh{max-width:1100px}}
-
-/* When logged in, shift for sidebar on desktop */
-body.logged-in .sh{margin:0 auto}
-@media(min-width:1024px){
-  body.logged-in .sh{margin-left:220px;max-width:calc(100% - 220px);padding-bottom:40px}
-  body.logged-in .nv{display:none !important}
-}
-@media(min-width:1280px){
-  body.logged-in .sh{margin-left:240px;max-width:calc(100% - 240px)}
-}
-
-.desk-nav{display:none}
-@media(min-width:1024px){
-  body.logged-in .desk-nav{display:flex;position:fixed;left:0;top:var(--hdr);bottom:0;width:220px;background:var(--s1);border-right:1px solid var(--b1);flex-direction:column;padding:16px 10px;gap:4px;z-index:90}
-}
-@media(min-width:1280px){body.logged-in .desk-nav{width:240px}}
-.dni{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;cursor:pointer;font-size:.88em;font-weight:600;color:var(--t2);transition:.12s;user-select:none}
-.dni:hover{background:var(--s3)}
-.dni.on{background:var(--c1);color:#fff}
-[data-theme="dark"] .dni.on{background:var(--g1);color:#000}
-.dni svg{width:18px;height:18px;flex-shrink:0}
-
-/* Ride grid */
-.ride-grid{display:flex;flex-direction:column;gap:8px}
-@media(min-width:768px){.ride-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}}
-@media(min-width:1280px){.ride-grid{grid-template-columns:1fr 1fr 1fr}}
-
-.v{display:none;animation:fi .18s ease-out}.v.on{display:block}
-@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-
-/* MOBILE NAV */
-.nv{position:fixed;bottom:0;left:0;right:0;z-index:200;background:var(--s1);border-top:1px solid var(--b1);height:var(--nav);padding-bottom:env(safe-area-inset-bottom);display:none}
-.nv-i{max-width:600px;margin:0 auto;display:flex;height:100%}
-.ni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;color:var(--t3);font-size:.58em;font-weight:700;letter-spacing:.4px;text-transform:uppercase;transition:.12s;position:relative;user-select:none}
-.ni svg{width:19px;height:19px;stroke-width:1.7}
-.ni.on{color:var(--c1)}
-[data-theme="dark"] .ni.on{color:var(--g1)}
-.ni::after{content:'';position:absolute;top:-1px;left:20%;right:20%;height:2px;border-radius:0 0 2px 2px;background:var(--c1);opacity:0;transition:.12s}
-[data-theme="dark"] .ni.on::after{background:var(--g1)}.ni.on::after{opacity:1}
-
-/* FORMS */
-.fg{margin-bottom:10px}
-.fg>label{display:block;font-size:.68em;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--t3);margin-bottom:4px}
-.fi{width:100%;padding:11px 13px;border-radius:10px;border:1.5px solid var(--b1);background:var(--s2);color:var(--t1);font-size:.88em;transition:.12s;outline:none}
-.fi:focus{border-color:var(--g1);box-shadow:0 0 0 3px rgba(255,184,28,.1)}
-.fi::placeholder{color:var(--t3)}
-select.fi{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='none' stroke='%238892a8' stroke-width='2'%3E%3Cpath d='m2 3 3 3 3-3'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:28px}
-textarea.fi{min-height:60px;resize:vertical;line-height:1.5}
-.r2{display:flex;gap:8px}.r2>*{flex:1}
-.hint{font-size:.68em;color:var(--t3);text-align:right;margin:-4px 2px 8px 0;font-weight:600}
-
-/* BUTTONS */
-.bt{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:11px 16px;border-radius:10px;border:none;font-weight:700;font-size:.86em;cursor:pointer;transition:.12s;outline:none}
-.bt:active{transform:scale(.97)}.bt:disabled{opacity:.4;pointer-events:none}
-.bp{background:var(--c1);color:#fff}
-[data-theme="dark"] .bp{background:var(--g1);color:#000}
-.bg{background:var(--g1);color:#000}
-.bo{background:var(--s2);border:1.5px solid var(--b1);color:var(--t1)}
-.bd{background:transparent;border:1.5px solid var(--err);color:var(--err)}
-.bs{padding:9px 13px;font-size:.8em;border-radius:8px}
-.brow{display:flex;gap:5px}.brow .bt{flex:1}
-.bt-ghost{background:none;border:none;color:var(--t3);font-weight:600;padding:10px}
-.bt-loading{position:relative;color:transparent !important;pointer-events:none}
-.bt-loading::after{content:'';position:absolute;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
-[data-theme="dark"] .bt-loading::after{border-color:rgba(0,0,0,.2);border-top-color:#000}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* ONBOARDING */
-.onboard{text-align:center;padding:0 8px;max-width:600px;margin:0 auto}
-@media(min-width:768px){.onboard{padding:0 40px}}
-.onboard .hero{margin:32px 0 24px}
-@media(min-width:768px){.onboard .hero{margin:48px 0 32px}}
-.onboard .hero-icon{width:72px;height:72px;border-radius:22px;background:linear-gradient(135deg,var(--c1),var(--c2));display:grid;place-items:center;margin:0 auto 16px;box-shadow:0 8px 24px rgba(0,53,148,.2)}
-[data-theme="dark"] .onboard .hero-icon{background:linear-gradient(135deg,var(--g1),var(--g2));box-shadow:0 8px 24px rgba(255,184,28,.15)}
-.onboard .hero-icon svg{width:32px;height:32px;color:#fff}
-[data-theme="dark"] .onboard .hero-icon svg{color:#000}
-.onboard h1{font-size:1.6em;font-weight:800;letter-spacing:-.5px;margin-bottom:6px}
-@media(min-width:768px){.onboard h1{font-size:2em}}
-.onboard .sub{color:var(--t2);font-size:.92em;line-height:1.5;margin-bottom:28px;max-width:420px;margin-left:auto;margin-right:auto}
-.features{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:28px;text-align:left;max-width:500px;margin-left:auto;margin-right:auto}
-@media(min-width:768px){.features{grid-template-columns:1fr 1fr 1fr 1fr;max-width:700px}}
-.feat{background:var(--s1);border-radius:var(--r);padding:14px;border:1px solid var(--b1)}
-.feat .fi-icon{font-size:1.2em;margin-bottom:6px}
-.feat .fi-title{font-weight:700;font-size:.82em;margin-bottom:2px}
-.feat .fi-desc{font-size:.72em;color:var(--t3);line-height:1.4}
-.auth-wrap{display:flex;justify-content:center}
-.auth-box{background:var(--s1);border-radius:var(--rl);padding:28px 20px;border:1px solid var(--b1);box-shadow:var(--shh);width:100%;max-width:400px}
-.auth-box h2{font-size:1.2em;font-weight:800;margin-bottom:3px}
-.auth-box .sub{color:var(--t3);font-size:.82em;margin-bottom:20px}
-
-/* DIRECTION */
-.dtg{display:flex;background:var(--s2);border-radius:10px;border:1px solid var(--b1);padding:3px;margin-bottom:10px}
-.db{flex:1;padding:9px;border-radius:8px;border:none;background:transparent;font-weight:700;font-size:.78em;color:var(--t3);cursor:pointer;transition:.15s}
-.db.on{background:var(--c1);color:#fff;box-shadow:0 2px 6px rgba(0,53,148,.12)}
-[data-theme="dark"] .db.on{background:var(--g1);color:#000}
-
-/* TOOLBAR */
-.toolbar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center}
-@media(min-width:768px){.toolbar{flex-wrap:nowrap}}
-.fl{display:flex;gap:4px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none}.fl::-webkit-scrollbar{display:none}
-.fc{flex-shrink:0;padding:6px 11px;border-radius:16px;border:1px solid var(--b1);background:var(--s1);color:var(--t2);font-size:.74em;font-weight:600;cursor:pointer;transition:.12s;white-space:nowrap}
-.fc.on{background:var(--g1);color:#000;border-color:var(--g1)}
-.date-chips{display:flex;gap:4px;margin-bottom:8px}
-.dc{flex:1;padding:7px 4px;border-radius:8px;border:1px solid var(--b1);background:var(--s1);color:var(--t2);font-size:.72em;font-weight:700;cursor:pointer;transition:.12s;text-align:center}
-.dc.on{background:var(--c1);color:#fff;border-color:var(--c1)}
-[data-theme="dark"] .dc.on{background:var(--g1);color:#000;border-color:var(--g1)}
-.sw{position:relative;margin-bottom:8px;flex:1;min-width:200px}
-.sw svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--t3)}
-.si{width:100%;padding:10px 12px 10px 34px;border-radius:10px;border:1.5px solid var(--b1);background:var(--s1);color:var(--t1);font-size:.85em;outline:none;transition:.12s}
-.si:focus{border-color:var(--g1);box-shadow:0 0 0 3px rgba(255,184,28,.08)}
-.sb{display:flex;gap:5px;align-items:center;flex-shrink:0}
-.sb select{padding:6px 24px 6px 8px;border-radius:7px;border:1px solid var(--b1);background:var(--s1);color:var(--t1);font-size:.74em;font-weight:600;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' fill='none' stroke='%238892a8' stroke-width='2'%3E%3Cpath d='m2 3 2 2 2-2'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center;outline:none}
-.rc-count{font-size:.72em;color:var(--t3);font-weight:600}
-
-/* RIDE CARDS */
-.rc{background:var(--s1);border-radius:var(--rl);padding:16px;border:1px solid var(--b1);box-shadow:var(--sh);position:relative;overflow:hidden;transition:.15s;display:flex;flex-direction:column}
-.rc:hover{box-shadow:var(--shh)}
-.rc.mine{border-left:3px solid var(--c1)}
-[data-theme="dark"] .rc.mine{border-left-color:var(--g1)}
-.rc.booked{border-left:3px solid var(--g1)}
-.rc.expired{opacity:.5}
-.rc.expired::after{content:'PAST';position:absolute;top:12px;right:12px;font-size:.6em;font-weight:800;color:var(--err);background:rgba(220,38,38,.08);padding:3px 8px;border-radius:5px;letter-spacing:.5px}
-.rc .top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.av{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:.8em;flex-shrink:0}
-.rc .di{flex:1;min-width:0}
-.rc .dn{font-weight:700;font-size:.85em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rc .dm{font-size:.68em;color:var(--t3)}
-.rc .pr{font-size:1.3em;font-weight:800;color:var(--c1);letter-spacing:-.5px}
-[data-theme="dark"] .rc .pr{color:var(--g1)}
-.rc .dst{font-size:1.1em;font-weight:800;letter-spacing:-.2px;margin-bottom:1px}
-.rc .wp{font-size:.72em;color:var(--t3);margin-bottom:4px}
-.rc .meta-row{display:flex;gap:10px;font-size:.75em;color:var(--t2);font-weight:600;margin-bottom:8px;flex-wrap:wrap}
-.rc .meta-row span{display:flex;align-items:center;gap:3px}
-.rc .meta-row svg{width:12px;height:12px;flex-shrink:0}
-.tags{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px}
-.tg{padding:3px 7px;border-radius:5px;font-size:.66em;font-weight:700;background:var(--s3);color:var(--t2)}
-.tg-w{background:rgba(147,51,234,.07);color:#7c3aed}
-.seats-vis{display:flex;gap:2px;align-items:center;margin-bottom:10px}
-.sd{width:7px;height:7px;border-radius:50%;background:var(--g1)}.sd.tk{background:var(--b2)}
-.sl{font-size:.68em;color:var(--t3);font-weight:600;margin-left:4px}
-.rc .nt{background:var(--s3);padding:8px 10px;border-radius:8px;font-size:.78em;color:var(--t2);margin-bottom:10px;line-height:1.4}
-.rc .actions{margin-top:auto}
-
-/* MAP */
-#mapbox{border-radius:var(--rl);overflow:hidden;height:260px;margin-bottom:10px;border:1px solid var(--b1);display:none}
-@media(min-width:768px){#mapbox{height:360px}}
-
-/* TRIPS */
-.trips-grid{display:flex;flex-direction:column;gap:8px}
-@media(min-width:768px){.trips-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}}
-.tc{background:var(--s1);border-radius:var(--rl);padding:16px;border:1px solid var(--b1);box-shadow:var(--sh);border-left:3px solid var(--g1)}
-.tc .dst{font-size:1.05em;font-weight:800;margin-bottom:2px}
-.tc .meta{font-size:.75em;color:var(--t3);font-weight:600;margin-bottom:10px}
-
-/* POST */
-.pc{background:var(--s1);border-radius:var(--rl);padding:22px 18px;border:1px solid var(--b1);box-shadow:var(--sh);max-width:560px;margin:0 auto}
-@media(min-width:768px){.pc{padding:28px 24px}}
-.pc h2{font-size:1.15em;font-weight:800;margin-bottom:2px}
-.pc .sub{color:var(--t3);font-size:.78em;margin-bottom:18px}
-
-/* PROFILE — richer */
-.prof-header{background:var(--s1);border-radius:var(--rl);padding:26px 18px 20px;text-align:center;border:1px solid var(--b1);box-shadow:var(--sh);max-width:560px;margin:0 auto 12px}
-.prof-header .ba{width:64px;height:64px;border-radius:18px;font-size:1.6em;margin:0 auto 12px}
-.prof-header .pn{font-size:1.1em;font-weight:800;margin-bottom:1px}
-.prof-header .pg{font-size:.75em;color:var(--t3);margin-bottom:3px}
-.prof-header .prr{font-size:.78em;color:var(--warn);font-weight:700;margin-bottom:4px}
-.prof-header .pdate{font-size:.7em;color:var(--t3)}
-.prof-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:0 auto 12px;max-width:560px}
-.prof-stat{background:var(--s1);border-radius:var(--r);padding:14px 8px;text-align:center;border:1px solid var(--b1)}
-.prof-stat .psv{font-size:1.4em;font-weight:800;color:var(--c1)}
-[data-theme="dark"] .prof-stat .psv{color:var(--g1)}
-.prof-stat .psl{font-size:.62em;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--t3);margin-top:1px}
-.prof-bio{background:var(--s1);border-radius:var(--rl);padding:20px 18px;border:1px solid var(--b1);box-shadow:var(--sh);max-width:560px;margin:0 auto 12px}
-.prof-bio h3{font-size:.85em;font-weight:800;margin-bottom:8px}
-.prof-history{max-width:560px;margin:0 auto}
-.prof-history h3{font-size:.85em;font-weight:800;margin-bottom:8px}
-.ph-item{background:var(--s1);border-radius:var(--r);padding:12px 14px;border:1px solid var(--b1);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
-.ph-item .ph-dest{font-weight:700;font-size:.85em}
-.ph-item .ph-meta{font-size:.7em;color:var(--t3);font-weight:600}
-.ph-item .ph-price{font-weight:800;color:var(--c1);font-size:.9em}
-[data-theme="dark"] .ph-item .ph-price{color:var(--g1)}
-
-/* VERIFIED BADGE */
-.vbadge{display:inline-flex;align-items:center;gap:3px;font-size:.65em;font-weight:700;color:var(--ok);background:rgba(22,163,74,.08);padding:2px 6px;border-radius:4px;vertical-align:middle;margin-left:4px}
-
-/* RIDER AVATARS */
-.rider-row{display:flex;gap:-4px;align-items:center;margin-bottom:10px}
-.rider-mini{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;color:#fff;font-size:.5em;font-weight:800;margin-right:-4px;border:2px solid var(--s1)}
-.rider-count{font-size:.68em;color:var(--t3);font-weight:600;margin-left:8px}
-
-/* PICKUP PIN */
-.pickup-row{display:flex;align-items:center;gap:4px;font-size:.72em;color:var(--t2);font-weight:600;margin-bottom:6px}
-.pickup-row svg{width:12px;height:12px;color:var(--err);flex-shrink:0}
-
-/* CANCEL POLICY TAG */
-.tg-cancel{background:rgba(234,140,0,.08);color:var(--warn)}
-
-/* PAYMENT */
-.pay-row{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
-.pay-chip{display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:6px;font-size:.66em;font-weight:700;background:var(--s3);color:var(--t2);cursor:pointer;border:1px solid var(--b1);transition:.12s}
-.pay-chip.paid{background:rgba(22,163,74,.08);color:var(--ok);border-color:rgba(22,163,74,.15)}
-.pay-chip.received{background:rgba(0,53,148,.08);color:var(--c1);border-color:rgba(0,53,148,.15)}
-
-/* ALERTS */
-.alert-card{background:var(--s1);border-radius:var(--r);padding:12px 14px;border:1px solid var(--b1);margin-bottom:6px;display:flex;justify-content:space-between;align-items:center}
-.alert-card .al-info{font-weight:700;font-size:.82em}
-.alert-card .al-meta{font-size:.68em;color:var(--t3);font-weight:600;margin-top:2px}
-.alert-card .al-del{width:28px;height:28px;border-radius:8px;border:1px solid var(--b1);background:var(--s2);display:grid;place-items:center;cursor:pointer;flex-shrink:0}
-.alert-card .al-del svg{width:12px;height:12px;color:var(--t3)}
-
-/* SKIP NAV */
-.skip-nav{position:absolute;top:-100px;left:16px;background:var(--c1);color:#fff;padding:8px 16px;border-radius:8px;font-weight:700;font-size:.85em;z-index:1000;transition:.2s}
-.skip-nav:focus{top:8px}
-
-/* FOCUS STATES */
-.bt:focus-visible,.ib:focus-visible,.fi:focus-visible,.fc:focus-visible,.dc:focus-visible,.db:focus-visible,.ni:focus-visible,.dni:focus-visible{outline:2px solid var(--g1);outline-offset:2px}
-
-
-/* ADMIN */
-.sg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
-@media(min-width:768px){.sg{grid-template-columns:1fr 1fr 1fr 1fr}}
-.sc{background:var(--s1);border-radius:var(--rl);padding:18px 12px;text-align:center;border:1px solid var(--b1)}
-.sc .sv{font-size:1.7em;font-weight:800;color:var(--c1)}
-[data-theme="dark"] .sc .sv{color:var(--g1)}
-.sc .sl{font-size:.62em;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);margin-top:1px}
-
-/* MODALS */
-.mo{position:fixed;inset:0;background:rgba(11,18,34,.4);backdrop-filter:blur(8px);z-index:300;display:none;align-items:flex-end;justify-content:center}
-@media(min-width:768px){.mo{align-items:center}}
-.mo.open{display:flex}
-.ms{background:var(--bg);width:100%;max-width:520px;max-height:85dvh;border-radius:var(--rl) var(--rl) 0 0;display:flex;flex-direction:column;animation:su .18s ease-out}
-@media(min-width:768px){.ms{border-radius:var(--rl);max-height:80vh}}
-@keyframes su{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
-.mh{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--b1);flex-shrink:0}
-.mh h3{font-weight:800;font-size:.95em}
-.mb{padding:16px;overflow-y:auto;flex:1}
-
-/* CONFIRM MODAL */
-.confirm-modal{position:fixed;inset:0;background:rgba(11,18,34,.45);backdrop-filter:blur(6px);z-index:500;display:none;align-items:center;justify-content:center}
-.confirm-modal.open{display:flex}
-.confirm-box{background:var(--s1);border-radius:var(--rl);padding:24px 20px;max-width:340px;width:90%;box-shadow:var(--shm);text-align:center;animation:su .15s ease-out}
-.confirm-box .cf-icon{font-size:2em;margin-bottom:8px}
-.confirm-box .cf-title{font-weight:800;font-size:1em;margin-bottom:4px}
-.confirm-box .cf-msg{font-size:.84em;color:var(--t2);margin-bottom:18px;line-height:1.4}
-.confirm-box .brow{gap:8px}
-
-/* CHAT */
-.ca{display:flex;flex-direction:column;gap:4px;min-height:180px;margin-bottom:10px}
-@media(min-width:768px){.ca{min-height:280px}}
-.cb{max-width:78%;padding:8px 12px;border-radius:14px;font-size:.84em;line-height:1.4}
-.cm{background:var(--c1);color:#fff;align-self:flex-end;border-bottom-right-radius:3px}
-[data-theme="dark"] .cm{background:var(--g1);color:#000}
-.ct{background:var(--s1);border:1px solid var(--b1);align-self:flex-start;border-bottom-left-radius:3px}
-.cs{font-size:.62em;font-weight:700;opacity:.55;margin-bottom:1px}
-.ci{display:flex;gap:5px}.ci input{flex:1;margin:0}.ci .bt{width:40px;flex-shrink:0;padding:0}
-
-/* NOTIFS */
-.nl{max-height:70dvh;overflow-y:auto}
-.nit{padding:12px 14px;border-bottom:1px solid var(--b1);display:flex;gap:8px}
-.nit.ur{background:rgba(255,184,28,.04)}
-.nit .nic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;font-size:.9em;flex-shrink:0}
-.nit .nb{flex:1}.nit .nb p{font-size:.82em;line-height:1.35}
-.nit .nb .nt2{font-size:.66em;color:var(--t3);margin-top:2px}
-
-/* RATING */
-.sr{display:flex;gap:6px;justify-content:center;margin:14px 0}
-.sb2{font-size:1.8em;cursor:pointer;transition:.12s;opacity:.2}.sb2.lit{opacity:1}.sb2:hover{transform:scale(1.1)}
-
-/* TOAST */
-.tw{position:fixed;top:calc(var(--hdr) + 6px);left:50%;transform:translateX(-50%);z-index:400;width:88%;max-width:360px;display:flex;flex-direction:column;gap:5px;pointer-events:none}
-.tt{padding:10px 14px;border-radius:10px;font-weight:600;font-size:.82em;box-shadow:var(--shm);opacity:0;transform:translateY(-6px);transition:.2s;display:flex;align-items:center;gap:7px;pointer-events:auto}
-.tt.ok{background:#065f46;color:#d1fae5}.tt.er{background:#7f1d1d;color:#fecaca}.tt.show{opacity:1;transform:none}
-
-/* EMPTY */
-.emp{text-align:center;padding:36px 16px;color:var(--t3)}
-@media(min-width:768px){.emp{grid-column:1/-1}}
-.emp svg{width:36px;height:36px;margin-bottom:8px;opacity:.3}
-.emp p{font-weight:600;font-size:.88em}.emp .sub{font-size:.76em;margin-top:2px}
-
-.sk{background:var(--s1);border-radius:var(--rl);padding:16px;border:1px solid var(--b1)}
-.skl{height:10px;border-radius:5px;background:var(--b2);margin-bottom:7px;animation:pu 1.5s infinite}
-.skl.w50{width:50%}.skl.w70{width:70%}.skl.w30{width:30%}
-.skc{width:36px;height:36px;border-radius:10px;background:var(--b2);animation:pu 1.5s infinite}
-@keyframes pu{0%,100%{opacity:.3}50%{opacity:.55}}
-</style>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
+
 <body>
+  <a href="#app" class="skip-nav" tabindex="0">Skip to content</a>
 
-<a href="#app" class="skip-nav" tabindex="0">Skip to content</a>
-<div class="hdr" role="banner">
- <div class="logo"><div class="logo-mark">PR</div>PittRide</div>
- <div class="hdr-r">
-  <button class="ib" id="nbtn" onclick="openN()" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><div class="nd" id="nd"></div></button>
-  <button class="ib" onclick="toggleTheme()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></button>
-  <button class="ib" id="lob" onclick="logout()" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>
- </div>
-</div>
+  <!-- ===================================================================
+       Header
+       =================================================================== -->
+  <div class="hdr" role="banner">
+    <div class="logo">
+      <div class="logo-mark">PR</div>PittRide
+    </div>
 
-<nav class="desk-nav" id="dnav" role="navigation" aria-label="Main navigation">
- <div class="dni on" data-t="rider" onclick="sw(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Search Rides</div>
- <div class="dni" data-t="driver" onclick="sw(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>Post a Ride</div>
- <div class="dni" data-t="trips" onclick="sw(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>My Trips</div>
- <div class="dni" data-t="profile" onclick="sw(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</div>
- <div class="dni" id="atab2" style="display:none" data-t="admin" onclick="sw(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>Admin</div>
-</nav>
+    <div class="hdr-r">
+      <button class="ib" id="nbtn" onclick="openNotifications()" style="display:none" aria-label="Notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <div class="nd" id="nd"></div>
+      </button>
 
-<div class="sh" id="app">
+      <button class="ib" onclick="toggleTheme()" aria-label="Toggle dark mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      </button>
 
-<!-- AUTH -->
-<div id="v-auth" class="v on">
- <div class="onboard" id="onboard-screen">
-  <div class="hero">
-   <div class="hero-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></div>
-   <h1>PittRide</h1>
-   <p class="sub">The rideshare board built for Pitt students. Split gas, share the road, travel safer together.</p>
+      <button class="ib" id="lob" onclick="logout()" style="display:none" aria-label="Sign out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      </button>
+    </div>
   </div>
-  <div class="features">
-   <div class="feat"><div class="fi-icon">🔍</div><div class="fi-title">Find Rides</div><div class="fi-desc">Search by city, date, price, vibe</div></div>
-   <div class="feat"><div class="fi-icon">🚗</div><div class="fi-title">Offer Seats</div><div class="fi-desc">Post trips and split costs</div></div>
-   <div class="feat"><div class="fi-icon">💜</div><div class="fi-title">Safe Routing</div><div class="fi-desc">Women-only and .edu verified</div></div>
-   <div class="feat"><div class="fi-icon">💬</div><div class="fi-title">Trip Chat</div><div class="fi-desc">Coordinate with your group</div></div>
+
+  <!-- ===================================================================
+       Desktop sidebar
+       =================================================================== -->
+  <nav class="desk-nav" id="dnav" role="navigation" aria-label="Main navigation">
+    <div class="dni on" data-t="rider" onclick="switchView(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Search Rides
+    </div>
+    <div class="dni" data-t="driver" onclick="switchView(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>Post a Ride
+    </div>
+    <div class="dni" data-t="trips" onclick="switchView(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>My Trips
+    </div>
+    <div class="dni" data-t="profile" onclick="switchView(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile
+    </div>
+    <div class="dni" id="atab2" data-t="admin" onclick="switchView(this)" style="display:none">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>Admin
+    </div>
+  </nav>
+
+  <div class="sh" id="app">
+
+    <!-- =================================================================
+         Onboarding and auth
+         ================================================================= -->
+    <div id="v-auth" class="v on">
+      <div class="onboard" id="onboard-screen">
+        <div class="hero">
+          <div class="hero-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          </div>
+          <h1>PittRide</h1>
+          <p class="sub">The rideshare board built for Pitt students. Split gas, share the road, travel safer together.</p>
+        </div>
+
+        <div class="features">
+          <div class="feat"><div class="fi-icon">🔍</div><div class="fi-title">Find Rides</div><div class="fi-desc">Search by city, date, price, vibe</div></div>
+          <div class="feat"><div class="fi-icon">🚗</div><div class="fi-title">Offer Seats</div><div class="fi-desc">Post trips and split costs</div></div>
+          <div class="feat"><div class="fi-icon">💜</div><div class="fi-title">Safe Routing</div><div class="fi-desc">Women-only and .edu verified</div></div>
+          <div class="feat"><div class="fi-icon">💬</div><div class="fi-title">Trip Chat</div><div class="fi-desc">Coordinate with your group</div></div>
+        </div>
+
+        <div style="max-width:340px;margin:0 auto">
+          <button class="bt bp" onclick="showAuthForm()" style="margin-bottom:8px">Get Started</button>
+          <button class="bt bt-ghost" onclick="showAuthForm(true)">I already have an account</button>
+        </div>
+      </div>
+
+      <div id="auth-form" style="display:none">
+        <div class="auth-wrap">
+          <div class="auth-box">
+            <h2 id="atit">Sign in</h2>
+            <p class="sub" id="asub">Use your @pitt.edu email</p>
+
+            <div id="rfs" style="display:none">
+              <div class="fg">
+                <label for="rn">Full Name</label>
+                <input class="fi" id="rn" placeholder="Jane Doe">
+              </div>
+              <div class="fg">
+                <label for="rg">Gender</label>
+                <select class="fi" id="rg">
+                  <option value="" disabled selected>For safe routing</option>
+                  <option value="Female">Female</option>
+                  <option value="Male">Male</option>
+                  <option value="Other">Non-Binary / Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="fg">
+              <label for="em">Email</label>
+              <input type="email" class="fi" id="em" placeholder="abc123@pitt.edu" autocapitalize="off">
+            </div>
+            <div class="fg">
+              <label for="pw">Password</label>
+              <input type="password" class="fi" id="pw" placeholder="6+ characters"
+                     onkeypress="if(event.key==='Enter')submitAuth()">
+            </div>
+
+            <button class="bt bp" id="abtn" onclick="submitAuth()">Sign In</button>
+            <button class="bt bt-ghost" id="rtog" onclick="toggleRegisterMode()">Need an account? Sign up</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =================================================================
+         Search rides
+         ================================================================= -->
+    <div id="v-rider" class="v">
+      <div class="dtg">
+        <button class="db on" id="bo" onclick="setDirection('Leaving Pitt')">Leaving</button>
+        <button class="db" id="br" onclick="setDirection('Returning to Pitt')">Returning</button>
+      </div>
+
+      <div class="date-chips">
+        <div class="dc on" id="dc-all" onclick="setDateFilter('all')">All</div>
+        <div class="dc" id="dc-today" onclick="setDateFilter('today')">Today</div>
+        <div class="dc" id="dc-tmrw" onclick="setDateFilter('tmrw')">Tomorrow</div>
+        <div class="dc" id="dc-wknd" onclick="setDateFilter('wknd')">Weekend</div>
+      </div>
+
+      <div class="fl">
+        <div class="fc" id="fc-cheap" onclick="toggleFilter('cheap')">Under $30</div>
+        <div class="fc" id="fc-women" onclick="toggleFilter('women')" style="display:none">Women Only</div>
+        <div class="fc" id="fc-trunk" onclick="toggleFilter('trunk')">Trunk</div>
+        <div class="fc" id="fc-quiet" onclick="toggleFilter('quiet')">Quiet</div>
+      </div>
+
+      <div class="toolbar">
+        <div class="sw">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input class="si" id="srch" placeholder="Search city or stops…" oninput="renderAll()" aria-label="Search rides">
+        </div>
+
+        <div class="sb">
+          <select id="srt" onchange="renderAll()" aria-label="Sort rides">
+            <option value="date">Soonest</option>
+            <option value="price">Cheapest</option>
+            <option value="priceh">Highest $</option>
+            <option value="seats">Most seats</option>
+          </select>
+          <span class="rc-count" id="cnt"></span>
+        </div>
+
+        <button class="bt bo bs" style="width:auto;flex-shrink:0" onclick="toggleMap()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg>Map
+        </button>
+      </div>
+
+      <div id="mapbox"></div>
+
+      <!-- Loading placeholder, shown only on a cold start -->
+      <div id="skel" style="display:none">
+        <div class="ride-grid">
+          <div class="sk">
+            <div style="display:flex;gap:10px;margin-bottom:10px">
+              <div class="skc"></div>
+              <div style="flex:1"><div class="skl w50"></div><div class="skl w70"></div></div>
+            </div>
+            <div class="skl"></div><div class="skl w30"></div>
+          </div>
+          <div class="sk">
+            <div style="display:flex;gap:10px;margin-bottom:10px">
+              <div class="skc"></div>
+              <div style="flex:1"><div class="skl w50"></div><div class="skl w70"></div></div>
+            </div>
+            <div class="skl"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="rl" class="ride-grid"></div>
+    </div>
+
+    <!-- =================================================================
+         Post a ride
+         ================================================================= -->
+    <div id="v-driver" class="v">
+      <div class="pc">
+        <h2>Offer a ride</h2>
+        <p class="sub">Post to the board for students to book</p>
+
+        <div class="fg">
+          <label for="pd">Direction</label>
+          <select class="fi" id="pd" onchange="updateDestinationLabel()">
+            <option value="Leaving Pitt">Leaving Pitt</option>
+            <option value="Returning to Pitt">Returning to Pitt</option>
+          </select>
+        </div>
+
+        <div class="fg">
+          <label for="pde" id="pde-label">Destination</label>
+          <input class="fi" id="pde" placeholder="e.g. Philadelphia"
+                 oninput="suggestFare('pde','pla','plo','ph','pse')">
+        </div>
+        <input type="hidden" id="pla"><input type="hidden" id="plo">
+
+        <div class="fg">
+          <label for="pst">Waypoints</label>
+          <input class="fi" id="pst" placeholder="e.g. Harrisburg">
+        </div>
+
+        <div class="r2">
+          <div class="fg">
+            <label for="pda">Date</label>
+            <input type="date" class="fi" id="pda">
+          </div>
+          <div class="fg">
+            <label for="ptm">Departure</label>
+            <select class="fi" id="ptm">
+              <option value="Flexible">Flexible</option>
+              <option value="Early Morning">Early AM (5-8)</option>
+              <option value="Morning">Morning (8-11)</option>
+              <option value="Afternoon">Afternoon (11-4)</option>
+              <option value="Evening">Evening (4-8)</option>
+              <option value="Late Night">Late (8+)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="r2">
+          <div class="fg">
+            <label for="pse">Seats</label>
+            <input type="number" class="fi" id="pse" placeholder="1-6" min="1" max="6"
+                   oninput="suggestFare('pde','pla','plo','ph','pse')">
+          </div>
+          <div class="fg">
+            <label for="ppr">$/Seat</label>
+            <input type="number" class="fi" id="ppr" placeholder="$">
+          </div>
+        </div>
+        <p class="hint" id="ph"></p>
+
+        <div class="fg">
+          <label for="paf">Who Can Join</label>
+          <select class="fi" id="paf">
+            <option value="Everyone">Everyone</option>
+            <option value="Women Only">Women Only</option>
+          </select>
+        </div>
+
+        <div class="r2">
+          <div class="fg">
+            <label for="pvi">Vibe</label>
+            <select class="fi" id="pvi">
+              <option value="Chatty">Chatty</option>
+              <option value="Quiet">Quiet</option>
+              <option value="Mixed">Mixed</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label for="pmu">Music</label>
+            <select class="fi" id="pmu">
+              <option value="Driver's Choice">Driver Aux</option>
+              <option value="Pass the Aux">Pass Aux</option>
+              <option value="Podcasts/Silence">Podcasts</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="fg">
+          <label for="plu">Luggage</label>
+          <select class="fi" id="plu">
+            <option value="Backpack Only">Backpack</option>
+            <option value="Carry-on Size">Carry-on</option>
+            <option value="Large Trunk Space">Large Trunk</option>
+          </select>
+        </div>
+
+        <div class="fg">
+          <label for="pcp">Cancellation Policy</label>
+          <select class="fi" id="pcp">
+            <option value="Flexible">Flexible — cancel anytime</option>
+            <option value="24h Notice">24h Notice required</option>
+            <option value="No Cancellation">No cancellation</option>
+          </select>
+        </div>
+
+        <div class="fg">
+          <label for="ppl">Pickup Spot</label>
+          <input class="fi" id="ppl" placeholder="e.g. Cathy front steps, Panther Hollow lot">
+        </div>
+
+        <div class="fg">
+          <label for="pno">Notes</label>
+          <textarea class="fi" id="pno" placeholder="Extra details…"></textarea>
+        </div>
+
+        <input type="hidden" id="pfn">
+        <button class="bt bp" id="post-btn" onclick="postRide()">Post Ride</button>
+      </div>
+    </div>
+
+    <!-- =================================================================
+         My trips
+         ================================================================= -->
+    <div id="v-trips" class="v">
+      <h2 style="font-weight:800;font-size:1.1em;margin:0 auto 12px;max-width:560px">My Trips</h2>
+      <div id="tl" class="trips-grid" style="max-width:560px;margin:0 auto"></div>
+    </div>
+
+    <!-- =================================================================
+         Profile
+         ================================================================= -->
+    <div id="v-profile" class="v">
+      <div class="prof-header">
+        <div id="pav" class="av ba" style="background:var(--c1)">👤</div>
+        <div class="pn" id="pnd">—</div>
+        <div class="pg" id="pgd">—</div>
+        <div class="prr" id="prd"></div>
+        <div class="pdate" id="pdate"></div>
+        <input type="hidden" id="pfg">
+      </div>
+
+      <div class="prof-stats">
+        <div class="prof-stat"><div class="psv" id="ps-rides">0</div><div class="psl">Rides</div></div>
+        <div class="prof-stat"><div class="psv" id="ps-booked">0</div><div class="psl">Booked</div></div>
+        <div class="prof-stat"><div class="psv" id="ps-rating">—</div><div class="psl">Rating</div></div>
+      </div>
+
+      <div class="prof-bio">
+        <h3>About Me</h3>
+        <div class="fg">
+          <textarea class="fi" id="pfb" placeholder="Tell others about yourself…"></textarea>
+        </div>
+        <div class="fg">
+          <label for="pcar">Car Info (optional)</label>
+          <input class="fi" id="pcar" placeholder="e.g. Blue Honda Civic 2019">
+        </div>
+        <button class="bt bp" onclick="saveProfile()">Save Profile</button>
+      </div>
+
+      <div class="prof-history" style="margin-bottom:12px">
+        <h3>Ride Alerts</h3>
+        <div id="alert-list"></div>
+        <button class="bt bo bs" style="margin-top:6px" onclick="openAlertModal()">+ New Alert</button>
+      </div>
+
+      <div class="prof-history">
+        <h3>Ride History</h3>
+        <div id="ph-list"></div>
+      </div>
+    </div>
+
+    <!-- =================================================================
+         Admin
+         ================================================================= -->
+    <div id="v-admin" class="v">
+      <h2 style="font-weight:800;font-size:1.1em;margin-bottom:12px">Dashboard</h2>
+      <div class="sg">
+        <div class="sc"><div class="sv" id="su">—</div><div class="sl">Users</div></div>
+        <div class="sc"><div class="sv" id="sr">—</div><div class="sl">Rides</div></div>
+        <div class="sc"><div class="sv" id="sm" style="color:var(--ok)">$—</div><div class="sl">Economy</div></div>
+        <div class="sc"><div class="sv" id="smg">—</div><div class="sl">Messages</div></div>
+      </div>
+    </div>
   </div>
-  <div style="max-width:340px;margin:0 auto">
-   <button class="bt bp" onclick="showAuthForm()" style="margin-bottom:8px">Get Started</button>
-   <button class="bt bt-ghost" onclick="showAuthForm(true)">I already have an account</button>
+
+  <!-- ===================================================================
+       Mobile bottom navigation
+       =================================================================== -->
+  <nav class="nv" id="nav" role="navigation" aria-label="Mobile navigation">
+    <div class="nv-i">
+      <div class="ni on" data-t="rider" onclick="switchView(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Search
+      </div>
+      <div class="ni" data-t="driver" onclick="switchView(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>Post
+      </div>
+      <div class="ni" data-t="trips" onclick="switchView(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>Trips
+      </div>
+      <div class="ni" data-t="profile" onclick="switchView(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile
+      </div>
+      <div class="ni" id="atab" data-t="admin" onclick="switchView(this)" style="display:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>Admin
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===================================================================
+       Modals
+       =================================================================== -->
+
+  <!-- Edit ride -->
+  <div class="mo" id="emod" onclick="if(event.target===this)closeEditModal()">
+    <div class="ms">
+      <div class="mh">
+        <h3>Edit Ride</h3>
+        <button class="ib" onclick="closeEditModal()" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="mb">
+        <input type="hidden" id="ei">
+
+        <div class="fg">
+          <label for="edi">Direction</label>
+          <select class="fi" id="edi">
+            <option value="Leaving Pitt">Leaving</option>
+            <option value="Returning to Pitt">Returning</option>
+          </select>
+        </div>
+
+        <div class="fg">
+          <label for="ede">Destination / Coming From</label>
+          <input class="fi" id="ede" oninput="suggestFare('ede','ela','elo','eph','ese')">
+        </div>
+        <input type="hidden" id="ela"><input type="hidden" id="elo">
+
+        <div class="fg">
+          <label for="est">Waypoints</label>
+          <input class="fi" id="est">
+        </div>
+
+        <div class="r2">
+          <div class="fg"><label for="eda">Date</label><input type="date" class="fi" id="eda"></div>
+          <div class="fg">
+            <label for="etm">Departure</label>
+            <select class="fi" id="etm">
+              <option value="Flexible">Flexible</option>
+              <option value="Early Morning">Early AM</option>
+              <option value="Morning">Morning</option>
+              <option value="Afternoon">Afternoon</option>
+              <option value="Evening">Evening</option>
+              <option value="Late Night">Late</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="r2">
+          <div class="fg">
+            <label for="ese">Seats</label>
+            <input type="number" class="fi" id="ese" min="1" max="6"
+                   oninput="suggestFare('ede','ela','elo','eph','ese')">
+          </div>
+          <div class="fg"><label for="epr">Price</label><input type="number" class="fi" id="epr"></div>
+        </div>
+        <p class="hint" id="eph"></p>
+
+        <div class="fg">
+          <label for="eaf">Affinity</label>
+          <select class="fi" id="eaf">
+            <option value="Everyone">Everyone</option>
+            <option value="Women Only">Women Only</option>
+          </select>
+        </div>
+
+        <div class="r2">
+          <div class="fg">
+            <label for="evi">Vibe</label>
+            <select class="fi" id="evi">
+              <option value="Chatty">Chatty</option>
+              <option value="Quiet">Quiet</option>
+              <option value="Mixed">Mixed</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label for="emu">Music</label>
+            <select class="fi" id="emu">
+              <option value="Driver's Choice">Driver Aux</option>
+              <option value="Pass the Aux">Pass Aux</option>
+              <option value="Podcasts/Silence">Podcasts</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="fg">
+          <label for="elu">Luggage</label>
+          <select class="fi" id="elu">
+            <option value="Backpack Only">Backpack</option>
+            <option value="Carry-on Size">Carry-on</option>
+            <option value="Large Trunk Space">Trunk</option>
+          </select>
+        </div>
+
+        <div class="fg">
+          <label for="ecp">Cancel Policy</label>
+          <select class="fi" id="ecp">
+            <option value="Flexible">Flexible</option>
+            <option value="24h Notice">24h Notice</option>
+            <option value="No Cancellation">No Cancellation</option>
+          </select>
+        </div>
+
+        <div class="fg">
+          <label for="epl">Pickup Spot</label>
+          <input class="fi" id="epl" placeholder="e.g. Cathy front steps">
+        </div>
+
+        <div class="fg"><label for="eno">Notes</label><textarea class="fi" id="eno"></textarea></div>
+
+        <button class="bt bg" onclick="submitEdit()">Save</button>
+      </div>
+    </div>
   </div>
- </div>
- <div id="auth-form" style="display:none"><div class="auth-wrap"><div class="auth-box">
-  <h2 id="atit">Sign in</h2><p class="sub" id="asub">Use your @pitt.edu email</p>
-  <div id="rfs" style="display:none">
-   <div class="fg"><label>Full Name</label><input class="fi" id="rn" placeholder="Jane Doe"></div>
-   <div class="fg"><label>Gender</label><select class="fi" id="rg"><option value="" disabled selected>For safe routing</option><option value="Female">Female</option><option value="Male">Male</option><option value="Other">Non-Binary / Other</option></select></div>
+
+  <!-- Trip chat -->
+  <div class="mo" id="cmod" onclick="if(event.target===this)closeChat()">
+    <div class="ms">
+      <div class="mh">
+        <h3>Trip Chat</h3>
+        <button class="ib" onclick="closeChat()" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="mb" style="display:flex;flex-direction:column">
+        <div id="cbox" class="ca"></div>
+        <div class="ci">
+          <input class="fi" id="cin" style="margin:0" placeholder="Message…"
+                 onkeypress="if(event.key==='Enter')sendMessage()" aria-label="Message">
+          <button class="bt bp bs" onclick="sendMessage()" style="width:40px;padding:0" aria-label="Send">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="fg"><label>Email</label><input type="email" class="fi" id="em" placeholder="abc123@pitt.edu" autocapitalize="off"></div>
-  <div class="fg"><label>Password</label><input type="password" class="fi" id="pw" placeholder="6+ characters" onkeypress="if(event.key==='Enter')submitAuth()"></div>
-  <button class="bt bp" id="abtn" onclick="submitAuth()">Sign In</button>
-  <button class="bt bt-ghost" id="rtog" onclick="toggleReg()">Need an account? Sign up</button>
- </div></div></div>
-</div>
 
-<!-- SEARCH -->
-<div id="v-rider" class="v">
- <div class="dtg"><button class="db on" id="bo" onclick="setDir('Leaving Pitt')">Leaving</button><button class="db" id="br" onclick="setDir('Returning to Pitt')">Returning</button></div>
- <div class="date-chips"><div class="dc on" id="dc-all" onclick="setDate('all')">All</div><div class="dc" id="dc-today" onclick="setDate('today')">Today</div><div class="dc" id="dc-tmrw" onclick="setDate('tmrw')">Tomorrow</div><div class="dc" id="dc-wknd" onclick="setDate('wknd')">Weekend</div></div>
- <div class="fl"><div class="fc" id="fc-cheap" onclick="tF('cheap')">Under $30</div><div class="fc" id="fc-women" onclick="tF('women')" style="display:none">Women Only</div><div class="fc" id="fc-trunk" onclick="tF('trunk')">Trunk</div><div class="fc" id="fc-quiet" onclick="tF('quiet')">Quiet</div></div>
- <div class="toolbar">
-  <div class="sw"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg><input class="si" id="srch" placeholder="Search city or stops…" oninput="render()"></div>
-  <div class="sb"><select id="srt" onchange="render()"><option value="date">Soonest</option><option value="price">Cheapest</option><option value="priceh">Highest $</option><option value="seats">Most seats</option></select><span class="rc-count" id="cnt"></span></div>
-  <button class="bt bo bs" style="width:auto;flex-shrink:0" onclick="toggleMap()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/></svg>Map</button>
- </div>
- <div id="mapbox"></div>
- <div id="skel" style="display:none"><div class="ride-grid"><div class="sk"><div style="display:flex;gap:10px;margin-bottom:10px"><div class="skc"></div><div style="flex:1"><div class="skl w50"></div><div class="skl w70"></div></div></div><div class="skl"></div><div class="skl w30"></div></div><div class="sk"><div style="display:flex;gap:10px;margin-bottom:10px"><div class="skc"></div><div style="flex:1"><div class="skl w50"></div><div class="skl w70"></div></div></div><div class="skl"></div></div></div></div>
- <div id="rl" class="ride-grid"></div>
-</div>
-
-<!-- POST -->
-<div id="v-driver" class="v">
- <div class="pc">
-  <h2>Offer a ride</h2><p class="sub">Post to the board for students to book</p>
-  <div class="fg"><label>Direction</label><select class="fi" id="pd" onchange="updPostLabel()"><option value="Leaving Pitt">Leaving Pitt</option><option value="Returning to Pitt">Returning to Pitt</option></select></div>
-  <div class="fg"><label id="pde-label">Destination</label><input class="fi" id="pde" placeholder="e.g. Philadelphia" oninput="calcP('pde','pla','plo','ph','pse')"></div>
-  <input type="hidden" id="pla"><input type="hidden" id="plo">
-  <div class="fg"><label>Waypoints</label><input class="fi" id="pst" placeholder="e.g. Harrisburg"></div>
-  <div class="r2"><div class="fg"><label>Date</label><input type="date" class="fi" id="pda"></div><div class="fg"><label>Departure</label><select class="fi" id="ptm"><option value="Flexible">Flexible</option><option value="Early Morning">Early AM (5-8)</option><option value="Morning">Morning (8-11)</option><option value="Afternoon">Afternoon (11-4)</option><option value="Evening">Evening (4-8)</option><option value="Late Night">Late (8+)</option></select></div></div>
-  <div class="r2"><div class="fg"><label>Seats</label><input type="number" class="fi" id="pse" placeholder="1-6" min="1" max="6" oninput="calcP('pde','pla','plo','ph','pse')"></div><div class="fg"><label>$/Seat</label><input type="number" class="fi" id="ppr" placeholder="$"></div></div>
-  <p class="hint" id="ph"></p>
-  <div class="fg"><label>Who Can Join</label><select class="fi" id="paf"><option value="Everyone">Everyone</option><option value="Women Only">Women Only</option></select></div>
-  <div class="r2"><div class="fg"><label>Vibe</label><select class="fi" id="pvi"><option value="Chatty">Chatty</option><option value="Quiet">Quiet</option><option value="Mixed">Mixed</option></select></div><div class="fg"><label>Music</label><select class="fi" id="pmu"><option value="Driver's Choice">Driver Aux</option><option value="Pass the Aux">Pass Aux</option><option value="Podcasts/Silence">Podcasts</option></select></div></div>
-  <div class="fg"><label>Luggage</label><select class="fi" id="plu"><option value="Backpack Only">Backpack</option><option value="Carry-on Size">Carry-on</option><option value="Large Trunk Space">Large Trunk</option></select></div>
-  <div class="fg"><label>Cancellation Policy</label><select class="fi" id="pcp"><option value="Flexible">Flexible — cancel anytime</option><option value="24h Notice">24h Notice required</option><option value="No Cancellation">No cancellation</option></select></div>
-  <div class="fg"><label>Pickup Spot</label><input class="fi" id="ppl" placeholder="e.g. Cathy front steps, Panther Hollow lot"></div>
-  <div class="fg"><label>Notes</label><textarea class="fi" id="pno" placeholder="Extra details…"></textarea></div>
-  <button class="bt bp" id="post-btn" onclick="postRide()">Post Ride</button>
- </div>
-</div>
-
-<!-- TRIPS -->
-<div id="v-trips" class="v"><h2 style="font-weight:800;font-size:1.1em;margin-bottom:12px;max-width:560px;margin-left:auto;margin-right:auto">My Trips</h2><div id="tl" class="trips-grid" style="max-width:560px;margin:0 auto"></div></div>
-
-<!-- PROFILE -->
-<div id="v-profile" class="v">
- <div class="prof-header">
-  <div id="pav" class="av ba" style="background:var(--c1)">👤</div>
-  <div class="pn" id="pnd">—</div>
-  <div class="pg" id="pgd">—</div>
-  <div class="prr" id="prd"></div>
-  <div class="pdate" id="pdate"></div>
-  <input type="hidden" id="pfn"><input type="hidden" id="pfg">
- </div>
- <div class="prof-stats">
-  <div class="prof-stat"><div class="psv" id="ps-rides">0</div><div class="psl">Rides</div></div>
-  <div class="prof-stat"><div class="psv" id="ps-booked">0</div><div class="psl">Booked</div></div>
-  <div class="prof-stat"><div class="psv" id="ps-rating">—</div><div class="psl">Rating</div></div>
- </div>
- <div class="prof-bio">
-  <h3>About Me</h3>
-  <div class="fg"><textarea class="fi" id="pfb" placeholder="Tell others about yourself…"></textarea></div>
-  <div class="fg"><label>Car Info (optional)</label><input class="fi" id="pcar" placeholder="e.g. Blue Honda Civic 2019"></div>
-  <button class="bt bp" onclick="savePf()">Save Profile</button>
- </div>
- <div class="prof-history" style="margin-bottom:12px">
-  <h3>Ride Alerts</h3>
-  <div id="alert-list"></div>
-  <button class="bt bo bs" style="margin-top:6px" onclick="openAlertForm()">+ New Alert</button>
- </div>
- <div class="prof-history">
-  <h3>Ride History</h3>
-  <div id="ph-list"></div>
- </div>
-</div>
-
-<!-- ADMIN -->
-<div id="v-admin" class="v"><h2 style="font-weight:800;font-size:1.1em;margin-bottom:12px">Dashboard</h2><div class="sg"><div class="sc"><div class="sv" id="su">—</div><div class="sl">Users</div></div><div class="sc"><div class="sv" id="sr">—</div><div class="sl">Rides</div></div><div class="sc"><div class="sv" id="sm" style="color:var(--ok)">$—</div><div class="sl">Economy</div></div><div class="sc"><div class="sv" id="smg">—</div><div class="sl">Messages</div></div></div></div>
-</div>
-
-<!-- MOBILE NAV -->
-<nav class="nv" id="nav" role="navigation" aria-label="Mobile navigation"><div class="nv-i">
- <div class="ni on" data-t="rider" onclick="sw(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Search</div>
- <div class="ni" data-t="driver" onclick="sw(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>Post</div>
- <div class="ni" data-t="trips" onclick="sw(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>Trips</div>
- <div class="ni" data-t="profile" onclick="sw(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile</div>
- <div class="ni" id="atab" style="display:none" data-t="admin" onclick="sw(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>Admin</div>
-</div></nav>
-
-<!-- EDIT MODAL -->
-<div class="mo" id="emod" onclick="if(event.target===this)closeE()"><div class="ms"><div class="mh"><h3>Edit Ride</h3><button class="ib" onclick="closeE()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div><div class="mb">
- <input type="hidden" id="ei">
- <div class="fg"><label>Direction</label><select class="fi" id="edi"><option value="Leaving Pitt">Leaving</option><option value="Returning to Pitt">Returning</option></select></div>
- <div class="fg"><label>Destination / Coming From</label><input class="fi" id="ede" oninput="calcP('ede','ela','elo','eph','ese')"></div>
- <input type="hidden" id="ela"><input type="hidden" id="elo">
- <div class="fg"><label>Waypoints</label><input class="fi" id="est"></div>
- <div class="r2"><div class="fg"><label>Date</label><input type="date" class="fi" id="eda"></div><div class="fg"><label>Departure</label><select class="fi" id="etm"><option value="Flexible">Flexible</option><option value="Early Morning">Early AM</option><option value="Morning">Morning</option><option value="Afternoon">Afternoon</option><option value="Evening">Evening</option><option value="Late Night">Late</option></select></div></div>
- <div class="r2"><div class="fg"><label>Seats</label><input type="number" class="fi" id="ese" min="1" max="6" oninput="calcP('ede','ela','elo','eph','ese')"></div><div class="fg"><label>Price</label><input type="number" class="fi" id="epr"></div></div>
- <p class="hint" id="eph"></p>
- <div class="fg"><label>Affinity</label><select class="fi" id="eaf"><option value="Everyone">Everyone</option><option value="Women Only">Women Only</option></select></div>
- <div class="r2"><div class="fg"><label>Vibe</label><select class="fi" id="evi"><option value="Chatty">Chatty</option><option value="Quiet">Quiet</option><option value="Mixed">Mixed</option></select></div><div class="fg"><label>Music</label><select class="fi" id="emu"><option value="Driver's Choice">Driver Aux</option><option value="Pass the Aux">Pass Aux</option><option value="Podcasts/Silence">Podcasts</option></select></div></div>
- <div class="fg"><label>Luggage</label><select class="fi" id="elu"><option value="Backpack Only">Backpack</option><option value="Carry-on Size">Carry-on</option><option value="Large Trunk Space">Trunk</option></select></div>
- <div class="fg"><label>Cancel Policy</label><select class="fi" id="ecp"><option value="Flexible">Flexible</option><option value="24h Notice">24h Notice</option><option value="No Cancellation">No Cancellation</option></select></div>
- <div class="fg"><label>Pickup Spot</label><input class="fi" id="epl" placeholder="e.g. Cathy front steps"></div>
- <div class="fg"><label>Notes</label><textarea class="fi" id="eno"></textarea></div>
- <button class="bt bg" onclick="submitE()">Save</button>
-</div></div></div>
-
-<!-- CHAT MODAL -->
-<div class="mo" id="cmod" onclick="if(event.target===this)closeC()"><div class="ms"><div class="mh"><h3>Trip Chat</h3><button class="ib" onclick="closeC()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div><div class="mb" style="display:flex;flex-direction:column">
- <div id="cbox" class="ca"></div>
- <div class="ci"><input class="fi" id="cin" style="margin:0" placeholder="Message…" onkeypress="if(event.key==='Enter')sendM()"><button class="bt bp bs" onclick="sendM()" style="width:40px;padding:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button></div>
-</div></div></div>
-
-<!-- NOTIF MODAL -->
-<div class="mo" id="nmod" onclick="if(event.target===this)closeN()"><div class="ms"><div class="mh"><h3>Notifications</h3><button class="ib" onclick="closeN()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div><div class="mb" style="padding:0"><div class="nl" id="nlist"></div></div></div></div>
-
-<!-- RATE MODAL -->
-<div class="mo" id="rmod" onclick="if(event.target===this)closeR()"><div class="ms"><div class="mh"><h3>Rate</h3><button class="ib" onclick="closeR()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div><div class="mb" style="text-align:center">
- <p id="rw" style="font-weight:700;margin-bottom:4px"></p>
- <div class="sr" id="srow"></div>
- <input type="hidden" id="re"><input type="hidden" id="rr">
- <button class="bt bp" onclick="submitR()">Submit</button>
-</div></div></div>
-
-<!-- CUSTOM CONFIRM MODAL -->
-<div class="confirm-modal" id="cfmod">
- <div class="confirm-box">
-  <div class="cf-icon" id="cf-icon">🚗</div>
-  <div class="cf-title" id="cf-title">Confirm</div>
-  <div class="cf-msg" id="cf-msg">Are you sure?</div>
-  <div class="brow">
-   <button class="bt bo bs" onclick="cfResolve(false)">Cancel</button>
-   <button class="bt bp bs" id="cf-ok" onclick="cfResolve(true)">Confirm</button>
+  <!-- Notifications -->
+  <div class="mo" id="nmod" onclick="if(event.target===this)closeNotifications()">
+    <div class="ms">
+      <div class="mh">
+        <h3>Notifications</h3>
+        <button class="ib" onclick="closeNotifications()" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="mb" style="padding:0">
+        <div class="nl" id="nlist"></div>
+      </div>
+    </div>
   </div>
- </div>
-</div>
 
-<!-- ALERT FORM MODAL -->
-<div class="mo" id="almod" onclick="if(event.target===this)closeAl()"><div class="ms"><div class="mh"><h3>New Ride Alert</h3><button class="ib" onclick="closeAl()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div><div class="mb">
- <p style="font-size:.82em;color:var(--t3);margin-bottom:14px">Get notified when a ride matching your criteria is posted.</p>
- <div class="fg"><label>Destination (city)</label><input class="fi" id="al-dest" placeholder="e.g. Philadelphia"></div>
- <div class="fg"><label>Direction</label><select class="fi" id="al-dir"><option value="">Any</option><option value="Leaving Pitt">Leaving Pitt</option><option value="Returning to Pitt">Returning to Pitt</option></select></div>
- <div class="r2"><div class="fg"><label>From Date</label><input type="date" class="fi" id="al-from"></div><div class="fg"><label>To Date</label><input type="date" class="fi" id="al-to"></div></div>
- <div class="fg"><label>Max Price ($)</label><input type="number" class="fi" id="al-max" placeholder="e.g. 40"></div>
- <button class="bt bp" onclick="saveAlert()">Create Alert</button>
-</div></div></div>
+  <!-- Rating -->
+  <div class="mo" id="rmod" onclick="if(event.target===this)closeRatingModal()">
+    <div class="ms">
+      <div class="mh">
+        <h3>Rate</h3>
+        <button class="ib" onclick="closeRatingModal()" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="mb" style="text-align:center">
+        <p id="rw" style="font-weight:700;margin-bottom:4px"></p>
+        <div class="sr" id="srow"></div>
+        <input type="hidden" id="re"><input type="hidden" id="rr">
+        <button class="bt bp" onclick="submitRating()">Submit</button>
+      </div>
+    </div>
+  </div>
 
-<!-- PAYMENT MODAL -->
-<div class="mo" id="paymod" onclick="if(event.target===this)closePay()"><div class="ms"><div class="mh"><h3>Payment Tracker</h3><button class="ib" onclick="closePay()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div><div class="mb" id="pay-body"></div></div></div>
+  <!-- Confirmation -->
+  <div class="confirm-modal" id="cfmod">
+    <div class="confirm-box">
+      <div class="cf-icon" id="cf-icon">🚗</div>
+      <div class="cf-title" id="cf-title">Confirm</div>
+      <div class="cf-msg" id="cf-msg">Are you sure?</div>
+      <div class="brow">
+        <button class="bt bo bs" onclick="resolveConfirm(false)">Cancel</button>
+        <button class="bt bp bs" id="cf-ok" onclick="resolveConfirm(true)">Confirm</button>
+      </div>
+    </div>
+  </div>
 
-<div class="tw" id="tw"></div>
+  <!-- New ride alert -->
+  <div class="mo" id="almod" onclick="if(event.target===this)closeAlertModal()">
+    <div class="ms">
+      <div class="mh">
+        <h3>New Ride Alert</h3>
+        <button class="ib" onclick="closeAlertModal()" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="mb">
+        <p style="font-size:.82em;color:var(--t3);margin-bottom:14px">Get notified when a ride matching your criteria is posted.</p>
 
-<script>
-const API="https://script.google.com/macros/s/AKfycbybwcZftye1RCC1rMRUGuY0J3Vt7sUyJncKQIItq4NijtCOHs7e6ezZ6YD_i-S2P2Pp/exec";
-let S=JSON.parse(localStorage.getItem('ps')||"null"),D=JSON.parse(localStorage.getItem('pd')||"[]");
-let map,mkrs,isMap=0,isReg=0,lS=0,dir='Leaving Pitt',aC=null,tmr,role='user',selR=0,userGender='Unknown';
-let F={cheap:0,women:0,trunk:0,quiet:0},dateF='all';
-let _cfRes=null;
-let userCar='';
+        <div class="fg">
+          <label for="al-dest">Destination (city)</label>
+          <input class="fi" id="al-dest" placeholder="e.g. Philadelphia">
+        </div>
+        <div class="fg">
+          <label for="al-dir">Direction</label>
+          <select class="fi" id="al-dir">
+            <option value="">Any</option>
+            <option value="Leaving Pitt">Leaving Pitt</option>
+            <option value="Returning to Pitt">Returning to Pitt</option>
+          </select>
+        </div>
+        <div class="r2">
+          <div class="fg"><label for="al-from">From Date</label><input type="date" class="fi" id="al-from"></div>
+          <div class="fg"><label for="al-to">To Date</label><input type="date" class="fi" id="al-to"></div>
+        </div>
+        <div class="fg">
+          <label for="al-max">Max Price ($)</label>
+          <input type="number" class="fi" id="al-max" placeholder="e.g. 40">
+        </div>
 
-function toggleTheme(){const t=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',t);localStorage.setItem('pt',t)}
-(()=>{const t=localStorage.getItem('pt');if(t)document.documentElement.setAttribute('data-theme',t);else if(matchMedia('(prefers-color-scheme:dark)').matches)document.documentElement.setAttribute('data-theme','dark')})();
-document.getElementById('pda').min=new Date().toISOString().split('T')[0];
-document.getElementById('eda').min=new Date().toISOString().split('T')[0];
+        <button class="bt bp" onclick="saveAlert()">Create Alert</button>
+      </div>
+    </div>
+  </div>
 
-function T(m,ok=1){const w=document.getElementById('tw'),e=document.createElement('div');e.className='tt '+(ok?'ok':'er');e.innerHTML=`<span>${ok?'✓':'!'}</span>${m}`;w.appendChild(e);requestAnimationFrame(()=>e.classList.add('show'));setTimeout(()=>{e.classList.remove('show');setTimeout(()=>e.remove(),200)},2200)}
-async function api(d){const r=await fetch(API,{method:'POST',body:JSON.stringify({token:S?.token,email:S?.email,...d})});return r.json()}
+  <!-- Payment tracker -->
+  <div class="mo" id="paymod" onclick="if(event.target===this)closePaymentModal()">
+    <div class="ms">
+      <div class="mh">
+        <h3>Payment Tracker</h3>
+        <button class="ib" onclick="closePaymentModal()" aria-label="Close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="mb" id="pay-body"></div>
+    </div>
+  </div>
 
-// Custom confirm
-function cfm(icon,title,msg,okText='Confirm',okClass='bp'){
- return new Promise(res=>{
-  _cfRes=res;
-  document.getElementById('cf-icon').textContent=icon;
-  document.getElementById('cf-title').textContent=title;
-  document.getElementById('cf-msg').textContent=msg;
-  const okBtn=document.getElementById('cf-ok');
-  okBtn.textContent=okText;okBtn.className='bt bs '+okClass;
-  document.getElementById('cfmod').classList.add('open');
- });
-}
-function cfResolve(v){_cfRes&&_cfRes(v);_cfRes=null;document.getElementById('cfmod').classList.remove('open')}
+  <div class="tw" id="tw"></div>
 
-function showAuthForm(login){document.getElementById('onboard-screen').style.display='none';document.getElementById('auth-form').style.display='block';if(login){isReg=0;updAuth()}}
-function updAuth(){document.getElementById('rfs').style.display=isReg?'block':'none';document.getElementById('atit').textContent=isReg?'Create account':'Sign in';document.getElementById('asub').textContent=isReg?'Sign up with your @pitt.edu email':'Use your @pitt.edu email';document.getElementById('abtn').textContent=isReg?'Create Account':'Sign In';document.getElementById('rtog').textContent=isReg?'Have an account? Sign in':'Need an account? Sign up'}
-function toggleReg(){isReg=!isReg;updAuth()}
-
-async function submitAuth(){
- const em=document.getElementById('em').value.trim(),pw=document.getElementById('pw').value,btn=document.getElementById('abtn');
- if(!em||!pw)return T('Fill all fields',0);
- let p={action:isReg?'register':'login',email:em,password:pw};
- if(isReg){p.name=document.getElementById('rn').value;p.gender=document.getElementById('rg').value;if(!p.name||!p.gender)return T('Name & gender required',0)}
- btn.classList.add('bt-loading');btn.disabled=1;
- try{const d=await api(p);if(d.status==='success'){S={email:em,token:d.token};role=d.role||'user';localStorage.setItem('ps',JSON.stringify(S));location.reload()}else{T(d.message,0);btn.classList.remove('bt-loading');btn.textContent=isReg?'Create Account':'Sign In';btn.disabled=0}}
- catch(e){T('Network error',0);btn.classList.remove('bt-loading');btn.textContent=isReg?'Create Account':'Sign In';btn.disabled=0}}
-function logout(){api({action:'logout'}).finally(()=>{localStorage.clear();location.reload()})}
-
-async function sync(f){
- if(!S||(!f&&Date.now()-lS<10000))return;
- if(!D.length)document.getElementById('skel').style.display='block';
- try{const d=await api({action:'getRides'});if(d.status==='success'){D=d.data;localStorage.setItem('pd',JSON.stringify(D));lS=Date.now();render();if(isMap)upMap()}else if(d.status==='unauthorized')logout()}catch(e){}
- document.getElementById('skel').style.display='none';pollN()}
-async function pollN(){if(!S)return;try{const d=await api({action:'getNotifications'});document.getElementById('nd').style.display=d.unread>0?'block':'none';window._nf=d.data||[]}catch(e){}}
-
-function col(s){let h=0;for(let i=0;i<s.length;i++)h=s.charCodeAt(i)+((h<<5)-h);return`hsl(${Math.abs(h)%360},48%,50%)`}
-function ini(n){let p=n.split(' ');return(p[0][0]+(p.length>1?p[p.length-1][0]:'')).toUpperCase()}
-function fD(d){try{return new Date(d).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}catch(e){return d}}
-function ago(t){const d=Date.now()-new Date(t).getTime(),m=Math.floor(d/60000);if(m<1)return'now';if(m<60)return m+'m';const h=Math.floor(m/60);if(h<24)return h+'h';return Math.floor(h/24)+'d'}
-function isToday(d){return new Date().toDateString()===new Date(d).toDateString()}
-function isTmrw(d){const t=new Date();t.setDate(t.getDate()+1);return t.toDateString()===new Date(d).toDateString()}
-function isWknd(d){const r=new Date(d),now=new Date();now.setHours(0,0,0,0);const ds=(6-now.getDay()+7)%7||7;const sat=new Date(now);sat.setDate(now.getDate()+ds);const sun=new Date(sat);sun.setDate(sat.getDate()+1);return r.toDateString()===sat.toDateString()||r.toDateString()===sun.toDateString()}
-function timeIcon(t){return{'Early Morning':'🌅','Morning':'☀️','Afternoon':'🌤','Evening':'🌆','Late Night':'🌙','Flexible':'🕐'}[t]||'🕐'}
-function isPast(d){const rd=new Date(d);rd.setHours(23,59,59);return rd<new Date()}
-
-function setDir(d){dir=d;document.getElementById('bo').className='db'+(d==='Leaving Pitt'?' on':'');document.getElementById('br').className='db'+(d==='Returning to Pitt'?' on':'');render();if(isMap)upMap()}
-function updPostLabel(){const v=document.getElementById('pd').value;document.getElementById('pde-label').textContent=v==='Returning to Pitt'?'Coming From':'Destination';document.getElementById('pde').placeholder=v==='Returning to Pitt'?'e.g. Philadelphia (where you\'re leaving from)':'e.g. Philadelphia'}
-function setDate(v){dateF=v;document.querySelectorAll('.dc').forEach(c=>c.classList.remove('on'));document.getElementById('dc-'+v).classList.add('on');render()}
-function tF(c){F[c]=!F[c];document.getElementById('fc-'+c).classList.toggle('on');render();if(isMap)upMap()}
-
-function getF(){
- const q=document.getElementById('srch').value.toLowerCase();
- let f=D.filter(r=>{
-  if(r.direction!==dir)return false;
-  if(!(r.destination.toLowerCase().includes(q)||(r.waypoints||'').toLowerCase().includes(q)))return false;
-  if(r.affinity==='Women Only'&&userGender!=='Female'&&r.email!==S.email&&!(r.riders||'').includes(S.email))return false;
-  return true;
- });
- if(F.cheap)f=f.filter(r=>r.price<=30);
- if(F.women)f=f.filter(r=>r.affinity==='Women Only');
- if(F.trunk)f=f.filter(r=>r.luggage==='Large Trunk Space');
- if(F.quiet)f=f.filter(r=>r.vibe==='Quiet');
- if(dateF==='today')f=f.filter(r=>isToday(r.date));
- else if(dateF==='tmrw')f=f.filter(r=>isTmrw(r.date));
- else if(dateF==='wknd')f=f.filter(r=>isWknd(r.date));
- const s=document.getElementById('srt').value;
- // Sort expired to bottom, then by selected sort
- f.sort((a,b)=>{
-  const ap=isPast(a.date),bp=isPast(b.date);
-  if(ap!==bp)return ap?1:-1;
-  if(s==='date')return new Date(a.date)-new Date(b.date);
-  if(s==='price')return a.price-b.price;
-  if(s==='priceh')return b.price-a.price;
-  if(s==='seats')return b.seats-a.seats;
-  return 0;
- });
- return f;
-}
-
-function render(){
- const f=getF();
- document.getElementById('cnt').textContent=f.length+' ride'+(f.length!==1?'s':'');
- const rl=document.getElementById('rl');
-
- rl.innerHTML=f.map(r=>{
-  let amIn=(r.riders||'').includes(S.email),wait=(r.waitlist||'').includes(S.email),me=S.email===r.email;
-  let past=isPast(r.date);
-  let act='';
-  if(past){
-   if(amIn)act=`<button class="bt bo bs" onclick="openRt('${r.email}','${r.id}','${r.name}')">⭐ Rate Driver</button>`;
-   else if(me)act=`<button class="bt bd bs" onclick="del('${r.id}')">Remove</button>`;
-   else act=`<button class="bt bo bs" disabled>Expired</button>`;
-  } else if(me)act=`<div class="brow"><button class="bt bg bs" onclick="openE('${r.id}')">Edit</button><button class="bt bd bs" onclick="del('${r.id}')">Delete</button></div>`;
-  else if(amIn)act=`<div class="brow"><button class="bt bo bs" onclick="canc('${r.id}')">Cancel</button><button class="bt bo bs" onclick="openRt('${r.email}','${r.id}','${r.name}')">⭐ Rate</button></div>`;
-  else if(r.seats>0)act=`<button class="bt bp bs" onclick="book('${r.id}')">Claim Seat</button>`;
-  else if(wait)act=`<button class="bt bo bs" disabled>Waitlisted</button>`;
-  else act=`<button class="bt bo bs" onclick="joinW('${r.id}')">Join Waitlist</button>`;
-
-  let total=r.seats+((r.riders||'').split(',').filter(x=>x).length),taken=total-r.seats;
-  let dots='';for(let i=0;i<Math.min(total,6);i++)dots+=`<div class="sd${i<taken?' tk':''}"></div>`;
-  let wp=r.waypoints?`<div class="wp">↳ Via ${r.waypoints}</div>`:'';
-  let timeStr=r.time&&r.time!=='Flexible'?`<span>${timeIcon(r.time)} ${r.time}</span>`:`<span>🕐 Flexible</span>`;
-  let chat=(!past&&(amIn||me))?`<button class="bt bo bs" style="margin-top:5px" onclick="openC('${r.id}')">💬 Chat</button>`:'';
-  let destLabel=r.direction==='Returning to Pitt'?r.destination+' → Pitt':r.destination;
-
-  // Verified badge
-  let vb=r.verified?'<span class="vbadge">✓ Verified</span>':'';
-
-  // Rider avatars
-  let riderHtml='';
-  let rNames=r.riderNames||[];
-  if(rNames.length>0){
-    let avatars=rNames.slice(0,4).map(n=>`<div class="rider-mini" style="background:${col(n)}" title="${n}">${ini(n)}</div>`).join('');
-    let extra=rNames.length>4?`<span class="rider-count">+${rNames.length-4}</span>`:'';
-    let nameList=rNames.slice(0,3).map(n=>n.split(' ')[0]).join(', ')+(rNames.length>3?' +more':'');
-    riderHtml=`<div class="rider-row">${avatars}${extra}<span class="rider-count">${nameList}</span></div>`;
-  }
-
-  // Pickup location
-  let pickupHtml=r.pickupLabel?`<div class="pickup-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>${r.pickupLabel}</div>`:'';
-
-  // Cancel policy tag
-  let cpTag=r.cancelPolicy&&r.cancelPolicy!=='Flexible'?`<span class="tg tg-cancel">${r.cancelPolicy}</span>`:'';
-
-  // Payment button for participants
-  let payBtn=(amIn||me)&&!past?`<button class="bt bo bs" style="margin-top:5px" onclick="openPay('${r.id}')">💰 Payments</button>`:'';
-
-  return`<div class="rc${me?' mine':''}${amIn?' booked':''}${past?' expired':''}" role="article" aria-label="Ride to ${destLabel} by ${r.name}">
-   <div class="top"><div class="av" style="background:${col(r.name)}" aria-hidden="true">${ini(r.name)}</div>
-    <div class="di"><div class="dn">${r.name}${vb}</div><div class="dm">${r.direction}</div></div>
-    <div class="pr" aria-label="${r.price} per seat">${r.price}</div></div>
-   <div class="dst">${destLabel}</div>${wp}${pickupHtml}
-   <div class="meta-row">
-    <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>${fD(r.date)}</span>
-    ${timeStr}
-   </div>
-   <div class="tags"><span class="tg">${r.vibe}</span><span class="tg">${r.music}</span><span class="tg">${r.luggage}</span>${r.affinity==='Women Only'?'<span class="tg tg-w">Women Only</span>':''}${cpTag}</div>
-   <div class="seats-vis">${dots}<span class="sl">${r.seats} left</span></div>
-   ${riderHtml}
-   ${r.notes?`<div class="nt">${r.notes}</div>`:''}
-   <div class="actions">${act}${chat}${payBtn}</div></div>`
- }).join('')||`<div class="emp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 15h8M9 9h.01M15 9h.01"/></svg><p>No rides match</p><p class="sub">Try different filters or dates</p></div>`;
-
- // Trips
- document.getElementById('tl').innerHTML=D.filter(r=>(r.riders||'').includes(S.email)||r.email===S.email).map(r=>{
-  let s2=new Date(r.date).toISOString().replace(/-|:|\.\d+/g,'').substring(0,8)+'T140000Z',e2=new Date(r.date).toISOString().replace(/-|:|\.\d+/g,'').substring(0,8)+'T160000Z';
-  let destLabel=r.direction==='Returning to Pitt'?r.destination+' → Pitt':r.destination;
-  let cal=`https://calendar.google.com/calendar/render?action=TEMPLATE&text=Ride+to+${encodeURIComponent(destLabel)}&dates=${s2}/${e2}&details=Driver:+${encodeURIComponent(r.name)}`;
-  let tm=r.time&&r.time!=='Flexible'?' · '+r.time:'';
-  let past=isPast(r.date);
-  return`<div class="tc" style="${past?'opacity:.5':''}"><div class="dst">${destLabel}${past?' <span style="font-size:.6em;color:var(--err);font-weight:700">PAST</span>':''}</div><div class="meta">${fD(r.date)}${tm} · ${r.name}</div><div class="brow">${past?`<button class="bt bo bs" onclick="openRt('${r.email}','${r.id}','${r.name}')">⭐ Rate</button>`:`<button class="bt bg bs" onclick="window.open('${cal}')">📅 Calendar</button><button class="bt bo bs" onclick="openC('${r.id}')">💬 Chat</button>`}</div></div>`
- }).join('')||`<div class="emp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg><p>No trips yet</p><p class="sub">Book or post a ride</p></div>`;
-
- // Profile stats
- const myRides=D.filter(r=>r.email===S.email).length;
- const myBooked=D.filter(r=>(r.riders||'').includes(S.email)).length;
- document.getElementById('ps-rides').textContent=myRides;
- document.getElementById('ps-booked').textContent=myBooked;
-
- // Profile ride history
- const history=D.filter(r=>r.email===S.email||(r.riders||'').includes(S.email));
- document.getElementById('ph-list').innerHTML=history.map(r=>{
-  let destLabel=r.direction==='Returning to Pitt'?r.destination+' → Pitt':r.destination;
-  let role2=r.email===S.email?'Driver':'Rider';
-  return`<div class="ph-item"><div><div class="ph-dest">${destLabel}</div><div class="ph-meta">${fD(r.date)} · ${role2}</div></div><div class="ph-price">$${r.price}</div></div>`
- }).join('')||'<p style="color:var(--t3);font-size:.82em">No ride history yet.</p>';
-}
-
-// Actions with custom confirms
-async function book(id){
- const r=D.find(x=>x.id==id);if(!r)return;
- if(isPast(r.date))return T('This ride has expired',0);
- const ok=await cfm('🎟️','Claim Seat?',`Book a seat on ${r.name}'s ride to ${r.destination} for $${r.price}?`,'Claim Seat','bp');
- if(!ok)return;
- r.seats--;r.riders=(r.riders?r.riders+',':'')+S.email;render();T('Confirmed!');api({action:'bookSeat',id}).then(()=>sync(1));
-}
-async function canc(id){
- const ok=await cfm('🚫','Cancel Booking?','Your seat will be released and someone on the waitlist may take it.','Cancel Seat','bd');
- if(!ok)return;
- let r=D.find(x=>x.id==id);if(r){r.seats++;r.riders=r.riders.replace(S.email,'').replace(',,',',').replace(/^,|,$/g,'');render();T('Cancelled')}api({action:'cancelSeat',id}).then(()=>sync(1));
-}
-async function del(id){
- const ok=await cfm('🗑️','Delete Ride?','This will permanently remove the ride and notify all booked riders.','Delete','bd');
- if(!ok)return;
- D=D.filter(x=>x.id!=id);render();T('Deleted');api({action:'deleteRide',id}).then(()=>sync(1));
-}
-async function joinW(id){
- const r=D.find(x=>x.id==id);if(!r)return;
- if(isPast(r.date))return T('This ride has expired',0);
- const ok=await cfm('⏳','Join Waitlist?',`You'll be notified if a seat opens up on this ride to ${r.destination}.`,'Join','bp');
- if(!ok)return;
- r.waitlist=(r.waitlist?r.waitlist+',':'')+S.email;render();T('Waitlisted');api({action:'joinWaitlist',id}).then(()=>sync(1));
-}
-
-// Edit
-function openE(id){const r=D.find(x=>x.id==id);if(!r)return;
- document.getElementById('ei').value=r.id;document.getElementById('edi').value=r.direction;document.getElementById('ede').value=r.destination;document.getElementById('ela').value=r.lat;document.getElementById('elo').value=r.lon;document.getElementById('est').value=r.waypoints||'';document.getElementById('eda').value=(r.date||'').split('T')[0];document.getElementById('ese').value=r.seats;document.getElementById('epr').value=r.price;document.getElementById('eaf').value=r.affinity;document.getElementById('evi').value=r.vibe;document.getElementById('emu').value=r.music;document.getElementById('elu').value=r.luggage;document.getElementById('eno').value=r.notes;document.getElementById('etm').value=r.time||'Flexible';document.getElementById('ecp').value=r.cancelPolicy||'Flexible';document.getElementById('epl').value=r.pickupLabel||'';
- document.getElementById('emod').classList.add('open')}
-function closeE(){document.getElementById('emod').classList.remove('open')}
-async function submitE(){const p={action:'editRide',id:document.getElementById('ei').value,destination:document.getElementById('ede').value,waypoints:document.getElementById('est').value,date:document.getElementById('eda').value,seats:document.getElementById('ese').value,price:document.getElementById('epr').value,direction:document.getElementById('edi').value,affinity:document.getElementById('eaf').value,vibe:document.getElementById('evi').value,music:document.getElementById('emu').value,luggage:document.getElementById('elu').value,notes:document.getElementById('eno').value,lat:document.getElementById('ela').value,lon:document.getElementById('elo').value,time:document.getElementById('etm').value,cancelPolicy:document.getElementById('ecp').value,pickupLabel:document.getElementById('epl').value};closeE();T('Saving…');await api(p);sync(1)}
-
-function calcP(dI,laI,loI,hI,sI){clearTimeout(tmr);const d=document.getElementById(dI).value.trim();let seats=parseInt(document.getElementById(sI).value)||3;
- tmr=setTimeout(async()=>{if(!d)return;try{const r=await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(d+', USA')}&limit=1`);const j=await r.json();
-  if(j.length){document.getElementById(laI).value=j[0].lat;document.getElementById(loI).value=j[0].lon;
-   const dL=(j[0].lat-40.4406)*Math.PI/180,dN=(j[0].lon- -79.9959)*Math.PI/180;
-   const a=Math.sin(dL/2)**2+Math.cos(40.4406*Math.PI/180)*Math.cos(j[0].lat*Math.PI/180)*Math.sin(dN/2)**2;
-   const mi=3958.8*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a))*1.25;
-   const c=(mi/25)*3.5+mi*.05+5;const pp=Math.max(5,Math.ceil(c/(1+seats)));
-   document.getElementById(hI).textContent=`~${Math.round(mi)} mi · $${pp}/seat suggested`}}catch(e){}},1000)}
-
-async function postRide(){
- const btn=document.getElementById('post-btn');
- const p={action:'addRide',id:Date.now(),name:document.getElementById('pfn').value||'Driver',destination:document.getElementById('pde').value,waypoints:document.getElementById('pst').value,date:document.getElementById('pda').value,seats:document.getElementById('pse').value,price:document.getElementById('ppr').value,direction:document.getElementById('pd').value,affinity:document.getElementById('paf').value,vibe:document.getElementById('pvi').value,music:document.getElementById('pmu').value,luggage:document.getElementById('plu').value,notes:document.getElementById('pno').value,lat:document.getElementById('pla').value,lon:document.getElementById('plo').value,time:document.getElementById('ptm').value,cancelPolicy:document.getElementById('pcp').value,pickupLabel:document.getElementById('ppl').value};
- if(!p.destination||!p.date||!p.seats||!p.price)return T('Fill required fields',0);
- if(new Date(p.date)<new Date(new Date().toDateString()))return T('Past date',0);
- if(parseInt(p.seats)<1||parseInt(p.seats)>6)return T('Seats: 1-6',0);
- if(parseFloat(p.price)<0||parseFloat(p.price)>500)return T('Price: $0-500',0);
- btn.classList.add('bt-loading');btn.disabled=1;
- try{await api(p);['pde','pst','pno','ppl'].forEach(x=>document.getElementById(x).value='');T('Posted!');sync(1);
-  const tripsBtn=document.querySelector('.ni[data-t="trips"]');if(tripsBtn)sw(tripsBtn);
- }catch(e){T('Error posting',0)}
- btn.classList.remove('bt-loading');btn.disabled=0;btn.textContent='Post Ride';
-}
-
-function toggleMap(){isMap=!isMap;const w=document.getElementById('mapbox');
- if(isMap){w.style.display='block';document.getElementById('rl').style.display='none';
-  if(!map){map=L.map('mapbox').setView([40.44,-79.99],6);L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:''}).addTo(map);mkrs=L.layerGroup().addTo(map)}
-  setTimeout(()=>{map.invalidateSize();upMap()},100)}
- else{w.style.display='none';document.getElementById('rl').style.display=''}}
-function upMap(){if(!map)return;mkrs.clearLayers();let b=[];
- getF().filter(r=>r.lat&&!isPast(r.date)).forEach(r=>{let m=L.marker([r.lat,r.lon]);const lb=r.direction==='Returning to Pitt'?r.destination+' → Pitt':r.destination;m.bindPopup(`<b>${lb}</b><br>$${r.price} · ${r.seats} seats`);mkrs.addLayer(m);b.push([r.lat,r.lon])});
- if(b.length)map.flyToBounds(b,{padding:[30,30]});else map.flyTo([40.44,-79.99],6)}
-
-function sw(el){const t=el.dataset.t;document.querySelectorAll('.v').forEach(v=>v.classList.remove('on'));document.getElementById('v-'+t).classList.add('on');
- document.querySelectorAll('.ni').forEach(i=>i.classList.remove('on'));document.querySelectorAll('.dni').forEach(i=>i.classList.remove('on'));
- document.querySelectorAll(`[data-t="${t}"]`).forEach(i=>i.classList.add('on'));
- if(t==='rider')sync();if(t==='profile')ldPf();if(t==='admin')ldAd();window.scrollTo({top:0,behavior:'smooth'})}
-
-async function ldPf(){try{const d=await api({action:'getProfile'});if(d.status==='success'){
- document.getElementById('pfn').value=d.name;document.getElementById('pfg').value=d.gender;
- document.getElementById('pnd').textContent=d.name;document.getElementById('pgd').textContent=d.gender;
- document.getElementById('pfb').value=d.bio||'';document.getElementById('pav').textContent=ini(d.name);
- document.getElementById('pav').style.background=col(d.name);role=d.role||'user';userGender=d.gender;
- userCar=d.car||'';document.getElementById('pcar').value=userCar;
- document.getElementById('fc-women').style.display=userGender==='Female'?'':'none';
- document.getElementById('ps-rating').textContent=d.rating>0?'★ '+d.rating:'—';
- document.getElementById('prd').textContent=d.rating>0?'★'.repeat(Math.round(d.rating))+' '+d.rating+' ('+d.ratingCount+' ratings)'+(d.verified?' ✓ Verified':''):'No ratings yet';
- document.getElementById('pdate').textContent=d.joined?'Member since '+new Date(d.joined).toLocaleDateString('en-US',{month:'long',year:'numeric'}):'';
- render();loadAlerts();
-}}catch(e){}}
-async function savePf(){await api({action:'updateProfile',bio:document.getElementById('pfb').value,car:document.getElementById('pcar').value});T('Saved!')}
-
-// Alerts
-async function loadAlerts(){
- try{const d=await api({action:'getAlerts'});
-  const al=d.data||[];
-  document.getElementById('alert-list').innerHTML=al.length?al.map(a=>{
-   let desc=a.destination||'Any destination';
-   if(a.direction)desc+=` · ${a.direction}`;
-   if(a.maxPrice)desc+=` · Under ${a.maxPrice}`;
-   let dates='';if(a.dateFrom||a.dateTo)dates=(a.dateFrom?fD(a.dateFrom):'Any')+' → '+(a.dateTo?fD(a.dateTo):'Any');
-   return`<div class="alert-card"><div><div class="al-info">🔔 ${desc}</div>${dates?`<div class="al-meta">${dates}</div>`:''}</div><div class="al-del" onclick="delAlert(${a.row})" aria-label="Delete alert"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></div></div>`
-  }).join(''):'<p style="font-size:.78em;color:var(--t3)">No alerts set. Create one to get notified.</p>';
- }catch(e){}}
-function openAlertForm(){document.getElementById('almod').classList.add('open')}
-function closeAl(){document.getElementById('almod').classList.remove('open')}
-async function saveAlert(){
- const dest=document.getElementById('al-dest').value.trim();
- if(!dest)return T('Enter a destination',0);
- await api({action:'saveAlert',destination:dest,direction:document.getElementById('al-dir').value,dateFrom:document.getElementById('al-from').value,dateTo:document.getElementById('al-to').value,maxPrice:document.getElementById('al-max').value});
- closeAl();T('Alert created!');loadAlerts();
-}
-async function delAlert(row){await api({action:'deleteAlert',row});T('Alert removed');loadAlerts()}
-
-// Payments
-function openPay(id){
- const r=D.find(x=>x.id==id);if(!r)return;
- const body=document.getElementById('pay-body');
- let riders=(r.riders||'').split(',').filter(x=>x.trim());
- let rNames=r.riderNames||[];
- let paidStatus={};try{paidStatus=JSON.parse(r.paidStatus||"{}")}catch(e){}
- let me=r.email===S.email;
-
- if(riders.length===0){body.innerHTML='<p style="text-align:center;color:var(--t3);padding:20px">No riders yet.</p>';document.getElementById('paymod').classList.add('open');return}
-
- body.innerHTML=`<p style="font-size:.82em;color:var(--t3);margin-bottom:12px">${me?'Track payments from your riders:':'Mark your payment status:'}</p>`+
-  riders.map((email,idx)=>{
-   let name=rNames[idx]||email.split('@')[0];
-   let st=paidStatus[email]||'unpaid';
-   let stLabel=st==='received'?'✅ Confirmed':st==='paid'?'💸 Sent':'⏳ Unpaid';
-   let stClass=st==='received'?'received':st==='paid'?'paid':'';
-
-   if(me){
-    // Driver view — can mark as received
-    return`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--b1)">
-     <div><div style="font-weight:700;font-size:.85em">${name}</div><div style="font-size:.7em;color:var(--t3)">${stLabel}</div></div>
-     <div class="brow" style="width:auto;gap:4px">
-      ${st==='paid'?`<button class="bt bg bs" style="width:auto" onclick="markPay('${r.id}','${email}','received')">Confirm</button>`:''}
-      ${st==='unpaid'?`<span style="font-size:.75em;color:var(--t3)">Waiting…</span>`:''}
-      ${st==='received'?`<span style="font-size:.75em;color:var(--ok)">Done</span>`:''}
-     </div></div>`;
-   }else if(email===S.email){
-    // Rider view — can mark as paid
-    return`<div style="padding:12px 0;text-align:center">
-     <p style="font-weight:700;font-size:.9em;margin-bottom:4px">Your payment: ${stLabel}</p>
-     <p style="font-size:.78em;color:var(--t3);margin-bottom:12px">Amount: ${r.price}</p>
-     ${st==='unpaid'?`<button class="bt bp bs" onclick="markPay('${r.id}','${email}','paid')">Mark as Paid</button>`:''}
-     ${st==='paid'?`<p style="font-size:.82em;color:var(--warn)">Waiting for driver to confirm…</p>`:''}
-     ${st==='received'?`<p style="font-size:.82em;color:var(--ok)">Driver confirmed payment!</p>`:''}
-    </div>`;
-   }
-   return'';
-  }).join('');
- document.getElementById('paymod').classList.add('open');
-}
-function closePay(){document.getElementById('paymod').classList.remove('open')}
-async function markPay(rideId,riderEmail,status){
- await api({action:'markPaid',rideId,riderEmail,status});
- T(status==='paid'?'Marked as paid':'Payment confirmed!');
- closePay();sync(1);
-}
-async function ldAd(){try{const d=await api({action:'getAnalytics'});if(d.stats){document.getElementById('su').textContent=d.stats.users;document.getElementById('sr').textContent=d.stats.rides;document.getElementById('sm').textContent='$'+d.stats.economy.toLocaleString();document.getElementById('smg').textContent=d.stats.messages}}catch(e){}}
-
-function openC(id){aC=id;document.getElementById('cmod').classList.add('open');ldM()}
-function closeC(){document.getElementById('cmod').classList.remove('open');aC=null;clearInterval(window._cp)}
-async function ldM(){if(!aC)return;const bx=document.getElementById('cbox');
- try{const d=await api({action:'getMessages',rideId:aC});
-  bx.innerHTML=d.data.map(m=>`<div class="cb ${m.email===S.email?'cm':'ct'}"><div class="cs">${m.name||m.email.split('@')[0]}</div>${m.message}</div>`).join('')||'<p style="text-align:center;color:var(--t3);padding:24px;font-size:.85em">No messages yet</p>';
-  bx.scrollTop=bx.scrollHeight}catch(e){}
- clearInterval(window._cp);window._cp=setInterval(()=>{if(aC)ldM()},8000)}
-async function sendM(){const i=document.getElementById('cin');if(!i.value.trim()||!aC)return;const m=i.value;i.value='';await api({action:'sendMessage',rideId:aC,message:m});ldM()}
-
-function openN(){document.getElementById('nmod').classList.add('open');renderN();api({action:'markNotifRead'}).then(()=>document.getElementById('nd').style.display='none')}
-function closeN(){document.getElementById('nmod').classList.remove('open')}
-function renderN(){const nl=document.getElementById('nlist'),ns=window._nf||[];
- nl.innerHTML=ns.length?ns.map(n=>{let ic='💬';if(n.type==='new_booking')ic='✅';else if(n.type.includes('cancel'))ic='❌';else if(n.type==='waitlist_promoted')ic='🎉';
-  return`<div class="nit${!n.read?' ur':''}"><div class="nic">${ic}</div><div class="nb"><p>${n.message}</p><div class="nt2">${ago(n.time)}</div></div></div>`}).join(''):'<div style="text-align:center;padding:32px;color:var(--t3);font-size:.85em">No notifications</div>'}
-
-function openRt(email,rideId,name){selR=0;document.getElementById('re').value=email;document.getElementById('rr').value=rideId;document.getElementById('rw').textContent='Rate '+name;
- const sr=document.getElementById('srow');sr.innerHTML='';
- for(let i=1;i<=5;i++){const s=document.createElement('span');s.className='sb2';s.textContent='★';s.onclick=()=>{selR=i;sr.querySelectorAll('.sb2').forEach((b,j)=>b.classList.toggle('lit',j<i))};sr.appendChild(s)}
- document.getElementById('rmod').classList.add('open')}
-function closeR(){document.getElementById('rmod').classList.remove('open')}
-async function submitR(){if(selR<1)return T('Pick a rating',0);const d=await api({action:'rateUser',ratedUser:document.getElementById('re').value,rideId:document.getElementById('rr').value,score:selR});if(d.status==='success'){closeR();T('Rated!')}else T(d.message||'Error',0)}
-
-// Init
-if(S){
- document.body.classList.add('logged-in');
- document.getElementById('v-auth').style.display='none';document.getElementById('v-rider').classList.add('on');
- document.getElementById('nav').style.display='block';document.getElementById('lob').style.display='flex';document.getElementById('nbtn').style.display='flex';
- ldPf().then(()=>{if(role==='admin'){document.getElementById('atab').style.display='flex';document.getElementById('atab2').style.display='flex'}});
- render();sync(1);setInterval(()=>sync(),30000);setInterval(pollN,30000);
-}
-</script>
+  <!-- config.js is gitignored; copy config.example.js and set your API URL -->
+  <script src="config.js"></script>
+  <script src="app.js" defer></script>
 </body>
 </html>
